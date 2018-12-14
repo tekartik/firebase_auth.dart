@@ -1,5 +1,5 @@
-
 import 'package:tekartik_firebase/firebase.dart';
+import 'dart:async';
 
 abstract class AuthService {
   // true if it supports listing users
@@ -15,7 +15,7 @@ abstract class Auth {
   /// and starting from the offset as specified by [pageToken].
   ///
   /// This is used to retrieve all the users of a specified project in batches.
-  Future<ListUsersResult> listUsers({num maxResults, String pageToken});
+  Future<ListUsersResult> listUsers({int maxResults, String pageToken});
 }
 
 abstract class UserRecord {

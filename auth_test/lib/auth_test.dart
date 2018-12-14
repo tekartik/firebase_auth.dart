@@ -9,7 +9,7 @@ bool skipConcurrentTransactionTests = false;
 void run(
     {@required fb.Firebase firebase,
     @required AuthService authService,
-      fb.AppOptions options}) {
+    fb.AppOptions options}) {
   fb.App app = firebase.initializeApp(options: options);
 
   tearDownAll(() {
@@ -20,17 +20,25 @@ void run(
   runApp(authService: authService, auth: auth);
 }
 
-runApp(
-    {@required AuthService authService,
-    @required Auth auth}) {
-  setUpAll(() async {
-  });
-  group('auth', ()
-  {
+runApp({@required AuthService authService, @required Auth auth}) {
+  setUpAll(() async {});
+  group('auth', () {
     group('listUsers', () {
       test('one', () async {
-        var user = (await auth.listUsers(maxResults: 1)).users?.first;
-        print(userRecordToJson(user));
+        try {
+          var user = (await auth.listUsers(maxResults: 1)).users?.first;
+          print(userRecordToJson(user));
+        } catch (e) {
+          // Error: Credential implementation provided to initializeApp() via the "credential" property has insufficient permission to access the requested resource. See https://firebase.google.com/docs/admin/setup for details on how to authenticate this SDK with appropriate permissions.
+          if (e.toString().contains('insufficient permission')) {
+            // Ok!
+            print('insufficient permission $e');
+          } else {
+            print('runtimeType: ${e.runtimeType}');
+            print(e);
+            rethrow;
+          }
+        }
       });
     }, skip: !authService.supportsListUsers);
   });
