@@ -1,0 +1,1 @@
+pub run test -p chrome,node,vm,firefox .\test\timestamp_test.dart

@@ -1,0 +1,58 @@
+# Created with https://github.com/dart-lang/mono_repo
+language: dart
+
+sudo: required
+addons:
+  chrome: stable
+
+jobs:
+  include:
+    - stage: analyzer_and_format
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="auth"
+      dart: dev
+    - stage: analyzer_and_format
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="auth_browser"
+      dart: dev
+    - stage: analyzer_and_format
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="auth_node"
+      dart: dev
+    - stage: analyzer_and_format
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="auth_test"
+      dart: dev
+    - stage: test_vm
+      script: ./tool/travis.sh test_vm
+      env: PKG="firebase_auth"
+      dart: dev
+    - stage: test_vm
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="firebase_auth_browser"
+      dart: stable
+    - stage: analyzer_and_format
+      script: ./tool/travis.sh dartfmt dartanalyzer
+      env: PKG="firebase_auth_node"
+      dart: stable
+    - stage: test_browser
+      script: ./tool/travis.sh test_browser
+      env: PKG="auth"
+      dart: stable
+    - stage: test_browser
+      script: ./tool/travis.sh test_browser
+      env: PKG="auth_browser"
+      dart: stable
+stages:
+  - analyzer_and_format
+  - test_vm
+
+# Only building master means that we don't run two builds for each pull request.
+# branches:
+#  only:
+#    - master
+#    - dart2
+
+cache:
+  directories:
+    - $HOME/.pub-cache
