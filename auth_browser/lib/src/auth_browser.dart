@@ -45,7 +45,7 @@ class AuthBrowserImpl implements Auth, AuthBrowser {
   Future signOut() => nativeAuth.signOut();
 
   @override
-  Future<ListUsersResult> listUsers({num maxResults, String pageToken}) {
+  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) {
     throw UnsupportedError('listUsers not supported in the browser');
   }
 

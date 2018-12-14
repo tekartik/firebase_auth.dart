@@ -146,7 +146,7 @@ class AuthNode implements Auth {
   /// and starting from the offset as specified by [pageToken].
   ///
   /// This is used to retrieve all the users of a specified project in batches.
-  Future<ListUsersResult> listUsers({num maxResults, String pageToken}) async {
+  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
     return wrapListUsersResult(
         await nativeInstance.listUsers(maxResults, pageToken));
   }

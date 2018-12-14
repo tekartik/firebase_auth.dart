@@ -1,84 +1,68 @@
-# firebase.dart
+# firebase_auth.dart
 
-Auth dart common interface and implementation for Browser, VM, node and flutter
-
+Firebase Auth dart common interface and implementation for Browser, VM, node and flutter
 
 ## Firebase Initialization
 
 ### Usage in browser
 
+```
+dependencies:
+  tekartik_firebase_auth_browser:
+    git:
+      url: git://github.com/tekartik/firebase_auth.dart
+      path: auth_browser
+      ref: dart2
+    version: '>=0.3.8'
+```
+
 ```dart
-import 'auth_browser';
+import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 
 void main() {
-  var firebase = firebaseNode;
+  var authService = authServiceBrowser;
   // ...
 }
 ```  
 
 ### Usage on node
 
+```
+dependencies:
+  tekartik_firebase_auth_node:
+    git:
+      url: git://github.com/tekartik/firebase_auth.dart
+      path: auth_node
+      ref: dart2
+    version: '>=0.3.8'
+```
+
 ```dart
-import 'auth_node';
+import 'package:tekartik_firebase_auth_node/auth_node.dart';
 
 void main() {
-  var firebase = firebaseNode;
+  var authService = authServiceNode;
   // ...
 }
 ```  
 
-### Usage on flutter
+## Generic usage
 
-```dart
-import 'package:tekartik_firebase_flutter/firebase_flutter.dart';
+```
+dependencies:
+  tekartik_firebase_auth:
+    git:
+      url: git://github.com/tekartik/firebase_auth.dart
+      path: auth
+      ref: dart2
+    version: '>=0.3.8'
+```
 
-void main() {
-  var firebase = firebaseFlutter;
-  // ...
-}
-```  
-
-### Usage on sembast (io simulation)
-
-```dart
-import 'package:tekartik_firebase_sembast/firebase_sembast_io.dart';
-
-void main() {
-  var firebase = firebaseSembastIo;
-  // ...
-}
-```  
-
-## App initialization
-
-```dart
-var options =  new AppOptions(
-    apiKey: "your_api_key",
-    authDomain: "xxxx",
-    databaseURL: "xxxx",
-    projectId: "xxxx",
-    storageBucket: "xxxx",
-    messagingSenderId: "xxxx"); 
-var app =  firebase.initializeApp(options);
-  // ...
-}
-```  
 
 ## Auth access
 
 ```dart
-var auth = app.auth();
-// read a document
-var data = (await auth.doc('collections/document').get()).data;
-// ...
-
-```  
-
-## Storage access
-
-Experimental, not fully implemented yet
-```dart
-var storage = app.storage();
+var auth = authService.auth(app);
 // ...
 
 ```  

@@ -1,4 +1,3 @@
-
 import 'package:tekartik_firebase_auth/auth.dart';
 
 Map<String, dynamic> userRecordToJson(UserRecord userRecord) {

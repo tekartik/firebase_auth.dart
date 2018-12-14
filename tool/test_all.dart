@@ -3,14 +3,20 @@ import 'package:tekartik_build_utils/common_import.dart';
 
 Future testAuth() async {
   var dir = 'auth';
-  await runCmd(PubCmd(pubRunTestArgs(platforms: ['vm', 'chrome']))..workingDirectory = dir);
+  await runCmd(PubCmd(pubRunTestArgs(platforms: ['vm', 'chrome']))
+    ..workingDirectory = dir);
+}
+
+Future testAuthLocal() async {
+  var dir = 'auth_local';
+  await runCmd(PubCmd(pubRunTestArgs(platforms: ['vm', 'chrome']))
+    ..workingDirectory = dir);
 }
 
 Future testAuthBrowser() async {
   var dir = 'auth_browser';
   await runCmd(
       PubCmd(pubRunTestArgs(platforms: ['chrome']))..workingDirectory = dir);
-
 }
 
 Future testAuthNode() async {
@@ -29,6 +35,7 @@ Future testAuthTest() async {
 
 Future main() async {
   await testAuth();
+  await testAuthLocal();
   await testAuthBrowser();
   await testAuthNode();
   // await testAuth();
