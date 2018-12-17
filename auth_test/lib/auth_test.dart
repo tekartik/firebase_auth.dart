@@ -41,5 +41,14 @@ runApp({@required AuthService authService, @required Auth auth}) {
         }
       });
     }, skip: !authService.supportsListUsers);
+
+    group('currentUser', () {
+      test('currentUser', () async {
+        var user = auth.currentUser;
+        print('currentUser: $user');
+        user = await auth.onCurrentUserChanged.first;
+        print('currentUser: $user');
+      });
+    }, skip: !authService.supportsCurrentUser);
   });
 }

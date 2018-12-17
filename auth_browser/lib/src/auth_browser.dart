@@ -8,7 +8,7 @@ import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth.dart';
 
-abstract class AuthBrowser {
+abstract class AuthBrowser extends Auth {
   Stream<native.User> get onAuthStateChanged;
 
   Future signOut();
@@ -28,9 +28,13 @@ class AuthServiceBrowser implements AuthService {
 
   @override
   bool get supportsListUsers => false;
+
+  @override
+  bool get supportsCurrentUser => true;
 }
 
 AuthServiceBrowser _firebaseAuthServiceBrowser;
+
 AuthService get authService =>
     _firebaseAuthServiceBrowser ??= AuthServiceBrowser();
 
@@ -58,4 +62,47 @@ class AuthBrowserImpl implements Auth, AuthBrowser {
   Future signInWithRedirect(
           native.AuthProvider<AuthProviderJsImpl> authProvider) =>
       nativeAuth.signInWithRedirect(authProvider);
+
+  Stream<UserInfo> get onCurrentUserChanged {
+    return nativeAuth.onAuthStateChanged.transform<UserInfo>(
+        StreamTransformer.fromHandlers(
+            handleData: (native.User nativeUser, sink) {
+      sink.add(wrapUserInfo(nativeUser));
+    }));
+  }
+
+  @override
+  UserInfo get currentUser => wrapUserInfo(nativeAuth.currentUser);
+}
+
+UserInfoBrowser wrapUserInfo(native.User nativeUser) =>
+    nativeUser != null ? UserInfoBrowser(nativeUser) : null;
+
+class UserInfoBrowser implements UserInfo {
+  final native.User nativeUser;
+
+  UserInfoBrowser(this.nativeUser);
+
+  @override
+  String get displayName => nativeUser.displayName;
+
+  @override
+  String get email => nativeUser.email;
+
+  @override
+  String get phoneNumber => nativeUser.phoneNumber;
+
+  @override
+  String get photoURL => nativeUser.photoURL;
+
+  @override
+  String get providerId => nativeUser.providerId;
+
+  @override
+  String get uid => nativeUser.uid;
+
+  @override
+  String toString() {
+    return '$uid $email $displayName';
+  }
 }

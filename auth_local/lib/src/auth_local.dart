@@ -58,14 +58,43 @@ class UserRecordLocal implements UserRecord {
   String uid;
 }
 
+UserInfo adminUserInfo = UserInfoLocal()
+  ..displayName = 'admin'
+  ..uid = "1";
+
+UserRecordLocal adminUser = UserRecordLocal()
+  ..displayName = 'admin'
+  ..uid = "1";
+
 List<UserRecordLocal> allUsers = [
-  UserRecordLocal()
-    ..displayName = 'admin'
-    ..uid = "1",
+  adminUser,
   UserRecordLocal()
     ..displayName = 'user'
     ..uid = "2"
 ];
+
+class UserInfoLocal implements UserInfo {
+  @override
+  String displayName;
+
+  @override
+  String email;
+
+  @override
+  String get phoneNumber => null;
+
+  @override
+  String get photoURL => null;
+
+  @override
+  String get providerId => null;
+
+  @override
+  String uid;
+
+  @override
+  String toString() => '$uid $email $displayName';
+}
 
 class AuthLocal implements Auth {
   final AppLocal appLocal;
@@ -84,6 +113,17 @@ class AuthLocal implements Auth {
 
     return result;
   }
+
+  @override
+  UserInfo get currentUser => adminUserInfo;
+
+  @override
+  Stream<UserInfo> get onCurrentUserChanged {
+    var ctlr = StreamController<UserInfo>();
+
+    Future.delayed(Duration(), () => ctlr.add(adminUserInfo));
+    return ctlr.stream;
+  }
 }
 
 class AuthServiceLocal implements AuthService {
@@ -96,6 +136,9 @@ class AuthServiceLocal implements AuthService {
     AppLocal appLocal = app;
     return AuthLocal(appLocal);
   }
+
+  @override
+  bool get supportsCurrentUser => true;
 }
 
 AuthServiceLocal _authServiceLocal;

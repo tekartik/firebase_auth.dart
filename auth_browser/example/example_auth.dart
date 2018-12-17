@@ -1,6 +1,7 @@
 import 'dart:html';
 
 import 'package:tekartik_firebase/firebase.dart' as fb;
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_browser/src/interop.dart';
@@ -15,12 +16,18 @@ void main() async {
 
   //Firebase firebase = firebaseBrowser;
   fb.App app = firebase.initializeApp(options: options);
+
   AuthBrowser auth = authServiceBrowser.auth(app) as AuthBrowser;
 
   auth.onAuthStateChanged.listen((User user) {
     write('onAuthStateChanged: $user');
   });
+
+  auth.onCurrentUserChanged.listen((UserInfo userInfo) {
+    write('onCurrentUserChanged: $userInfo');
+  });
   write('app ${app.name}');
+  write('currentUser ${auth.currentUser}');
 
   querySelector('#signOut').onClick.listen((_) async {
     write('signing out...');
@@ -38,5 +45,9 @@ void main() async {
     write('signing in...');
     await auth.signInWithRedirect(GoogleAuthProvider());
     write('signed in');
+  });
+
+  querySelector('#currentUser').onClick.listen((_) async {
+    write('currentUser ${auth.currentUser}');
   });
 }
