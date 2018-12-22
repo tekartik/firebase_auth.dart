@@ -1,6 +1,6 @@
 name: tekartik_firebase_auth_browser
 description: Firebase auth browser
-version: 0.3.8
+version: 0.3.10
 #homepage: https://www.example.com
 #author: alex <email@example.com>
 
@@ -13,7 +13,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
       ref: dart2
-    version: '>=0.3.8'
+    version: '>=0.3.10'
   tekartik_firebase_browser:
     git:
       url: git://github.com/tekartik/firebase.dart

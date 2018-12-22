@@ -4,6 +4,7 @@ import 'dart:async';
 abstract class AuthService {
   // true if it supports listing users
   bool get supportsListUsers;
+  bool get supportsCurrentUser;
 
   Auth auth(App app);
 }
@@ -16,6 +17,12 @@ abstract class Auth {
   ///
   /// This is used to retrieve all the users of a specified project in batches.
   Future<ListUsersResult> listUsers({int maxResults, String pageToken});
+
+  /// only if [AuthService.supportsCurrentUser] is true
+  UserInfo get currentUser;
+
+  /// When the current user changed
+  Stream<UserInfo> get onCurrentUserChanged;
 }
 
 abstract class UserRecord {

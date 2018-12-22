@@ -15,6 +15,9 @@ class AuthServiceNode implements AuthService {
     AppNode appNode = app;
     return AuthNode(appNode.nativeInstance.auth());
   }
+
+  @override
+  bool get supportsCurrentUser => false;
 }
 
 AuthServiceNode _authServiceNode;
@@ -150,6 +153,14 @@ class AuthNode implements Auth {
     return wrapListUsersResult(
         await nativeInstance.listUsers(maxResults, pageToken));
   }
+
+  @override
+  UserInfo get currentUser =>
+      throw UnsupportedError('currentUser not supported for node');
+
+  @override
+  Stream<UserInfo> get onCurrentUserChanged =>
+      throw UnsupportedError('onCurrentUserChanged not supported for node');
 }
 
 AuthNode auth(node.Auth _impl) => _impl != null ? AuthNode(_impl) : null;
