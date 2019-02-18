@@ -1,3 +1,14 @@
+## Usage
+
+In your `pubspec.yaml`:
+
+```yaml
+tekartik_firebase_auth_node:
+  git:
+    url: git://github.com/tekartik/firebase_auth.dart
+    path: auth_node
+    ref: dart2
+```
 ## Test setup
 
  Use dart2 and set env variable

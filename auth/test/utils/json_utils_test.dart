@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 class UserRecordMock implements UserRecord {
   @override
-  get customClaims => null;
+  dynamic get customClaims => null;
 
   @override
   bool disabled;
@@ -43,7 +43,7 @@ class UserRecordMock implements UserRecord {
   String uid;
 }
 
-main() {
+void main() {
   group('utils', () {
     test('userRecordToJson', () {
       expect(userRecordToJson(UserRecordMock()), {});

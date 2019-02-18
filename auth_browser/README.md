@@ -1,4 +1,15 @@
 
+## Usage
+
+In your `pubspec.yaml`:
+
+```yaml
+tekartik_firebase_auth_browser:
+  git:
+    url: git://github.com/tekartik/firebase_auth.dart
+    path: auth_browser
+    ref: dart2
+```
 
 ## Test
 

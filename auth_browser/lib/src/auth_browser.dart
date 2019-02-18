@@ -1,11 +1,14 @@
 import 'dart:async';
 
 import 'package:firebase/firebase.dart' as native;
+// ignore: implementation_imports
 import 'package:firebase/src/interop/auth_interop.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
 import 'package:tekartik_firebase/firebase.dart' as common;
+// ignore: implementation_imports
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth.dart';
 
 abstract class AuthBrowser extends Auth {
@@ -22,7 +25,7 @@ class AuthServiceBrowser implements AuthService {
   @override
   Auth auth(common.App app) {
     assert(app is AppBrowser, 'invalid firebase app type');
-    AppBrowser appBrowser = app;
+    final appBrowser = app as AppBrowser;
     return AuthBrowserImpl(appBrowser.nativeApp.auth());
   }
 
@@ -43,6 +46,7 @@ class AuthBrowserImpl implements Auth, AuthBrowser {
 
   AuthBrowserImpl(this.nativeAuth);
 
+  @override
   Stream<native.User> get onAuthStateChanged => nativeAuth.onAuthStateChanged;
 
   @override
@@ -63,6 +67,7 @@ class AuthBrowserImpl implements Auth, AuthBrowser {
           native.AuthProvider<AuthProviderJsImpl> authProvider) =>
       nativeAuth.signInWithRedirect(authProvider);
 
+  @override
   Stream<UserInfo> get onCurrentUserChanged {
     return nativeAuth.onAuthStateChanged.transform<UserInfo>(
         StreamTransformer.fromHandlers(

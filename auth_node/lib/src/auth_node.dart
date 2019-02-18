@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
+// ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth.dart';
 
 class AuthServiceNode implements AuthService {
@@ -12,7 +14,7 @@ class AuthServiceNode implements AuthService {
   @override
   Auth auth(App app) {
     assert(app is AppNode, 'invalid firebase app type');
-    AppNode appNode = app;
+    final appNode = app as AppNode;
     return AuthNode(appNode.nativeInstance.auth());
   }
 
@@ -83,7 +85,7 @@ class UserRecordNode implements UserRecord {
   UserRecordNode(this.nativeInstance);
 
   @override
-  get customClaims => nativeInstance.customClaims;
+  dynamic get customClaims => nativeInstance.customClaims;
 
   @override
   bool get disabled => nativeInstance.disabled;
@@ -149,6 +151,7 @@ class AuthNode implements Auth {
   /// and starting from the offset as specified by [pageToken].
   ///
   /// This is used to retrieve all the users of a specified project in batches.
+  @override
   Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
     return wrapListUsersResult(
         await nativeInstance.listUsers(maxResults, pageToken));

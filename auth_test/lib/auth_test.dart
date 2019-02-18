@@ -20,7 +20,7 @@ void run(
   runApp(authService: authService, auth: auth);
 }
 
-runApp({@required AuthService authService, @required Auth auth}) {
+void runApp({@required AuthService authService, @required Auth auth}) {
   setUpAll(() async {});
   group('auth', () {
     group('listUsers', () {

@@ -19,7 +19,7 @@ class ListUsersResultLocal implements ListUsersResult {
 
 class UserRecordLocal implements UserRecord {
   @override
-  get customClaims => null;
+  dynamic get customClaims => null;
 
   @override
   bool disabled;
@@ -133,7 +133,7 @@ class AuthServiceLocal implements AuthService {
   @override
   AuthLocal auth(App app) {
     assert(app is AppLocal, 'invalid app type - not AppLocal');
-    AppLocal appLocal = app;
+    final appLocal = app as AppLocal;
     return AuthLocal(appLocal);
   }
 

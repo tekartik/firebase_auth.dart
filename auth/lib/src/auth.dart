@@ -1,9 +1,11 @@
-import 'package:tekartik_firebase/firebase.dart';
 import 'dart:async';
+
+import 'package:tekartik_firebase/firebase.dart';
 
 abstract class AuthService {
   // true if it supports listing users
   bool get supportsListUsers;
+
   bool get supportsCurrentUser;
 
   Auth auth(App app);
@@ -30,7 +32,7 @@ abstract class UserRecord {
   /// roles and propagated to an authenticated user's ID token.
   ///
   /// This is set via [Auth.setCustomUserClaims].
-  get customClaims;
+  dynamic get customClaims;
 
   /// Whether or not the user is disabled: true for disabled; false for enabled.
   bool get disabled;
