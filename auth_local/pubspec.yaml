@@ -1,11 +1,10 @@
 name: tekartik_firebase_auth_local
 description: Firebase local test
-version: 0.4.0
-#homepage: https://www.example.com
-#author: alex <email@example.com>
+version: 0.5.0+0
+publish_to: none
 
 environment:
-  sdk: '>=2.0.0-dev.54 <3.0.0'
+  sdk: '>=2.1.0 <3.0.0'
 
 dependencies:
   uuid: '>=1.0.0'
@@ -14,13 +13,13 @@ dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
       ref: dart2
-    version: '>=0.4.0'
+    version: '>=0.5.0+0'
   tekartik_firebase_local:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_local
       ref: dart2
-    version: '>=0.3.9'
+    version: '>=0.4.0+0'
   test: ">=1.0.0"
 
 dev_dependencies:
@@ -30,7 +29,7 @@ dev_dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth_test
       ref: dart2
-    version: '>=0.3.8'
+    version: '>=0.5.0+0'
 
 dependency_overrides:
   tekartik_firebase_auth:

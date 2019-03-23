@@ -10,8 +10,10 @@ import 'package:tekartik_firebase_browser/src/firebase_browser.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth.dart';
+// ignore: implementation_imports
+import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 
-abstract class AuthBrowser extends Auth {
+abstract class AuthBrowser with AuthMixin {
   Stream<native.User> get onAuthStateChanged;
 
   Future signOut();
@@ -41,10 +43,17 @@ AuthServiceBrowser _firebaseAuthServiceBrowser;
 AuthService get authService =>
     _firebaseAuthServiceBrowser ??= AuthServiceBrowser();
 
-class AuthBrowserImpl implements Auth, AuthBrowser {
+class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   final native.Auth nativeAuth;
 
-  AuthBrowserImpl(this.nativeAuth);
+  StreamSubscription onAuthStateChangedSubscription;
+
+  AuthBrowserImpl(this.nativeAuth) {
+    // Register right away to feed our current user controller
+    onAuthStateChangedSubscription = onAuthStateChanged.listen((user) {
+      currentUserAdd(wrapUserInfo(user));
+    });
+  }
 
   @override
   Stream<native.User> get onAuthStateChanged => nativeAuth.onAuthStateChanged;
@@ -68,16 +77,10 @@ class AuthBrowserImpl implements Auth, AuthBrowser {
       nativeAuth.signInWithRedirect(authProvider);
 
   @override
-  Stream<UserInfo> get onCurrentUserChanged {
-    return nativeAuth.onAuthStateChanged.transform<UserInfo>(
-        StreamTransformer.fromHandlers(
-            handleData: (native.User nativeUser, sink) {
-      sink.add(wrapUserInfo(nativeUser));
-    }));
+  Future close(common.App app) async {
+    await super.close(app);
+    await onAuthStateChangedSubscription?.cancel();
   }
-
-  @override
-  UserInfo get currentUser => wrapUserInfo(nativeAuth.currentUser);
 }
 
 UserInfoBrowser wrapUserInfo(native.User nativeUser) =>

@@ -6,6 +6,8 @@ import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth.dart';
+// ignore: implementation_imports
+import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 
 class AuthServiceNode implements AuthService {
   @override
@@ -142,7 +144,7 @@ UserRecord wrapUserRecord(node.UserRecord nativeUserRecord) =>
 UserMetadata wrapUserMetadata(node.UserMetadata nativeUserMetadata) =>
     nativeUserMetadata != null ? UserMetadataNode(nativeUserMetadata) : null;
 
-class AuthNode implements Auth {
+class AuthNode with AuthMixin {
   final node.Auth nativeInstance;
 
   AuthNode(this.nativeInstance);
@@ -162,8 +164,8 @@ class AuthNode implements Auth {
       throw UnsupportedError('currentUser not supported for node');
 
   @override
-  Stream<UserInfo> get onCurrentUserChanged =>
-      throw UnsupportedError('onCurrentUserChanged not supported for node');
+  Stream<UserInfo> get onCurrentUser =>
+      throw UnsupportedError('onCurrentUser not supported for node');
 }
 
 AuthNode auth(node.Auth _impl) => _impl != null ? AuthNode(_impl) : null;

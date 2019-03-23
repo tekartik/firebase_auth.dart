@@ -23,8 +23,18 @@ abstract class Auth {
   /// only if [AuthService.supportsCurrentUser] is true
   UserInfo get currentUser;
 
-  /// When the current user changed
+  /// When the current user changed.
+  ///
+  /// NOT SURE if it also trigger upon start when the current user is ready (can be null if
+  /// none)
+  /// @deprecated v1
   Stream<UserInfo> get onCurrentUserChanged;
+
+  /// Current user stream.
+  ///
+  /// It also trigger upon start when the current user is ready (can be null if
+  /// none)
+  Stream<UserInfo> get onCurrentUser;
 }
 
 abstract class UserRecord {

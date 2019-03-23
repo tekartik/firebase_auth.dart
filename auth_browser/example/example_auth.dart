@@ -50,4 +50,9 @@ void main() async {
   querySelector('#currentUser').onClick.listen((_) async {
     write('currentUser ${auth.currentUser}');
   });
+
+  querySelector('#onCurrentUser').onClick.listen((_) async {
+    write('wait for first onCurrentUser');
+    write('onCurrentUser ${await auth.onCurrentUser.first}');
+  });
 }

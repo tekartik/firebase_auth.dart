@@ -1,11 +1,10 @@
 name: tekartik_firebase_auth_node
 description: Firebase auth server node
-version: 0.4.0
-#homepage: https://www.example.com
-#author: alex <email@example.com>
+version: 0.5.0+0
+publish_to: none
 
 environment:
-  sdk: '>=2.0.0-dev.54 <3.0.0'
+  sdk: '>=2.1.0 <3.0.0'
 
 dependencies:
   collection: '>=1.14.10'
@@ -16,13 +15,13 @@ dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
       ref: dart2
-    version: '>=0.4.0'
+    version: '>=0.5.0+0'
   tekartik_firebase_node:
     git:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_node
       ref: dart2
-    version: '>=0.3.7'
+    version: '>=0.4.0+0'
   firebase_functions_interop: ">=1.0.0-dev.11.0"
   firebase_admin_interop: ">=1.1.0"
 

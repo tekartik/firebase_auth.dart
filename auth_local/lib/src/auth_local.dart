@@ -6,6 +6,8 @@ import 'package:tekartik_common_utils/list_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
+// ignore: implementation_imports
+import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 
 class ListUsersResultLocal implements ListUsersResult {
   @override
@@ -96,10 +98,12 @@ class UserInfoLocal implements UserInfo {
   String toString() => '$uid $email $displayName';
 }
 
-class AuthLocal implements Auth {
+class AuthLocal with AuthMixin {
   final AppLocal appLocal;
 
-  AuthLocal(this.appLocal);
+  AuthLocal(this.appLocal) {
+    currentUserAdd(adminUserInfo);
+  }
 
   String get localPath => appLocal.localPath;
 
@@ -112,17 +116,6 @@ class AuthLocal implements Auth {
         users: listSubList(allUsers, startIndex, lastIndex));
 
     return result;
-  }
-
-  @override
-  UserInfo get currentUser => adminUserInfo;
-
-  @override
-  Stream<UserInfo> get onCurrentUserChanged {
-    var ctlr = StreamController<UserInfo>();
-
-    Future.delayed(Duration(), () => ctlr.add(adminUserInfo));
-    return ctlr.stream;
   }
 }
 
