@@ -49,10 +49,27 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   StreamSubscription onAuthStateChangedSubscription;
 
   AuthBrowserImpl(this.nativeAuth) {
+    // Handle the case where we never receive the information
+    // This happens if we register late, simple wait 5s
+    bool _seeded = false;
     // Register right away to feed our current user controller
+    final nativeCurrentUser = nativeAuth.currentUser;
+    // Handle when already known on start
+    if (nativeCurrentUser != null) {
+      _seeded = true;
+      currentUserAdd(wrapUserInfo(nativeCurrentUser));
+    }
     onAuthStateChangedSubscription = onAuthStateChanged.listen((user) {
+      _seeded = true;
       currentUserAdd(wrapUserInfo(user));
     });
+    if (!_seeded) {
+      sleep(5000).then((_) {
+        if (!_seeded) {
+          currentUserAdd(null);
+        }
+      });
+    }
   }
 
   @override
