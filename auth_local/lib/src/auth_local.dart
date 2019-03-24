@@ -58,23 +58,30 @@ class UserRecordLocal implements UserRecord {
 
   @override
   String uid;
+
+  UserInfo toUserInfo() {
+    return UserInfoLocal()
+      ..uid = uid
+      ..email = email
+      ..displayName = displayName;
+  }
 }
 
-UserInfo adminUserInfo = UserInfoLocal()
-  ..displayName = 'admin'
-  ..uid = "1";
-
-UserRecordLocal adminUser = UserRecordLocal()
+UserRecordLocal localAdminUser = UserRecordLocal()
   ..displayName = 'admin'
   ..email = 'admin@example.com'
   ..uid = "1";
 
+UserInfo adminUserInfo = localAdminUser.toUserInfo();
+
+UserRecordLocal localRegularUser = UserRecordLocal()
+  ..displayName = 'user'
+  ..email = 'user@example.com'
+  ..uid = "2";
+
 List<UserRecordLocal> allUsers = [
-  adminUser,
-  UserRecordLocal()
-    ..displayName = 'user'
-    ..email = 'user@example.com'
-    ..uid = "2"
+  localAdminUser,
+  localRegularUser,
 ];
 
 class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
@@ -103,10 +110,15 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   Future<String> getIdToken({bool forceRefresh}) async => uid;
 }
 
-class AuthLocal with AuthMixin {
+abstract class AuthLocal implements Auth {
+  Future signIn(String uid);
+  Future signOut();
+}
+
+class AuthLocalImpl with AuthMixin implements AuthLocal {
   final AppLocal appLocal;
 
-  AuthLocal(this.appLocal) {
+  AuthLocalImpl(this.appLocal) {
     currentUserAdd(adminUserInfo);
   }
 
@@ -142,6 +154,23 @@ class AuthLocal with AuthMixin {
     }
     return null;
   }
+
+  @override
+  Future signIn(String uid) async {
+    var userRecord = await getUser(uid);
+    if (userRecord == null) {
+      currentUserAdd(null);
+      throw StateError('user uid $uid not found');
+    } else {
+      currentUserAdd((userRecord as UserRecordLocal).toUserInfo());
+      return null;
+    }
+  }
+
+  @override
+  Future signOut() async {
+    currentUserAdd(null);
+  }
 }
 
 class AuthServiceLocal implements AuthService {
@@ -149,10 +178,10 @@ class AuthServiceLocal implements AuthService {
   bool get supportsListUsers => true;
 
   @override
-  AuthLocal auth(App app) {
+  Auth auth(App app) {
     assert(app is AppLocal, 'invalid app type - not AppLocal');
     final appLocal = app as AppLocal;
-    return AuthLocal(appLocal);
+    return AuthLocalImpl(appLocal);
   }
 
   @override

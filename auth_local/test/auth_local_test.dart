@@ -20,12 +20,29 @@ void main() {
 
     group('auth', () {
       App app = firebase.initializeApp(name: 'auth');
-      var auth = authServiceLocal.auth(app);
+      var auth = authServiceLocal.auth(app) as AuthLocal;
 
       tearDownAll(() {
         return app.delete();
       });
 
+      test('logout/login', () async {
+        await auth.signIn(localAdminUser.uid);
+        expect(auth.currentUser.uid, localAdminUser.uid);
+        expect(await (auth.currentUser as UserInfoWithIdToken).getIdToken(),
+            localAdminUser.uid);
+        await auth.signOut();
+        expect(auth.currentUser, isNull);
+        await auth.signIn(localRegularUser.uid);
+        expect(auth.currentUser.uid, localRegularUser.uid);
+        try {
+          await auth.signIn('-1');
+          fail('should fail');
+        } catch (e) {
+          expect(e, isNot(const TypeMatcher<TestFailure>()));
+        }
+        expect(auth.currentUser, isNull);
+      });
       test('listUsers', () async {
         var user = (await auth.listUsers(maxResults: 1)).users?.first;
         print(userRecordToJson(user));
