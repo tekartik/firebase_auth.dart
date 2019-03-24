@@ -28,10 +28,7 @@ abstract class GoogleAuthProvider extends AuthProvider {
 
 class GoogleAuthProviderImpl extends AuthProviderImpl
     implements GoogleAuthProvider {
-  static final native.GoogleAuthProvider nativeGoogleAuthProviderInstance =
-      native.GoogleAuthProvider();
-
-  GoogleAuthProviderImpl() : super(nativeGoogleAuthProviderInstance);
+  GoogleAuthProviderImpl() : super(native.GoogleAuthProvider());
 }
 
 abstract class AuthBrowser with AuthMixin {
