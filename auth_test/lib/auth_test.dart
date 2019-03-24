@@ -48,6 +48,10 @@ void runApp({@required AuthService authService, @required Auth auth}) {
         print('currentUser: $user');
         user = await auth.onCurrentUserChanged.first;
         print('currentUser: $user');
+
+        if (user is UserInfoWithIdToken) {
+          print('idToken: ${(user as UserInfoWithIdToken).getIdToken()}');
+        }
       });
     }, skip: !authService.supportsCurrentUser);
   });

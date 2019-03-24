@@ -135,6 +135,10 @@ abstract class UserInfo {
   String get uid;
 }
 
+abstract class UserInfoWithIdToken {
+  Future<String> getIdToken({bool forceRefresh});
+}
+
 abstract class ListUsersResult {
   String get pageToken;
 

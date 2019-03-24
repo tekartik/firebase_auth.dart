@@ -11,6 +11,8 @@ mixin AuthMixin implements Auth, FirebaseAppService {
     _currentUserSubject.add(userInfo);
   }
 
+  //void currentUserTokenAdd(String tokenId)
+
   @override
   UserInfo get currentUser => _currentUserSubject.value;
 

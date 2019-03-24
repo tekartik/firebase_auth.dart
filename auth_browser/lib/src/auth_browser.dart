@@ -70,6 +70,10 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
         }
       });
     }
+    //TODO cache id token when refreshed?
+    //nativeAuth.onIdTokenChanged.listen((user) {
+    //  user?.getIdToken();
+    //});
   }
 
   @override
@@ -98,7 +102,7 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
 UserInfoBrowser wrapUserInfo(native.User nativeUser) =>
     nativeUser != null ? UserInfoBrowser(nativeUser) : null;
 
-class UserInfoBrowser implements UserInfo {
+class UserInfoBrowser implements UserInfo, UserInfoWithIdToken {
   final native.User nativeUser;
 
   UserInfoBrowser(this.nativeUser);
@@ -125,4 +129,8 @@ class UserInfoBrowser implements UserInfo {
   String toString() {
     return '$uid $email $displayName';
   }
+
+  @override
+  Future<String> getIdToken({bool forceRefresh}) =>
+      nativeUser.getIdToken(forceRefresh == true);
 }

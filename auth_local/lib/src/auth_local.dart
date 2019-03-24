@@ -77,7 +77,7 @@ List<UserRecordLocal> allUsers = [
     ..uid = "2"
 ];
 
-class UserInfoLocal implements UserInfo {
+class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   @override
   String displayName;
 
@@ -98,6 +98,9 @@ class UserInfoLocal implements UserInfo {
 
   @override
   String toString() => '$uid $email $displayName';
+
+  @override
+  Future<String> getIdToken({bool forceRefresh}) async => uid;
 }
 
 class AuthLocal with AuthMixin {

@@ -1,6 +1,7 @@
 library tekartik_firebase_sembast.firebase_sembast_memory_test;
 
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
@@ -41,6 +42,18 @@ void main() {
             "admin");
         expect((await auth.getUserByEmail("user@example.com")).displayName,
             "user");
+      });
+
+      group('currentUser', () {
+        test('currentUser', () async {
+          var user = auth.currentUser;
+          print('currentUser: $user');
+          user = await auth.onCurrentUserChanged.first;
+          print('currentUser: $user');
+          if (user != null) {
+            expect(user, const TypeMatcher<UserInfoWithIdToken>());
+          }
+        });
       });
     });
   });
