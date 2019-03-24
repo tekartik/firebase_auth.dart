@@ -47,4 +47,15 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   Future<UserRecord> getUserByEmail(String email) {
     throw UnsupportedError('getUser not supported');
   }
+
+  @override
+  Future<AuthSignInResult> signIn(AuthProvider authProvider,
+      {AuthSignInOptions options}) {
+    throw UnsupportedError('signIn not supported');
+  }
+
+  @override
+  Future signOut() {
+    throw UnsupportedError('signIn not supported');
+  }
 }

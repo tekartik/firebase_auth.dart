@@ -1,13 +1,13 @@
-import 'dart:async';
-
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:test/test.dart';
 
 class AuthMock with AuthMixin {
-  @override
-  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async =>
-      null;
+//  @override
+//  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async =>
+//      null;
+
 }
 
 class UserInfoMock implements UserInfo {

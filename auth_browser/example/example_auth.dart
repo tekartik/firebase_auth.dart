@@ -53,7 +53,7 @@ void main() async {
   });
   AuthBrowser auth = authServiceBrowser.auth(app) as AuthBrowser;
 
-  auth.onAuthStateChanged.listen((User user) {
+  auth.onAuthStateChanged.listen((fb.User user) {
     write('onAuthStateChanged: $user');
   });
 
@@ -71,14 +71,34 @@ void main() async {
 
   querySelector('#googleSignIn').onClick.listen((_) async {
     write('signing in...');
-    await auth.signInPopup(GoogleAuthProvider());
-    write('signed in');
+    try {
+      var result = await auth.signIn(GoogleAuthProvider());
+      write('signed in result $result');
+    } catch (e) {
+      write('signed in error $e');
+    }
+  });
+
+  querySelector('#googleSignInWithPopup').onClick.listen((_) async {
+    write('popup signing in...');
+    try {
+      await auth.signIn(GoogleAuthProvider(),
+          options: AuthBrowserSignInOptions(isPopup: true));
+      write('signed in');
+    } catch (e) {
+      write('signed in error $e');
+    }
   });
 
   querySelector('#googleSignInWithRedirect').onClick.listen((_) async {
     write('signing in...');
-    await auth.signInWithRedirect(GoogleAuthProvider());
-    write('signed in');
+    try {
+      await auth.signIn(GoogleAuthProvider(),
+          options: AuthBrowserSignInOptions(isRedirect: true));
+      write('signed in maybe...');
+    } catch (e) {
+      write('signed in error $e');
+    }
   });
 
   querySelector('#currentUser').onClick.listen((_) async {

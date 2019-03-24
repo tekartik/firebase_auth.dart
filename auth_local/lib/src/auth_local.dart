@@ -9,6 +9,25 @@ import 'package:tekartik_firebase_local/firebase_local.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 
+abstract class AuthLocalProvider implements AuthProvider {
+  factory AuthLocalProvider() {
+    return AuthLocalProviderImpl();
+  }
+}
+
+const localProviderId = '_local';
+
+class AuthLocalProviderImpl implements AuthLocalProvider {
+  @override
+  String get providerId => localProviderId;
+}
+
+class AuthLocalSignInOptions implements AuthSignInOptions {
+  final UserRecordLocal _userRecordLocal;
+
+  AuthLocalSignInOptions(this._userRecordLocal);
+}
+
 class ListUsersResultLocal implements ListUsersResult {
   @override
   final String pageToken;
@@ -17,6 +36,31 @@ class ListUsersResultLocal implements ListUsersResult {
   final List<UserRecord> users;
 
   ListUsersResultLocal({@required this.pageToken, @required this.users});
+}
+
+class AuthSignInResultImpl implements AuthSignInResult {
+  @override
+  final UserCredential credential;
+
+  AuthSignInResultImpl(this.credential);
+
+  @override
+  bool get hasInfo => true;
+}
+
+class UserCredentialImpl implements UserCredential {
+  @override
+  final AuthCredential credential;
+
+  @override
+  final UserInfo user;
+
+  UserCredentialImpl(this.credential, this.user);
+}
+
+class AuthCredentialImpl implements AuthCredential {
+  @override
+  String get providerId => localProviderId;
 }
 
 class UserRecordLocal implements UserRecord {
@@ -110,10 +154,7 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   Future<String> getIdToken({bool forceRefresh}) async => uid;
 }
 
-abstract class AuthLocal implements Auth {
-  Future signIn(String uid);
-  Future signOut();
-}
+abstract class AuthLocal implements Auth {}
 
 class AuthLocalImpl with AuthMixin implements AuthLocal {
   final AppLocal appLocal;
@@ -156,6 +197,31 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
   }
 
   @override
+  Future<AuthSignInResult> signIn(AuthProvider authProvider,
+      {AuthSignInOptions options}) async {
+    var localOptions = options as AuthLocalSignInOptions;
+    var uid = localOptions?._userRecordLocal?.uid;
+    var userRecord = await getUser(uid) as UserRecordLocal;
+
+    if (userRecord == null) {
+      throw StateError('user $uid not found');
+      // return AuthSignInResultImpl(null);
+    } else {
+      var userInfo = userRecord.toUserInfo();
+      currentUserAdd(userInfo);
+      return AuthSignInResultImpl(
+          UserCredentialImpl(AuthCredentialImpl(), userInfo));
+    }
+  }
+
+  @override
+  Future signOut() async {
+    currentUserAdd(null);
+  }
+
+  /*
+
+  @override
   Future signIn(String uid) async {
     var userRecord = await getUser(uid);
     if (userRecord == null) {
@@ -171,6 +237,7 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
   Future signOut() async {
     currentUserAdd(null);
   }
+  */
 }
 
 class AuthServiceLocal implements AuthService {

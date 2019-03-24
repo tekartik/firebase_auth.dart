@@ -4,6 +4,12 @@ export 'package:tekartik_firebase_auth/src/auth.dart'
         AuthService,
         UserMetadata,
         UserInfo,
+        UserInfoWithStatus,
+        UserCredential,
+        AuthSignInResult,
+        AuthProvider,
+        AuthCredential,
+        AuthSignInOptions,
         UserInfoWithIdToken,
         UserRecord,
         ListUsersResult;

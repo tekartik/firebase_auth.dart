@@ -11,6 +11,26 @@ abstract class AuthService {
   Auth auth(App app);
 }
 
+/// Represents an auth provider.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthProvider>.
+abstract class AuthProvider {
+  /// Provider id.
+  String get providerId;
+}
+
+/// Abstract sign in options, per provider.
+abstract class AuthSignInOptions {}
+
+/// Sign in result;
+abstract class AuthSignInResult {
+  /// If true, especially during redirect, we have no clue of what is going on...
+  bool get hasInfo;
+
+  /// The credentials if any. null might not mean failure if [hasInfo] is true
+  UserCredential get credential;
+}
+
 /// Represents a Auth Database and is the entry point for all
 /// Auth operations.
 abstract class Auth {
@@ -41,6 +61,15 @@ abstract class Auth {
   /// It also trigger upon start when the current user is ready (can be null if
   /// none)
   Stream<UserInfo> get onCurrentUser;
+
+  /// only if [AuthService.supportsCurrentUser] is true.
+  ///
+  /// Credential can be null and the login happen later
+  Future<AuthSignInResult> signIn(AuthProvider authProvider,
+      {AuthSignInOptions options});
+
+  /// Signs out the current user.
+  Future signOut();
 }
 
 abstract class UserRecord {
@@ -133,6 +162,40 @@ abstract class UserInfo {
 
   /// The user identifier for the linked provider.
   String get uid;
+}
+
+/// User account.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.User>.
+abstract class UserInfoWithStatus {
+  /// If the user's email address has been already verified.
+  bool get emailVerified;
+
+  /// If the user is anonymous.
+  bool get isAnonymous;
+}
+
+/// Represents the credentials returned by an auth provider.
+/// Implementations specify the details about each auth provider's credential
+/// requirements.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthCredential>.
+abstract class AuthCredential {
+  /// The authentication provider ID for the credential.
+  String get providerId;
+}
+
+/// A structure containing a [UserInfoWithStatus], an [AuthCredential] and [operationType].
+/// operationType could be 'signIn' for a sign-in operation, 'link' for a
+/// linking operation and 'reauthenticate' for a reauthentication operation.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.auth#.UserCredential>
+abstract class UserCredential {
+  /// Returns the user.
+  UserInfo get user;
+
+  /// Returns the auth credential.
+  AuthCredential get credential;
 }
 
 abstract class UserInfoWithIdToken {

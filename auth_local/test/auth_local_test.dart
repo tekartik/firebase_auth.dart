@@ -3,9 +3,9 @@ library tekartik_firebase_sembast.firebase_sembast_memory_test;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/utils/json_utils.dart';
-import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
 import 'package:tekartik_firebase_auth_test/auth_test.dart';
+import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -27,21 +27,26 @@ void main() {
       });
 
       test('logout/login', () async {
-        await auth.signIn(localAdminUser.uid);
+        var provider = AuthLocalProvider();
+        await auth.signIn(provider,
+            options: AuthLocalSignInOptions(localAdminUser));
         expect(auth.currentUser.uid, localAdminUser.uid);
+        expect((await auth.onCurrentUser.first).uid, localAdminUser.uid);
         expect(await (auth.currentUser as UserInfoWithIdToken).getIdToken(),
             localAdminUser.uid);
         await auth.signOut();
         expect(auth.currentUser, isNull);
-        await auth.signIn(localRegularUser.uid);
+        await auth.signIn(provider,
+            options: AuthLocalSignInOptions(localRegularUser));
         expect(auth.currentUser.uid, localRegularUser.uid);
         try {
-          await auth.signIn('-1');
+          await auth.signIn(provider,
+              options: AuthLocalSignInOptions(UserRecordLocal()..uid = '-1'));
           fail('should fail');
         } catch (e) {
           expect(e, isNot(const TypeMatcher<TestFailure>()));
         }
-        expect(auth.currentUser, isNull);
+        expect(auth.currentUser, isNotNull);
       });
       test('listUsers', () async {
         var user = (await auth.listUsers(maxResults: 1)).users?.first;
