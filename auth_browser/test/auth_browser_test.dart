@@ -47,8 +47,10 @@ void main() async {
 
       test('signOut', () async {
         var auth = authServiceBrowser.auth(app) as auth_browser.AuthBrowser;
+        //if (auth.currentUser != null) {
         await auth.signOut();
-        expect(await auth.onAuthStateChanged.take(1).toList(), [null]);
+        expect(await auth.onCurrentUser.first, null);
+        // }
       });
     });
   });
