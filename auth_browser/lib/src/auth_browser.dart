@@ -64,7 +64,7 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
       currentUserAdd(wrapUserInfo(user));
     });
     if (!_seeded) {
-      sleep(5000).then((_) {
+      sleep(3000).then((_) {
         if (!_seeded) {
           currentUserAdd(null);
         }
@@ -77,11 +77,6 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
 
   @override
   Future signOut() => nativeAuth.signOut();
-
-  @override
-  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) {
-    throw UnsupportedError('listUsers not supported in the browser');
-  }
 
   @override
   Future<native.UserCredential> signInPopup(

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:tekartik_firebase/firebase.dart';
 
 abstract class AuthService {
-  // true if it supports listing users
+  // true if it supports listing and finding users
   bool get supportsListUsers;
 
   bool get supportsCurrentUser;
@@ -19,6 +19,12 @@ abstract class Auth {
   ///
   /// This is used to retrieve all the users of a specified project in batches.
   Future<ListUsersResult> listUsers({int maxResults, String pageToken});
+
+  /// Gets the user data for the user corresponding to a given [email].
+  Future<UserRecord> getUserByEmail(String email);
+
+  /// Gets the user data for the user corresponding to a given [uid].
+  Future<UserRecord> getUser(String uid);
 
   /// only if [AuthService.supportsCurrentUser] is true
   UserInfo get currentUser;

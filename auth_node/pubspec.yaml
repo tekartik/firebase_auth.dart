@@ -1,6 +1,6 @@
 name: tekartik_firebase_auth_node
 description: Firebase auth server node
-version: 0.5.0+0
+version: 0.5.0+1
 publish_to: none
 
 environment:
@@ -15,7 +15,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
       ref: dart2
-    version: '>=0.5.0+0'
+    version: '>=0.5.0+1'
   tekartik_firebase_node:
     git:
       url: git://github.com/tekartik/firebase.dart

@@ -66,12 +66,14 @@ UserInfo adminUserInfo = UserInfoLocal()
 
 UserRecordLocal adminUser = UserRecordLocal()
   ..displayName = 'admin'
+  ..email = 'admin@example.com'
   ..uid = "1";
 
 List<UserRecordLocal> allUsers = [
   adminUser,
   UserRecordLocal()
     ..displayName = 'user'
+    ..email = 'user@example.com'
     ..uid = "2"
 ];
 
@@ -116,6 +118,26 @@ class AuthLocal with AuthMixin {
         users: listSubList(allUsers, startIndex, lastIndex));
 
     return result;
+  }
+
+  @override
+  Future<UserRecord> getUser(String uid) async {
+    for (var user in allUsers) {
+      if (user.uid == uid) {
+        return user;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<UserRecord> getUserByEmail(String email) async {
+    for (var user in allUsers) {
+      if (user.email == email) {
+        return user;
+      }
+    }
+    return null;
   }
 }
 

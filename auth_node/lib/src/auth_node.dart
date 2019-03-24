@@ -1,13 +1,12 @@
 import 'dart:async';
+
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_node/src/firebase_node.dart';
-// ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth.dart';
-// ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
+import 'package:tekartik_firebase_node/src/firebase_node.dart';
+// ignore_for_file: implementation_imports
 
 class AuthServiceNode implements AuthService {
   @override
@@ -158,6 +157,14 @@ class AuthNode with AuthMixin {
     return wrapListUsersResult(
         await nativeInstance.listUsers(maxResults, pageToken));
   }
+
+  @override
+  Future<UserRecord> getUserByEmail(String email) async =>
+      wrapUserRecord(await nativeInstance.getUserByEmail(email));
+
+  @override
+  Future<UserRecord> getUser(String uid) async =>
+      wrapUserRecord(await nativeInstance.getUser(uid));
 
   @override
   UserInfo get currentUser =>

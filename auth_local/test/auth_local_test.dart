@@ -29,6 +29,19 @@ void main() {
         var user = (await auth.listUsers(maxResults: 1)).users?.first;
         print(userRecordToJson(user));
       });
+
+      test('getUser', () async {
+        expect(await auth.getUser(null), isNull);
+        expect((await auth.getUser("1")).displayName, "admin");
+        expect((await auth.getUser("2")).displayName, "user");
+      });
+      test('getUserByEmail', () async {
+        expect(await auth.getUserByEmail(null), isNull);
+        expect((await auth.getUserByEmail("admin@example.com")).displayName,
+            "admin");
+        expect((await auth.getUserByEmail("user@example.com")).displayName,
+            "user");
+      });
     });
   });
 }

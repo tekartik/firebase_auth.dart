@@ -14,7 +14,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
       ref: dart2
-    version: '>=0.5.0+0'
+    version: '>=0.5.0+1'
   tekartik_firebase_browser:
     git:
       url: git://github.com/tekartik/firebase.dart
