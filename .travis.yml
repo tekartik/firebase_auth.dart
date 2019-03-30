@@ -12,7 +12,7 @@ addons:
 
 jobs:
   include:
-    - stage: dart_test
+    - stage: test
       script: dart tool/travis.dart
     - stage: analyzer_and_format
       script: ./tool/travis.sh dartfmt dartanalyzer
@@ -46,7 +46,7 @@ jobs:
       env: PKG="auth_local"
 
 stages:
-  - dart_test
+  - test
   - analyzer_and_format
   - test_vm
 
