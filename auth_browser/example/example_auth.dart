@@ -103,6 +103,7 @@ void main() async {
 
   querySelector('#currentUser').onClick.listen((_) async {
     write('currentUser ${auth.currentUser}');
+    write('providerId: ${auth.currentUser?.providerId}');
   });
 
   querySelector('#onCurrentUser').onClick.listen((_) async {

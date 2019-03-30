@@ -40,6 +40,7 @@ void main() async {
         // print('currentUser: $user');
         if (user != null) {
           expect(user, const TypeMatcher<UserInfoWithIdToken>());
+          expect(user.providerId, isNotNull);
           var token = await (user as UserInfoWithIdToken).getIdToken();
           print('token: $token');
         }

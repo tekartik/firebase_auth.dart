@@ -44,14 +44,23 @@ void runApp({@required AuthService authService, @required Auth auth}) {
 
     group('currentUser', () {
       test('currentUser', () async {
+        Future _checkUser(UserInfo user) async {
+          if (user != null) {
+            if (user is UserInfoWithIdToken) {
+              print(
+                  'idToken: ${await (user as UserInfoWithIdToken).getIdToken()}');
+            }
+            expect(user.providerId, isNotNull);
+          }
+        }
+
         var user = auth.currentUser;
         print('currentUser: $user');
+        await _checkUser(user);
+
         user = await auth.onCurrentUserChanged.first;
         print('currentUser: $user');
-
-        if (user is UserInfoWithIdToken) {
-          print('idToken: ${(user as UserInfoWithIdToken).getIdToken()}');
-        }
+        await _checkUser(user);
       });
     }, skip: !authService.supportsCurrentUser);
   });

@@ -142,7 +142,7 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   String get photoURL => null;
 
   @override
-  String get providerId => null;
+  String get providerId => localProviderId;
 
   @override
   String uid;
@@ -157,13 +157,15 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
 abstract class AuthLocal implements Auth {}
 
 class AuthLocalImpl with AuthMixin implements AuthLocal {
-  final AppLocal appLocal;
+  final AppLocal _appLocal;
+  // ignore: unused_field
+  final App _app;
 
-  AuthLocalImpl(this.appLocal) {
+  AuthLocalImpl(this._app) : _appLocal = (_app is AppLocal ? _app : null) {
     currentUserAdd(adminUserInfo);
   }
 
-  String get localPath => appLocal.localPath;
+  //String get localPath => _appLocal?.localPath;
 
   @override
   Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
@@ -219,25 +221,8 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
     currentUserAdd(null);
   }
 
-  /*
-
   @override
-  Future signIn(String uid) async {
-    var userRecord = await getUser(uid);
-    if (userRecord == null) {
-      currentUserAdd(null);
-      throw StateError('user uid $uid not found');
-    } else {
-      currentUserAdd((userRecord as UserRecordLocal).toUserInfo());
-      return null;
-    }
-  }
-
-  @override
-  Future signOut() async {
-    currentUserAdd(null);
-  }
-  */
+  String toString() => _appLocal?.name ?? 'local';
 }
 
 class AuthServiceLocal implements AuthService {
@@ -246,9 +231,9 @@ class AuthServiceLocal implements AuthService {
 
   @override
   Auth auth(App app) {
-    assert(app is AppLocal, 'invalid app type - not AppLocal');
-    final appLocal = app as AppLocal;
-    return AuthLocalImpl(appLocal);
+    // assert(app is AppLocal, 'invalid app type - not AppLocal');
+    // final appLocal = app as AppLocal;
+    return AuthLocalImpl(app);
   }
 
   @override

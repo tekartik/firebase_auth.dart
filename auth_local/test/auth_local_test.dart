@@ -28,12 +28,16 @@ void main() {
 
       test('logout/login', () async {
         var provider = AuthLocalProvider();
+        expect(provider.providerId, isNotNull);
         await auth.signIn(provider,
             options: AuthLocalSignInOptions(localAdminUser));
         expect(auth.currentUser.uid, localAdminUser.uid);
         expect((await auth.onCurrentUser.first).uid, localAdminUser.uid);
-        expect(await (auth.currentUser as UserInfoWithIdToken).getIdToken(),
+        var userInfo = auth.currentUser;
+        expect(await (userInfo as UserInfoWithIdToken).getIdToken(),
             localAdminUser.uid);
+        expect(userInfo.providerId, provider.providerId);
+
         await auth.signOut();
         expect(auth.currentUser, isNull);
         await auth.signIn(provider,
