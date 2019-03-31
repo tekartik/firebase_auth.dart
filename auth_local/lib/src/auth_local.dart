@@ -223,6 +223,20 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
 
   @override
   String toString() => _appLocal?.name ?? 'local';
+
+  @override
+  Future<DecodedIdToken> verifyIdToken(String idToken,
+      {bool checkRevoked}) async {
+    // The id token is the uid itself
+    return DecodedIdTokenLocal(uid: idToken);
+  }
+}
+
+class DecodedIdTokenLocal implements DecodedIdToken {
+  @override
+  final String uid;
+
+  DecodedIdTokenLocal({this.uid});
 }
 
 class AuthServiceLocal implements AuthService {

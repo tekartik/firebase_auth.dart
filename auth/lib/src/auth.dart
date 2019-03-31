@@ -70,6 +70,14 @@ abstract class Auth {
 
   /// Signs out the current user.
   Future signOut();
+
+  /// Verifies a Firebase ID token (JWT).
+  ///
+  /// If the token is valid, the returned [Future] is completed with an instance
+  /// of [DecodedIdToken]; otherwise, the future is completed with an error.
+  /// An optional flag can be passed to additionally check whether the ID token
+  /// was revoked.
+  Future<DecodedIdToken> verifyIdToken(String idToken, {bool checkRevoked});
 }
 
 abstract class UserRecord {
@@ -198,12 +206,24 @@ abstract class UserCredential {
   AuthCredential get credential;
 }
 
+/// Client interface.
 abstract class UserInfoWithIdToken {
+  /// Get the auth token
   Future<String> getIdToken({bool forceRefresh});
 }
 
+/// User list result
 abstract class ListUsersResult {
+  /// to use for next page token
   String get pageToken;
 
+  /// The user list, some items can be null
   List<UserRecord> get users;
+}
+
+/// Interface representing a decoded Firebase ID token, returned from the
+/// [Auth.verifyIdToken] method.
+abstract class DecodedIdToken {
+  /// The uid corresponding to the user who the ID token belonged to.
+  String get uid;
 }

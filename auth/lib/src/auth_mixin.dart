@@ -58,4 +58,9 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   Future signOut() {
     throw UnsupportedError('signIn not supported');
   }
+
+  @override
+  Future<DecodedIdToken> verifyIdToken(String idToken, {bool checkRevoked}) {
+    throw UnsupportedError('verifyIdToken not supported');
+  }
 }

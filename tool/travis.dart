@@ -6,6 +6,9 @@ Future main() async {
   for (var dir in [
     'auth_local',
     'auth_browser',
+    'auth_node',
+    'auth_test',
+    'auth',
   ]) {
     shell = shell.pushd(dir);
     await shell.run('''

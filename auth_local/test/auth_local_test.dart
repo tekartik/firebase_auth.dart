@@ -81,6 +81,16 @@ void main() {
           }
         });
       });
+
+      test('idToken', () async {
+        var provider = AuthLocalProvider();
+        var result = await auth.signIn(provider,
+            options: AuthLocalSignInOptions(localAdminUser));
+        var user = result.credential.user;
+        var idToken = await (user as UserInfoWithIdToken).getIdToken();
+        var decoded = await auth.verifyIdToken(idToken);
+        expect(decoded.uid, localAdminUser.uid);
+      });
     });
   });
 }

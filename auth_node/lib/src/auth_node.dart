@@ -128,6 +128,16 @@ class UserRecordNode implements UserRecord {
   String get uid => nativeInstance.uid;
 }
 
+/// Node implementation
+class DecodedIdTokenNode implements DecodedIdToken {
+  final node.DecodedIdToken nativeInstance;
+
+  DecodedIdTokenNode(this.nativeInstance);
+
+  @override
+  String get uid => nativeInstance.uid;
+}
+
 ListUsersResult wrapListUsersResult(
         node.ListUsersResult nativeListUsersResult) =>
     nativeListUsersResult != null
@@ -173,6 +183,18 @@ class AuthNode with AuthMixin {
   @override
   Stream<UserInfo> get onCurrentUser =>
       throw UnsupportedError('onCurrentUser not supported for node');
+
+  @override
+  Future<DecodedIdToken> verifyIdToken(String idToken,
+      {bool checkRevoked}) async {
+    var nativeDecodedIdToken =
+        await nativeInstance.verifyIdToken(idToken, checkRevoked);
+    if (nativeDecodedIdToken == null) {
+      return null;
+    } else {
+      return DecodedIdTokenNode(nativeDecodedIdToken);
+    }
+  }
 }
 
 AuthNode auth(node.Auth _impl) => _impl != null ? AuthNode(_impl) : null;
