@@ -74,7 +74,7 @@ void main() {
         test('currentUser', () async {
           var user = auth.currentUser;
           print('currentUser: $user');
-          user = await auth.onCurrentUserChanged.first;
+          user = await auth.onCurrentUser.first;
           print('currentUser: $user');
           if (user != null) {
             expect(user, const TypeMatcher<UserInfoWithIdToken>());

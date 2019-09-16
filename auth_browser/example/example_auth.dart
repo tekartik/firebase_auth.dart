@@ -17,6 +17,7 @@ void main() async {
   var options = await setup();
   write("loaded");
   fb.Firebase firebase = fb.firebaseBrowser;
+  var authService = authServiceBrowser;
 
   //Firebase firebase = firebaseBrowser;
   fb.App app = firebase.initializeApp(options: options);
@@ -35,6 +36,8 @@ void main() async {
     write('native.onIdTokenChanged1: $user');
   });
 
+  AuthBrowser auth = authService.auth(app) as AuthBrowser;
+
   if (delay != null) {
     await sleep(delay);
   }
@@ -51,14 +54,13 @@ void main() async {
   (app as fb_impl.AppBrowser).nativeApp.auth().onIdTokenChanged.listen((user) {
     write('native.onIdTokenChanged2: $user');
   });
-  AuthBrowser auth = authServiceBrowser.auth(app) as AuthBrowser;
 
-  auth.onAuthStateChanged.listen((fb.User user) {
+  auth.onAuthStateChanged.listen((User user) {
     write('onAuthStateChanged: $user');
   });
 
-  auth.onCurrentUserChanged.listen((UserInfo userInfo) {
-    write('onCurrentUserChanged: $userInfo');
+  auth.onCurrentUser.listen((User user) {
+    write('onCurrentUser: $user');
   });
   write('app ${app.name}');
   write('currentUser ${auth.currentUser}');

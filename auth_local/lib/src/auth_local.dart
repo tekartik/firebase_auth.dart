@@ -109,6 +109,13 @@ class UserRecordLocal implements UserRecord {
       ..email = email
       ..displayName = displayName;
   }
+
+  User toUser() {
+    return UserLocal()
+      ..uid = uid
+      ..email = email
+      ..displayName = displayName;
+  }
 }
 
 UserRecordLocal localAdminUser = UserRecordLocal()
@@ -116,7 +123,7 @@ UserRecordLocal localAdminUser = UserRecordLocal()
   ..email = 'admin@example.com'
   ..uid = "1";
 
-UserInfo adminUserInfo = localAdminUser.toUserInfo();
+User adminUserInfo = localAdminUser.toUser();
 
 UserRecordLocal localRegularUser = UserRecordLocal()
   ..displayName = 'user'
@@ -152,6 +159,14 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
 
   @override
   Future<String> getIdToken({bool forceRefresh}) async => uid;
+}
+
+class UserLocal extends UserInfoLocal implements User {
+  @override
+  bool get emailVerified => true;
+
+  @override
+  bool get isAnonymous => false;
 }
 
 abstract class AuthLocal implements Auth {}
@@ -209,10 +224,10 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
       throw StateError('user $uid not found');
       // return AuthSignInResultImpl(null);
     } else {
-      var userInfo = userRecord.toUserInfo();
-      currentUserAdd(userInfo);
+      var user = userRecord.toUser();
+      currentUserAdd(user);
       return AuthSignInResultImpl(
-          UserCredentialImpl(AuthCredentialImpl(), userInfo));
+          UserCredentialImpl(AuthCredentialImpl(), user));
     }
   }
 

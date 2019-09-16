@@ -32,11 +32,19 @@ class UserInfoMock implements UserInfo {
   String get uid => null;
 }
 
+class UserMock extends UserInfoMock implements User {
+  @override
+  bool get emailVerified => null;
+
+  @override
+  bool get isAnonymous => null;
+}
+
 void main() {
   group('auth_mixin', () {
     test('onCurrentUserNonNull', () async {
       var mock = AuthMock();
-      var userInfo = UserInfoMock();
+      var userInfo = UserMock();
       mock.currentUserAdd(userInfo);
       /*
       // expect(mock.onCurrentUser, emitsInOrder([userInfo]));

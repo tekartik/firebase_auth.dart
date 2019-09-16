@@ -177,11 +177,11 @@ class AuthNode with AuthMixin {
       wrapUserRecord(await nativeInstance.getUser(uid));
 
   @override
-  UserInfo get currentUser =>
+  User get currentUser =>
       throw UnsupportedError('currentUser not supported for node');
 
   @override
-  Stream<UserInfo> get onCurrentUser =>
+  Stream<User> get onCurrentUser =>
       throw UnsupportedError('onCurrentUser not supported for node');
 
   @override

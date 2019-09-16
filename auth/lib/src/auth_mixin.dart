@@ -5,21 +5,19 @@ import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_common_utils/stream/subject.dart';
 
 mixin AuthMixin implements Auth, FirebaseAppService {
-  final _currentUserSubject = Subject<UserInfo>();
+  final _currentUserSubject = Subject<User>();
 
-  void currentUserAdd(UserInfo userInfo) {
-    _currentUserSubject.add(userInfo);
+  void currentUserAdd(User user) {
+    _currentUserSubject.add(user);
   }
 
   //void currentUserTokenAdd(String tokenId)
 
   @override
-  UserInfo get currentUser => _currentUserSubject.value;
+  User get currentUser => _currentUserSubject.value;
 
   @override
-  Stream<UserInfo> get onCurrentUserChanged => onCurrentUser;
-  @override
-  Stream<UserInfo> get onCurrentUser => _currentUserSubject.stream;
+  Stream<User> get onCurrentUser => _currentUserSubject.stream;
 
   Future<void> currentUserClose() async {
     await _currentUserSubject.close();

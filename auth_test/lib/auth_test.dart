@@ -58,7 +58,7 @@ void runApp({@required AuthService authService, @required Auth auth}) {
         print('currentUser: $user');
         await _checkUser(user);
 
-        user = await auth.onCurrentUserChanged.first;
+        user = await auth.onCurrentUser.first;
         print('currentUser: $user');
         await _checkUser(user);
       });

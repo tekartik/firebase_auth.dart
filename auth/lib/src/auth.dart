@@ -47,20 +47,13 @@ abstract class Auth {
   Future<UserRecord> getUser(String uid);
 
   /// only if [AuthService.supportsCurrentUser] is true
-  UserInfo get currentUser;
-
-  /// When the current user changed.
-  ///
-  /// NOT SURE if it also trigger upon start when the current user is ready (can be null if
-  /// none)
-  /// @deprecated v1
-  Stream<UserInfo> get onCurrentUserChanged;
+  User get currentUser;
 
   /// Current user stream.
   ///
   /// It also trigger upon start when the current user is ready (can be null if
   /// none)
-  Stream<UserInfo> get onCurrentUser;
+  Stream<User> get onCurrentUser;
 
   /// only if [AuthService.supportsCurrentUser] is true.
   ///
@@ -175,7 +168,7 @@ abstract class UserInfo {
 /// User account.
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.User>.
-abstract class UserInfoWithStatus {
+abstract class User extends UserInfo {
   /// If the user's email address has been already verified.
   bool get emailVerified;
 
@@ -193,7 +186,7 @@ abstract class AuthCredential {
   String get providerId;
 }
 
-/// A structure containing a [UserInfoWithStatus], an [AuthCredential] and [operationType].
+/// A structure containing a [User], an [AuthCredential] and [operationType].
 /// operationType could be 'signIn' for a sign-in operation, 'link' for a
 /// linking operation and 'reauthenticate' for a reauthentication operation.
 ///

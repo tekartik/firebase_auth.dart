@@ -36,7 +36,7 @@ void main() async {
         var auth = authServiceBrowser.auth(app);
         var user = auth.currentUser;
         // print('currentUser: $user');
-        user = await auth.onCurrentUserChanged.first;
+        user = await auth.onCurrentUser.first;
         // print('currentUser: $user');
         if (user != null) {
           expect(user, const TypeMatcher<UserInfoWithIdToken>());

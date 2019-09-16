@@ -6,21 +6,10 @@ import 'package:tekartik_firebase/firebase.dart' as common;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
-import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as native;
-
+import 'package:tekartik_firebase_browser/src/firebase_browser.dart'
+    as firebase_browser;
+import 'auth_browser_api.dart';
 // ignore_for_file: implementation_imports
-
-class AuthBrowserSignInOptions implements AuthSignInOptions {
-  bool _isPopup;
-
-  bool get isPopup => _isPopup == true;
-
-  bool get isRedirect => _isPopup != true;
-
-  AuthBrowserSignInOptions({bool isPopup, bool isRedirect}) {
-    _isPopup = isPopup ?? (isRedirect == null ? null : !isRedirect);
-  }
-}
 
 abstract class GoogleAuthProvider extends AuthProvider {
   factory GoogleAuthProvider() => GoogleAuthProviderImpl();
@@ -31,24 +20,11 @@ class GoogleAuthProviderImpl extends AuthProviderImpl
   GoogleAuthProviderImpl() : super(native.GoogleAuthProvider());
 }
 
-abstract class AuthBrowser with AuthMixin {
-  Stream<native.User> get onAuthStateChanged;
-
-  @override
-  Future signOut();
-
-  @deprecated
-  Future signInWithRedirect(AuthProvider authProvider);
-
-  @deprecated
-  Future<UserCredential> signInPopup(AuthProvider authProvider);
-}
-
-class AuthServiceBrowser implements AuthService {
+class AuthServiceBrowserImpl implements AuthServiceBrowser {
   @override
   Auth auth(common.App app) {
-    assert(app is native.AppBrowser, 'invalid firebase app type');
-    final appBrowser = app as native.AppBrowser;
+    assert(app is firebase_browser.AppBrowser, 'invalid firebase app type');
+    final appBrowser = app as firebase_browser.AppBrowser;
     return AuthBrowserImpl(appBrowser.nativeApp.auth());
   }
 
@@ -62,7 +38,7 @@ class AuthServiceBrowser implements AuthService {
 AuthServiceBrowser _firebaseAuthServiceBrowser;
 
 AuthService get authService =>
-    _firebaseAuthServiceBrowser ??= AuthServiceBrowser();
+    _firebaseAuthServiceBrowser ??= AuthServiceBrowserImpl();
 
 class AuthProviderImpl implements AuthProvider {
   final native.AuthProvider nativeAuthProvider;
@@ -98,7 +74,7 @@ class AuthCredentialImpl implements AuthCredential {
   String get providerId => nativeInstance.providerId;
 }
 
-class UserImpl extends UserInfoBrowser implements UserInfoWithStatus {
+class UserImpl extends UserInfoBrowser implements User {
   UserImpl(native.User nativeUser) : super(nativeUser);
 
   @override
@@ -148,11 +124,11 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
     // Handle when already known on start
     if (nativeCurrentUser != null) {
       _seeded = true;
-      currentUserAdd(wrapUserInfo(nativeCurrentUser));
+      currentUserAdd(wrapUser(nativeCurrentUser));
     }
     onAuthStateChangedSubscription = onAuthStateChanged.listen((user) {
       _seeded = true;
-      currentUserAdd(wrapUserInfo(user));
+      currentUserAdd(user);
     });
     if (!_seeded) {
       sleep(3000).then((_) {
@@ -168,7 +144,11 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   }
 
   @override
-  Stream<native.User> get onAuthStateChanged => nativeAuth.onAuthStateChanged;
+  Stream<User> get onAuthStateChanged =>
+      nativeAuth.onAuthStateChanged.transform(
+          StreamTransformer.fromHandlers(handleData: (nativeUser, sink) {
+        sink.add(wrapUser(nativeUser));
+      }));
 
   @override
   Future signOut() => nativeAuth.signOut();
@@ -202,10 +182,16 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
       return null;
     }
   }
+
+  @override
+  String toString() => 'AuthBrowser(${nativeAuth?.app?.options?.projectId})';
 }
 
 UserInfoBrowser wrapUserInfo(native.User nativeUser) =>
     nativeUser != null ? UserInfoBrowser(nativeUser) : null;
+
+UserBrowser wrapUser(native.User nativeUser) =>
+    nativeUser != null ? UserBrowser(nativeUser) : null;
 
 abstract class UserInfoMixin {}
 
@@ -240,4 +226,14 @@ class UserInfoBrowser implements UserInfo, UserInfoWithIdToken {
   @override
   Future<String> getIdToken({bool forceRefresh}) =>
       nativeUser.getIdToken(forceRefresh == true);
+}
+
+class UserBrowser extends UserInfoBrowser implements User {
+  UserBrowser(native.User nativeUser) : super(nativeUser);
+
+  @override
+  bool get emailVerified => nativeUser.emailVerified;
+
+  @override
+  bool get isAnonymous => nativeUser.isAnonymous;
 }
