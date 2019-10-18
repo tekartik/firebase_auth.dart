@@ -8,6 +8,7 @@ import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart'
     as firebase_browser;
+
 import 'auth_browser_api.dart';
 // ignore_for_file: implementation_imports
 
@@ -58,7 +59,7 @@ class UserCredentialImpl implements UserCredential {
   //AuthCredential get credential => wrapAuthCredential(nativeInstance.credential);
 
   @override
-  UserInfo get user => wrapUserInfo(nativeInstance.user);
+  User get user => wrapUser(nativeInstance.user);
 
   @override
   // TODO: implement credential

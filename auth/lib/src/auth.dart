@@ -193,7 +193,7 @@ abstract class AuthCredential {
 /// See: <https://firebase.google.com/docs/reference/js/firebase.auth#.UserCredential>
 abstract class UserCredential {
   /// Returns the user.
-  UserInfo get user;
+  User get user;
 
   /// Returns the auth credential.
   AuthCredential get credential;

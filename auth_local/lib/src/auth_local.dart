@@ -5,9 +5,8 @@ import 'package:tekartik_common_utils/int_utils.dart';
 import 'package:tekartik_common_utils/list_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth/src/auth_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_local/firebase_local.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 
 abstract class AuthLocalProvider implements AuthProvider {
   factory AuthLocalProvider() {
@@ -53,7 +52,7 @@ class UserCredentialImpl implements UserCredential {
   final AuthCredential credential;
 
   @override
-  final UserInfo user;
+  final User user;
 
   UserCredentialImpl(this.credential, this.user);
 }
