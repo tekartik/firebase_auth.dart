@@ -9,13 +9,17 @@ import 'package:tekartik_firebase_auth_flutter/auth_flutter.dart';
 import 'package:tekartik_firebase_flutter/src/firebase_flutter.dart'
     as firebase_flutter;
 
-class AuthServiceFlutterImpl implements AuthServiceFlutter {
+class AuthServiceFlutterImpl
+    with AuthServiceMixin
+    implements AuthServiceFlutter {
   @override
   Auth auth(common.App app) {
-    assert(app is firebase_flutter.AppFlutter, 'invalid firebase app type');
-    final appFlutter = app as firebase_flutter.AppFlutter;
-    return AuthFlutterImpl(
-        native.FirebaseAuth.fromApp(appFlutter.nativeInstance));
+    return getInstance(app, () {
+      assert(app is firebase_flutter.AppFlutter, 'invalid firebase app type');
+      final appFlutter = app as firebase_flutter.AppFlutter;
+      return AuthFlutterImpl(
+          native.FirebaseAuth.fromApp(appFlutter.nativeInstance));
+    });
   }
 
   @override

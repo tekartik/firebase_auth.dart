@@ -23,16 +23,15 @@ dependencies:
 
 dev_dependencies:
   test: ">=1.0.0"
-  dev_test: '>=0.12.0-dev.1'
   tekartik_firebase_auth_test:
     git:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth_test
       ref: dart2
     version: '>=0.8.0'
-  build_runner: ">=0.9.1"
-  build_test: ">=0.10.3"
-  build_web_compilers: ">=0.4.0+4"
+  build_runner: ">1.7.1"
+  build_test: ">=0.10.9+1"
+  build_web_compilers: ">=2.7.0"
   process_run: '>=0.10.0+1'
 
 dependency_overrides:

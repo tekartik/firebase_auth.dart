@@ -253,15 +253,17 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   DecodedIdTokenLocal({this.uid});
 }
 
-class AuthServiceLocal implements AuthService {
+class AuthServiceLocal with AuthServiceMixin implements AuthService {
   @override
   bool get supportsListUsers => true;
 
   @override
   Auth auth(App app) {
-    // assert(app is AppLocal, 'invalid app type - not AppLocal');
-    // final appLocal = app as AppLocal;
-    return AuthLocalImpl(app);
+    return getInstance(app, () {
+      // assert(app is AppLocal, 'invalid app type - not AppLocal');
+      // final appLocal = app as AppLocal;
+      return AuthLocalImpl(app);
+    });
   }
 
   @override

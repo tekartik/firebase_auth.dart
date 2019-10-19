@@ -17,12 +17,18 @@ void run(
   });
 
   var auth = authService.auth(app);
-  runApp(authService: authService, auth: auth);
+  runApp(authService: authService, auth: auth, app: app);
 }
 
-void runApp({@required AuthService authService, @required Auth auth}) {
+void runApp(
+    {@required AuthService authService,
+    @required Auth auth,
+    @required fb.App app}) {
   setUpAll(() async {});
   group('auth', () {
+    test('unique', () {
+      expect(authService.auth(app), auth);
+    });
     group('listUsers', () {
       test('one', () async {
         try {

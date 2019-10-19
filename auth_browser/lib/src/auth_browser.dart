@@ -21,12 +21,16 @@ class GoogleAuthProviderImpl extends AuthProviderImpl
   GoogleAuthProviderImpl() : super(native.GoogleAuthProvider());
 }
 
-class AuthServiceBrowserImpl implements AuthServiceBrowser {
+class AuthServiceBrowserImpl
+    with AuthServiceMixin
+    implements AuthServiceBrowser {
   @override
   Auth auth(common.App app) {
-    assert(app is firebase_browser.AppBrowser, 'invalid firebase app type');
-    final appBrowser = app as firebase_browser.AppBrowser;
-    return AuthBrowserImpl(appBrowser.nativeApp.auth());
+    return getInstance(app, () {
+      assert(app is firebase_browser.AppBrowser, 'invalid firebase app type');
+      final appBrowser = app as firebase_browser.AppBrowser;
+      return AuthBrowserImpl(appBrowser.nativeApp.auth());
+    });
   }
 
   @override
