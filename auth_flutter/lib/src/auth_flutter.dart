@@ -114,5 +114,10 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   }
 
   @override
+  Future signOut() async {
+    await nativeAuth.signOut();
+  }
+
+  @override
   String toString() => 'AuthFlutter(${nativeAuth?.app?.name})';
 }
