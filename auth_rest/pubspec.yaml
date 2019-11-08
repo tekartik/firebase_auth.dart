@@ -1,0 +1,47 @@
+name: tekartik_firebase_auth_rest
+description: Firebase auth rest
+version: 0.8.0
+publish_to: none
+
+environment:
+  sdk: '>=2.1.0 <3.0.0'
+
+dependencies:
+  uuid: '>=1.0.0'
+  tekartik_firebase_auth:
+    git:
+      url: git://github.com/tekartik/firebase_auth.dart
+      path: auth
+      ref: dart2
+    version: '>=0.8.0'
+  tekartik_firebase_rest:
+    git:
+      url: git://github.com/tekartik/firebase.dart
+      path: firebase_rest
+      ref: dart2
+    version: '>=0.6.0'
+  # This is a private package dependency used by the generated client stubs.
+  _discoveryapis_commons: '>=0.1.0 <0.2.0'
+  http: '>=0.11.1 <0.13.0'
+
+dev_dependencies:
+  test: ">=1.0.0"
+  tekartik_firebase_auth_test:
+    git:
+      url: git://github.com/tekartik/firebase_auth.dart
+      path: auth_test
+      ref: dart2
+    version: '>=0.8.0'
+  build_runner: ">1.6.0"
+  build_test: ">=0.10.9+1"
+  build_web_compilers: ">=2.7.0"
+  process_run: '>=0.10.0+1'
+
+dependency_overrides:
+  tekartik_firebase_auth:
+    path: ../auth
+  tekartik_firebase_auth_test:
+    path: ../auth_test
+  # tmp
+  # tekartik_firebase_rest:
+  #   path: ../../firebase.dart/firebase_rest

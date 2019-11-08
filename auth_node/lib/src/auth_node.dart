@@ -1,11 +1,12 @@
 import 'dart:async';
+
 import 'package:firebase_admin_interop/firebase_admin_interop.dart' as node;
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
-// ignore: implementation_imports
-import 'package:tekartik_firebase_node/src/firebase_node.dart';
-// ignore: implementation_imports
 import 'package:tekartik_firebase_auth/src/auth.dart';
+import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
+import 'package:tekartik_firebase_node/src/firebase_node.dart';
+// ignore_for_file: implementation_imports
 
 class AuthServiceNode implements AuthService {
   @override
@@ -127,6 +128,16 @@ class UserRecordNode implements UserRecord {
   String get uid => nativeInstance.uid;
 }
 
+/// Node implementation
+class DecodedIdTokenNode implements DecodedIdToken {
+  final node.DecodedIdToken nativeInstance;
+
+  DecodedIdTokenNode(this.nativeInstance);
+
+  @override
+  String get uid => nativeInstance.uid;
+}
+
 ListUsersResult wrapListUsersResult(
         node.ListUsersResult nativeListUsersResult) =>
     nativeListUsersResult != null
@@ -142,7 +153,7 @@ UserRecord wrapUserRecord(node.UserRecord nativeUserRecord) =>
 UserMetadata wrapUserMetadata(node.UserMetadata nativeUserMetadata) =>
     nativeUserMetadata != null ? UserMetadataNode(nativeUserMetadata) : null;
 
-class AuthNode implements Auth {
+class AuthNode with AuthMixin {
   final node.Auth nativeInstance;
 
   AuthNode(this.nativeInstance);
@@ -158,12 +169,32 @@ class AuthNode implements Auth {
   }
 
   @override
-  UserInfo get currentUser =>
+  Future<UserRecord> getUserByEmail(String email) async =>
+      wrapUserRecord(await nativeInstance.getUserByEmail(email));
+
+  @override
+  Future<UserRecord> getUser(String uid) async =>
+      wrapUserRecord(await nativeInstance.getUser(uid));
+
+  @override
+  User get currentUser =>
       throw UnsupportedError('currentUser not supported for node');
 
   @override
-  Stream<UserInfo> get onCurrentUserChanged =>
-      throw UnsupportedError('onCurrentUserChanged not supported for node');
+  Stream<User> get onCurrentUser =>
+      throw UnsupportedError('onCurrentUser not supported for node');
+
+  @override
+  Future<DecodedIdToken> verifyIdToken(String idToken,
+      {bool checkRevoked}) async {
+    var nativeDecodedIdToken =
+        await nativeInstance.verifyIdToken(idToken, checkRevoked);
+    if (nativeDecodedIdToken == null) {
+      return null;
+    } else {
+      return DecodedIdTokenNode(nativeDecodedIdToken);
+    }
+  }
 }
 
 AuthNode auth(node.Auth _impl) => _impl != null ? AuthNode(_impl) : null;

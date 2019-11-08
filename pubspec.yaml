@@ -1,11 +1,10 @@
 name: tekartik_firebase_auth_repo
 description: Firebase auth repo (tools)
-version: 0.4.0
-#homepage: https://www.example.com
-#author: alex <email@example.com>
+version: 0.8.0
+publish_to: none
 
 environment:
-  sdk: '>=2.0.0-dev.54 <3.0.0'
+  sdk: '>=2.1.0 <3.0.0'
 
 dev_dependencies:
   test: ">=1.2.0"
@@ -16,6 +15,11 @@ dev_dependencies:
       url: git://github.com/tekartik/build_utils.dart
       ref: dart2
     version: '>=0.5.8'
+  chrome_travis:
+    git:
+      url: git://github.com/tekartik/chrome_travis.dart
+      ref: dart2
+    version: '>=0.1.4'
 
   # test dependencies without version
   tekartik_firebase_auth_browser:
@@ -28,3 +32,4 @@ dev_dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth_node
       ref: dart2
+

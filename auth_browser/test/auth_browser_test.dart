@@ -2,6 +2,7 @@
 library tekartik_firebase_auth_browser.auth_browser_test;
 
 import 'package:tekartik_firebase/firebase.dart' as fb;
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart'
@@ -31,10 +32,26 @@ void main() async {
         return app.delete();
       });
 
+      test('currentUser', () async {
+        var auth = authServiceBrowser.auth(app);
+        var user = auth.currentUser;
+        // print('currentUser: $user');
+        user = await auth.onCurrentUser.first;
+        // print('currentUser: $user');
+        if (user != null) {
+          expect(user, const TypeMatcher<UserInfoWithIdToken>());
+          expect(user.providerId, isNotNull);
+          var token = await (user as UserInfoWithIdToken).getIdToken();
+          print('token: $token');
+        }
+      });
+
       test('signOut', () async {
         var auth = authServiceBrowser.auth(app) as auth_browser.AuthBrowser;
+        //if (auth.currentUser != null) {
         await auth.signOut();
-        expect(await auth.onAuthStateChanged.take(1).toList(), [null]);
+        expect(await auth.onCurrentUser.first, null);
+        // }
       });
     });
   });

@@ -17,12 +17,18 @@ void run(
   });
 
   var auth = authService.auth(app);
-  runApp(authService: authService, auth: auth);
+  runApp(authService: authService, auth: auth, app: app);
 }
 
-void runApp({@required AuthService authService, @required Auth auth}) {
+void runApp(
+    {@required AuthService authService,
+    @required Auth auth,
+    @required fb.App app}) {
   setUpAll(() async {});
   group('auth', () {
+    test('unique', () {
+      expect(authService.auth(app), auth);
+    });
     group('listUsers', () {
       test('one', () async {
         try {
@@ -44,10 +50,23 @@ void runApp({@required AuthService authService, @required Auth auth}) {
 
     group('currentUser', () {
       test('currentUser', () async {
+        Future _checkUser(UserInfo user) async {
+          if (user != null) {
+            if (user is UserInfoWithIdToken) {
+              print(
+                  'idToken: ${await (user as UserInfoWithIdToken).getIdToken()}');
+            }
+            expect(user.providerId, isNotNull);
+          }
+        }
+
         var user = auth.currentUser;
         print('currentUser: $user');
-        user = await auth.onCurrentUserChanged.first;
+        await _checkUser(user);
+
+        user = await auth.onCurrentUser.first;
         print('currentUser: $user');
+        await _checkUser(user);
       });
     }, skip: !authService.supportsCurrentUser);
   });

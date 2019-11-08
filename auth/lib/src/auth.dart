@@ -3,12 +3,32 @@ import 'dart:async';
 import 'package:tekartik_firebase/firebase.dart';
 
 abstract class AuthService {
-  // true if it supports listing users
+  // true if it supports listing and finding users
   bool get supportsListUsers;
 
   bool get supportsCurrentUser;
 
   Auth auth(App app);
+}
+
+/// Represents an auth provider.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthProvider>.
+abstract class AuthProvider {
+  /// Provider id.
+  String get providerId;
+}
+
+/// Abstract sign in options, per provider.
+abstract class AuthSignInOptions {}
+
+/// Sign in result;
+abstract class AuthSignInResult {
+  /// If true, especially during redirect, we have no clue of what is going on...
+  bool get hasInfo;
+
+  /// The credentials if any. null might not mean failure if [hasInfo] is true
+  UserCredential get credential;
 }
 
 /// Represents a Auth Database and is the entry point for all
@@ -20,11 +40,40 @@ abstract class Auth {
   /// This is used to retrieve all the users of a specified project in batches.
   Future<ListUsersResult> listUsers({int maxResults, String pageToken});
 
-  /// only if [AuthService.supportsCurrentUser] is true
-  UserInfo get currentUser;
+  /// Gets the user data for the user corresponding to a given [email].
+  Future<UserRecord> getUserByEmail(String email);
 
-  /// When the current user changed
-  Stream<UserInfo> get onCurrentUserChanged;
+  /// Gets the user data for the user corresponding to a given [uid].
+  Future<UserRecord> getUser(String uid);
+
+  /// Gets the user data for all the users.
+  Future<List<UserRecord>> getUsers(List<String> uids);
+
+  /// only if [AuthService.supportsCurrentUser] is true
+  User get currentUser;
+
+  /// Current user stream.
+  ///
+  /// It also trigger upon start when the current user is ready (can be null if
+  /// none)
+  Stream<User> get onCurrentUser;
+
+  /// only if [AuthService.supportsCurrentUser] is true.
+  ///
+  /// Credential can be null and the login happen later
+  Future<AuthSignInResult> signIn(AuthProvider authProvider,
+      {AuthSignInOptions options});
+
+  /// Signs out the current user.
+  Future signOut();
+
+  /// Verifies a Firebase ID token (JWT).
+  ///
+  /// If the token is valid, the returned [Future] is completed with an instance
+  /// of [DecodedIdToken]; otherwise, the future is completed with an error.
+  /// An optional flag can be passed to additionally check whether the ID token
+  /// was revoked.
+  Future<DecodedIdToken> verifyIdToken(String idToken, {bool checkRevoked});
 }
 
 abstract class UserRecord {
@@ -119,8 +168,58 @@ abstract class UserInfo {
   String get uid;
 }
 
+/// User account.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.User>.
+abstract class User extends UserInfo {
+  /// If the user's email address has been already verified.
+  bool get emailVerified;
+
+  /// If the user is anonymous.
+  bool get isAnonymous;
+}
+
+/// Represents the credentials returned by an auth provider.
+/// Implementations specify the details about each auth provider's credential
+/// requirements.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthCredential>.
+abstract class AuthCredential {
+  /// The authentication provider ID for the credential.
+  String get providerId;
+}
+
+/// A structure containing a [User], an [AuthCredential] and [operationType].
+/// operationType could be 'signIn' for a sign-in operation, 'link' for a
+/// linking operation and 'reauthenticate' for a reauthentication operation.
+///
+/// See: <https://firebase.google.com/docs/reference/js/firebase.auth#.UserCredential>
+abstract class UserCredential {
+  /// Returns the user.
+  User get user;
+
+  /// Returns the auth credential.
+  AuthCredential get credential;
+}
+
+/// Client interface.
+abstract class UserInfoWithIdToken {
+  /// Get the auth token
+  Future<String> getIdToken({bool forceRefresh});
+}
+
+/// User list result
 abstract class ListUsersResult {
+  /// to use for next page token
   String get pageToken;
 
+  /// The user list, some items can be null
   List<UserRecord> get users;
+}
+
+/// Interface representing a decoded Firebase ID token, returned from the
+/// [Auth.verifyIdToken] method.
+abstract class DecodedIdToken {
+  /// The uid corresponding to the user who the ID token belonged to.
+  String get uid;
 }

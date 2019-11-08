@@ -1,46 +1,56 @@
 # Created with https://github.com/dart-lang/mono_repo
 language: dart
+dart:
+  - stable
+  - dev
+# before_script:
+#  - source $(pub run chrome_travis:env_rc)
 
 sudo: required
 addons:
   chrome: stable
 
-jobs:
-  include:
-    - stage: analyzer_and_format
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth"
-    - stage: analyzer_and_format
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth_browser"
-    - stage: analyzer_and_format
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth_node"
-    - stage: analyzer_and_format
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth_test"
-    - stage: analyzer_and_format
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth_local"
-    - stage: test_vm
-      script: ./tool/travis.sh test_vm
-      env: PKG="auth"
-    - stage: test_vm
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth_test"
-    - stage: test_vm
-      script: ./tool/travis.sh dartfmt dartanalyzer
-      env: PKG="auth_local"
-    - stage: test_browser
-      script: ./tool/travis.sh test_browser
-      env: PKG="auth"
-    - stage: test_browser
-      script: ./tool/travis.sh test_browser
-      env: PKG="auth_local"
+script:
+  - dart tool/travis.dart
+# jobs:
+#  include:
+#    - stage: test
+#      script: dart tool/travis.dart
+#    - stage: analyzer_and_format
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth"
+#    - stage: analyzer_and_format
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth_browser"
+#    - stage: analyzer_and_format
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth_node"
+#    - stage: analyzer_and_format
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth_test"
+#    - stage: analyzer_and_format
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth_local"
+#    - stage: test_vm
+#      script: ./tool/travis.sh test_vm
+#      env: PKG="auth"
+#    - stage: test_vm
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth_test"
+#    - stage: test_vm
+#      script: ./tool/travis.sh dartfmt dartanalyzer
+#      env: PKG="auth_local"
+#    - stage: test_browser
+#      script: ./tool/travis.sh test_browser
+#      env: PKG="auth"
+#    - stage: test_browser
+#      script: ./tool/travis.sh test_browser
+#      env: PKG="auth_local"
 
-stages:
-  - analyzer_and_format
-  - test_vm
+# stages:
+#  - test
+#  - analyzer_and_format
+#  - test_vm
 
 # Only building master means that we don't run two builds for each pull request.
 # branches:

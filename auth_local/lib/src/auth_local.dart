@@ -5,7 +5,27 @@ import 'package:tekartik_common_utils/int_utils.dart';
 import 'package:tekartik_common_utils/list_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth/src/auth_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_local/firebase_local.dart';
+
+abstract class AuthLocalProvider implements AuthProvider {
+  factory AuthLocalProvider() {
+    return AuthLocalProviderImpl();
+  }
+}
+
+const localProviderId = '_local';
+
+class AuthLocalProviderImpl implements AuthLocalProvider {
+  @override
+  String get providerId => localProviderId;
+}
+
+class AuthLocalSignInOptions implements AuthSignInOptions {
+  final UserRecordLocal _userRecordLocal;
+
+  AuthLocalSignInOptions(this._userRecordLocal);
+}
 
 class ListUsersResultLocal implements ListUsersResult {
   @override
@@ -15,6 +35,31 @@ class ListUsersResultLocal implements ListUsersResult {
   final List<UserRecord> users;
 
   ListUsersResultLocal({@required this.pageToken, @required this.users});
+}
+
+class AuthSignInResultImpl implements AuthSignInResult {
+  @override
+  final UserCredential credential;
+
+  AuthSignInResultImpl(this.credential);
+
+  @override
+  bool get hasInfo => true;
+}
+
+class UserCredentialImpl implements UserCredential {
+  @override
+  final AuthCredential credential;
+
+  @override
+  final User user;
+
+  UserCredentialImpl(this.credential, this.user);
+}
+
+class AuthCredentialImpl implements AuthCredential {
+  @override
+  String get providerId => localProviderId;
 }
 
 class UserRecordLocal implements UserRecord {
@@ -56,24 +101,40 @@ class UserRecordLocal implements UserRecord {
 
   @override
   String uid;
+
+  UserInfo toUserInfo() {
+    return UserInfoLocal()
+      ..uid = uid
+      ..email = email
+      ..displayName = displayName;
+  }
+
+  User toUser() {
+    return UserLocal()
+      ..uid = uid
+      ..email = email
+      ..displayName = displayName;
+  }
 }
 
-UserInfo adminUserInfo = UserInfoLocal()
+UserRecordLocal localAdminUser = UserRecordLocal()
   ..displayName = 'admin'
+  ..email = 'admin@example.com'
   ..uid = "1";
 
-UserRecordLocal adminUser = UserRecordLocal()
-  ..displayName = 'admin'
-  ..uid = "1";
+User adminUserInfo = localAdminUser.toUser();
+
+UserRecordLocal localRegularUser = UserRecordLocal()
+  ..displayName = 'user'
+  ..email = 'user@example.com'
+  ..uid = "2";
 
 List<UserRecordLocal> allUsers = [
-  adminUser,
-  UserRecordLocal()
-    ..displayName = 'user'
-    ..uid = "2"
+  localAdminUser,
+  localRegularUser,
 ];
 
-class UserInfoLocal implements UserInfo {
+class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   @override
   String displayName;
 
@@ -87,21 +148,38 @@ class UserInfoLocal implements UserInfo {
   String get photoURL => null;
 
   @override
-  String get providerId => null;
+  String get providerId => localProviderId;
 
   @override
   String uid;
 
   @override
   String toString() => '$uid $email $displayName';
+
+  @override
+  Future<String> getIdToken({bool forceRefresh}) async => uid;
 }
 
-class AuthLocal implements Auth {
-  final AppLocal appLocal;
+class UserLocal extends UserInfoLocal implements User {
+  @override
+  bool get emailVerified => true;
 
-  AuthLocal(this.appLocal);
+  @override
+  bool get isAnonymous => false;
+}
 
-  String get localPath => appLocal.localPath;
+abstract class AuthLocal implements Auth {}
+
+class AuthLocalImpl with AuthMixin implements AuthLocal {
+  final AppLocal _appLocal;
+  // ignore: unused_field
+  final App _app;
+
+  AuthLocalImpl(this._app) : _appLocal = (_app is AppLocal ? _app : null) {
+    currentUserAdd(adminUserInfo);
+  }
+
+  //String get localPath => _appLocal?.localPath;
 
   @override
   Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
@@ -115,26 +193,77 @@ class AuthLocal implements Auth {
   }
 
   @override
-  UserInfo get currentUser => adminUserInfo;
+  Future<UserRecord> getUser(String uid) async {
+    for (var user in allUsers) {
+      if (user.uid == uid) {
+        return user;
+      }
+    }
+    return null;
+  }
 
   @override
-  Stream<UserInfo> get onCurrentUserChanged {
-    var ctlr = StreamController<UserInfo>();
+  Future<UserRecord> getUserByEmail(String email) async {
+    for (var user in allUsers) {
+      if (user.email == email) {
+        return user;
+      }
+    }
+    return null;
+  }
 
-    Future.delayed(Duration(), () => ctlr.add(adminUserInfo));
-    return ctlr.stream;
+  @override
+  Future<AuthSignInResult> signIn(AuthProvider authProvider,
+      {AuthSignInOptions options}) async {
+    var localOptions = options as AuthLocalSignInOptions;
+    var uid = localOptions?._userRecordLocal?.uid;
+    var userRecord = await getUser(uid) as UserRecordLocal;
+
+    if (userRecord == null) {
+      throw StateError('user $uid not found');
+      // return AuthSignInResultImpl(null);
+    } else {
+      var user = userRecord.toUser();
+      currentUserAdd(user);
+      return AuthSignInResultImpl(
+          UserCredentialImpl(AuthCredentialImpl(), user));
+    }
+  }
+
+  @override
+  Future signOut() async {
+    currentUserAdd(null);
+  }
+
+  @override
+  String toString() => _appLocal?.name ?? 'local';
+
+  @override
+  Future<DecodedIdToken> verifyIdToken(String idToken,
+      {bool checkRevoked}) async {
+    // The id token is the uid itself
+    return DecodedIdTokenLocal(uid: idToken);
   }
 }
 
-class AuthServiceLocal implements AuthService {
+class DecodedIdTokenLocal implements DecodedIdToken {
+  @override
+  final String uid;
+
+  DecodedIdTokenLocal({this.uid});
+}
+
+class AuthServiceLocal with AuthServiceMixin implements AuthService {
   @override
   bool get supportsListUsers => true;
 
   @override
-  AuthLocal auth(App app) {
-    assert(app is AppLocal, 'invalid app type - not AppLocal');
-    final appLocal = app as AppLocal;
-    return AuthLocal(appLocal);
+  Auth auth(App app) {
+    return getInstance(app, () {
+      // assert(app is AppLocal, 'invalid app type - not AppLocal');
+      // final appLocal = app as AppLocal;
+      return AuthLocalImpl(app);
+    });
   }
 
   @override
