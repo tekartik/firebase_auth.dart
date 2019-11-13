@@ -120,6 +120,7 @@ class UserRecordLocal implements UserRecord {
 UserRecordLocal localAdminUser = UserRecordLocal()
   ..displayName = 'admin'
   ..email = 'admin@example.com'
+  ..emailVerified = true
   ..uid = "1";
 
 User adminUserInfo = localAdminUser.toUser();
@@ -127,6 +128,7 @@ User adminUserInfo = localAdminUser.toUser();
 UserRecordLocal localRegularUser = UserRecordLocal()
   ..displayName = 'user'
   ..email = 'user@example.com'
+  ..emailVerified = true
   ..uid = "2";
 
 List<UserRecordLocal> allUsers = [
@@ -200,6 +202,15 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
       }
     }
     return null;
+  }
+
+  @override
+  Future<List<UserRecord>> getUsers(List<String> uids) async {
+    var list = <UserRecord>[];
+    for (String uid in uids) {
+      list.add(await getUser(uid));
+    }
+    return list;
   }
 
   @override

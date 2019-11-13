@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:tekartik_common_utils/stream/subject.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
-import 'package:tekartik_common_utils/stream/subject.dart';
 
 mixin AuthServiceMixin implements AuthService {
   /// Most implementation need a single instance, keep it in memory!
@@ -47,37 +47,37 @@ mixin AuthMixin implements Auth, FirebaseAppService {
 
   @override
   Future<ListUsersResult> listUsers({int maxResults, String pageToken}) {
-    throw UnsupportedError('listUsers not supported');
+    throw UnsupportedError('$runtimeType.listUsers not supported');
   }
 
   @override
   Future<UserRecord> getUser(String uid) {
-    throw UnsupportedError('getUser not supported');
+    throw UnsupportedError('$runtimeType.getUser not supported');
   }
 
   @override
   Future<List<UserRecord>> getUsers(List<String> uids) {
-    throw UnsupportedError('getUsers not supported');
+    throw UnsupportedError('$runtimeType.getUsers not supported');
   }
 
   @override
   Future<UserRecord> getUserByEmail(String email) {
-    throw UnsupportedError('getUser not supported');
+    throw UnsupportedError('$runtimeType.getUser not supported');
   }
 
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
       {AuthSignInOptions options}) {
-    throw UnsupportedError('signIn not supported');
+    throw UnsupportedError('$runtimeType.signIn not supported');
   }
 
   @override
   Future signOut() {
-    throw UnsupportedError('signIn not supported');
+    throw UnsupportedError('$runtimeType.signIn not supported');
   }
 
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken, {bool checkRevoked}) {
-    throw UnsupportedError('verifyIdToken not supported');
+    throw UnsupportedError('$runtimeType.verifyIdToken not supported');
   }
 }
