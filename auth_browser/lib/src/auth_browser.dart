@@ -71,7 +71,7 @@ class UserCredentialImpl implements UserCredential {
 }
 
 class AuthCredentialImpl implements AuthCredential {
-  final native.AuthCredential nativeInstance;
+  final native.OAuthCredential nativeInstance;
 
   AuthCredentialImpl(this.nativeInstance);
 
@@ -101,7 +101,7 @@ class AuthSignInResultImpl implements AuthSignInResult {
 }
 
 //User wrapUser(native.User nativeInstance) => nativeInstance != null ? UserImpl(nativeInstance) : null;
-AuthCredential wrapAuthCredential(native.AuthCredential nativeInstance) =>
+AuthCredential wrapAuthCredential(native.OAuthCredential nativeInstance) =>
     nativeInstance != null ? AuthCredentialImpl(nativeInstance) : null;
 
 UserCredential wrapUserCredential(native.UserCredential nativeInstance) =>
