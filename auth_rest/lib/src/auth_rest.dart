@@ -12,15 +12,15 @@ import 'package:tekartik_firebase_rest/firebase_rest.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
-abstract class AuthLocalProvider implements AuthProvider {
-  factory AuthLocalProvider() {
+abstract class AuthRestProvider implements AuthProvider {
+  factory AuthRestProvider() {
     return AuthLocalProviderImpl();
   }
 }
 
 const localProviderId = '_local';
 
-class AuthLocalProviderImpl implements AuthLocalProvider {
+class AuthLocalProviderImpl implements AuthRestProvider {
   @override
   String get providerId => localProviderId;
 }
@@ -34,14 +34,14 @@ class AuthLocalSignInOptions implements AuthSignInOptions {
 
  */
 
-class ListUsersResultLocal implements ListUsersResult {
+class ListUsersResultRest implements ListUsersResult {
   @override
   final String pageToken;
 
   @override
   final List<UserRecord> users;
 
-  ListUsersResultLocal({@required this.pageToken, @required this.users});
+  ListUsersResultRest({@required this.pageToken, @required this.users});
 }
 
 class AuthSignInResultImpl implements AuthSignInResult {
@@ -171,7 +171,15 @@ class UserRest extends UserInfoRest implements User {
   }
 }
 
-abstract class AuthRest implements Auth {}
+/// Custom auth rest
+abstract class AuthRest implements Auth {
+  /// Custom AuthRest
+  factory AuthRest(
+      {@required AppRest appRest, String rootUrl, String servicePathBase}) {
+    return AuthRestImpl(appRest,
+        rootUrl: rootUrl, servicePathBase: servicePathBase);
+  }
+}
 
 class AuthRestImpl with AuthMixin implements AuthRest {
   final AppRest _appRest;
@@ -179,11 +187,26 @@ class AuthRestImpl with AuthMixin implements AuthRest {
   // ignore: unused_field
   final App _app;
   IdentitytoolkitApi _identitytoolkitApi;
+  String rootUrl;
+  String servicePathBase;
 
-  IdentitytoolkitApi get identitytoolkitApi =>
-      _identitytoolkitApi ??= IdentitytoolkitApi(_appRest.authClient);
+  IdentitytoolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
+        if (rootUrl != null || servicePathBase != null) {
+          String defaultRootUrl = "https://www.googleapis.com/";
 
-  AuthRestImpl(this._app) : _appRest = (_app is AppRest ? _app : null);
+          String defaultServicePath = "identitytoolkit/v3/relyingparty/";
+          return IdentitytoolkitApi(_appRest.authClient,
+              servicePath: servicePathBase == null
+                  ? defaultServicePath
+                  : '$servicePathBase/$defaultServicePath',
+              rootUrl: rootUrl ?? defaultRootUrl);
+        } else {
+          return IdentitytoolkitApi(_appRest.authClient);
+        }
+      }();
+
+  AuthRestImpl(this._app, {this.rootUrl, this.servicePathBase})
+      : _appRest = (_app is AppRest ? _app : null);
 
   //String get localPath => _appLocal?.localPath;
 
@@ -196,14 +219,6 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   @override
   Future<UserRecord> getUser(String uid) async {
-    /*
-    for (var user in allUsers) {
-      if (user.uid == uid) {
-        return user;
-      }
-    }
-
-     */
     var request = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
       ..localId = [uid];
     if (debugRest) {
@@ -232,14 +247,6 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   @override
   Future<List<UserRecord>> getUsers(List<String> uids) async {
-    /*
-    for (var user in allUsers) {
-      if (user.uid == uid) {
-        return user;
-      }
-    }
-
-     */
     var request = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
       ..localId = uids;
     if (debugRest) {

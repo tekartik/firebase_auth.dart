@@ -62,6 +62,14 @@ void main() {
         expect((await auth.getUser("1")).displayName, "admin");
         expect((await auth.getUser("2")).displayName, "user");
       });
+
+      test('getUsers', () async {
+        expect(await auth.getUsers(<String>[]), []);
+        expect(
+            (await auth.getUsers(["1", "2"])).map((user) => user.emailVerified),
+            [true, true]);
+        expect((await auth.getUser("2")).displayName, "user");
+      });
       test('getUserByEmail', () async {
         expect(await auth.getUserByEmail(null), isNull);
         expect((await auth.getUserByEmail("admin@example.com")).displayName,

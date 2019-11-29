@@ -28,6 +28,7 @@ dependencies:
     version: '>=0.1.0'
   googleapis_auth:
   service_worker:
+  firebase: '>=7.0.0'
 
 dev_dependencies:
   test: ">=1.5.0"
