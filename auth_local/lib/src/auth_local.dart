@@ -121,7 +121,7 @@ UserRecordLocal localAdminUser = UserRecordLocal()
   ..displayName = 'admin'
   ..email = 'admin@example.com'
   ..emailVerified = true
-  ..uid = "1";
+  ..uid = '1';
 
 User adminUserInfo = localAdminUser.toUser();
 
@@ -129,7 +129,7 @@ UserRecordLocal localRegularUser = UserRecordLocal()
   ..displayName = 'user'
   ..email = 'user@example.com'
   ..emailVerified = true
-  ..uid = "2";
+  ..uid = '2';
 
 List<UserRecordLocal> allUsers = [
   localAdminUser,
@@ -185,8 +185,8 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
 
   @override
   Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
-    int startIndex = parseInt(pageToken, 0);
-    int lastIndex = startIndex + (maxResults ?? 10);
+    var startIndex = parseInt(pageToken, 0);
+    var lastIndex = startIndex + (maxResults ?? 10);
     var result = ListUsersResultLocal(
         pageToken: lastIndex.toString(),
         users: listSubList(allUsers, startIndex, lastIndex));
@@ -207,7 +207,7 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
   @override
   Future<List<UserRecord>> getUsers(List<String> uids) async {
     var list = <UserRecord>[];
-    for (String uid in uids) {
+    for (var uid in uids) {
       list.add(await getUser(uid));
     }
     return list;

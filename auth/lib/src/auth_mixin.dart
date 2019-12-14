@@ -9,7 +9,7 @@ mixin AuthServiceMixin implements AuthService {
   static final _instances = <App, Auth>{};
 
   T getInstance<T extends Auth>(App app, T Function() createIfNotFound) {
-    T instance = _instances[app] as T;
+    var instance = _instances[app] as T;
     if (instance == null) {
       instance = createIfNotFound();
       _instances[app] = instance;

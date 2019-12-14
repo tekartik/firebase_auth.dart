@@ -1,6 +1,5 @@
 library tekartik_firebase_sembast.firebase_sembast_memory_test;
 
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
@@ -19,7 +18,7 @@ void main() {
     run(firebase: firebase, authService: authService);
 
     group('auth', () {
-      App app = firebase.initializeApp(name: 'auth');
+      var app = firebase.initializeApp(name: 'auth');
       var auth = authServiceLocal.auth(app) as AuthLocal;
 
       tearDownAll(() {
@@ -59,23 +58,23 @@ void main() {
 
       test('getUser', () async {
         expect(await auth.getUser(null), isNull);
-        expect((await auth.getUser("1")).displayName, "admin");
-        expect((await auth.getUser("2")).displayName, "user");
+        expect((await auth.getUser('1')).displayName, 'admin');
+        expect((await auth.getUser('2')).displayName, 'user');
       });
 
       test('getUsers', () async {
         expect(await auth.getUsers(<String>[]), []);
         expect(
-            (await auth.getUsers(["1", "2"])).map((user) => user.emailVerified),
+            (await auth.getUsers(['1', '2'])).map((user) => user.emailVerified),
             [true, true]);
-        expect((await auth.getUser("2")).displayName, "user");
+        expect((await auth.getUser('2')).displayName, 'user');
       });
       test('getUserByEmail', () async {
         expect(await auth.getUserByEmail(null), isNull);
-        expect((await auth.getUserByEmail("admin@example.com")).displayName,
-            "admin");
-        expect((await auth.getUserByEmail("user@example.com")).displayName,
-            "user");
+        expect((await auth.getUserByEmail('admin@example.com')).displayName,
+            'admin');
+        expect((await auth.getUserByEmail('user@example.com')).displayName,
+            'user');
       });
 
       group('currentUser', () {

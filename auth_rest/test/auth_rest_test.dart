@@ -43,7 +43,7 @@ Future main() async {
         var user = auth.currentUser;
         expect(user, isNull);
         // devPrint('user: $user');
-        String userId = 'gpt1QKVyJMcLHh2MM2x4THAaQW63';
+        var userId = 'gpt1QKVyJMcLHh2MM2x4THAaQW63';
         var userRecord = await auth.getUser(userId);
         if (userRecord != null) {
           expect(userRecord.displayName, isNotNull);
@@ -56,11 +56,11 @@ Future main() async {
         var user = auth.currentUser;
         expect(user, isNull);
         // devPrint('user: $user');
-        String userId = 'gpt1QKVyJMcLHh2MM2x4THAaQW63';
+        var userId = 'gpt1QKVyJMcLHh2MM2x4THAaQW63';
         var userRecords =
             await auth.getUsers([userId, 'NX8geaeHWCcibyp2YWeyU7UqEtN2']);
         if (userRecords?.isNotEmpty ?? false) {
-          for (int i = 0; i < userRecords.length; i++) {
+          for (var i = 0; i < userRecords.length; i++) {
             var userRecord = userRecords[i];
             expect(userRecord.displayName, isNotNull);
             print('userRecords[$i]: $userRecord');
@@ -80,10 +80,10 @@ Future main() async {
       test('getUserByEmail', () async {
         try {
           expect(await auth.getUserByEmail(null), isNull);
-          expect((await auth.getUserByEmail("admin@example.com")).displayName,
-              "admin");
-          expect((await auth.getUserByEmail("user@example.com")).displayName,
-              "user");
+          expect((await auth.getUserByEmail('admin@example.com')).displayName,
+              'admin');
+          expect((await auth.getUserByEmail('user@example.com')).displayName,
+              'user');
           fail('should fail');
         } on UnsupportedError catch (_) {}
       });
