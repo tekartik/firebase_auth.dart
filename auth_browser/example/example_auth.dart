@@ -13,14 +13,14 @@ import 'example_common.dart';
 import 'example_setup.dart';
 
 void main() async {
-  write("require :${hasRequire}");
+  write('require :${hasRequire}');
   var options = await setup();
-  write("loaded");
-  fb.Firebase firebase = fb.firebaseBrowser;
+  write('loaded');
+  var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
 
   //Firebase firebase = firebaseBrowser;
-  fb.App app = firebase.initializeApp(options: options);
+  var app = firebase.initializeApp(options: options);
 
   var delay = parseInt(locationInfo.arguments['delay']);
   write(
@@ -36,7 +36,7 @@ void main() async {
     write('native.onIdTokenChanged1: $user');
   });
 
-  AuthBrowser auth = authService.auth(app) as AuthBrowser;
+  var auth = authService.auth(app) as AuthBrowser;
 
   if (delay != null) {
     await sleep(delay);

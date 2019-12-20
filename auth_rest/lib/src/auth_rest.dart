@@ -167,7 +167,7 @@ class UserRest extends UserInfoRest implements User {
 
   @override
   String toString() {
-    return super.toString() + ", emailVerified: $emailVerified";
+    return super.toString() + ', emailVerified: $emailVerified';
   }
 }
 
@@ -192,9 +192,9 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   IdentitytoolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
         if (rootUrl != null || servicePathBase != null) {
-          String defaultRootUrl = "https://www.googleapis.com/";
+          var defaultRootUrl = 'https://www.googleapis.com/';
 
-          String defaultServicePath = "identitytoolkit/v3/relyingparty/";
+          var defaultServicePath = 'identitytoolkit/v3/relyingparty/';
           return IdentitytoolkitApi(_appRest.authClient,
               servicePath: servicePathBase == null
                   ? defaultServicePath

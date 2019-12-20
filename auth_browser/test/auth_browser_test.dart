@@ -1,13 +1,12 @@
 @TestOn('browser')
 library tekartik_firebase_auth_browser.auth_browser_test;
 
-import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
-import 'package:tekartik_firebase_browser/firebase_browser.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart'
     as auth_browser;
 import 'package:tekartik_firebase_auth_test/auth_test.dart';
+import 'package:tekartik_firebase_browser/firebase_browser.dart';
 import 'package:test/test.dart';
 
 import 'test_setup.dart';
@@ -26,7 +25,7 @@ void main() async {
     run(firebase: firebase, authService: authService, options: options);
 
     group('auth', () {
-      fb.App app = firebase.initializeApp(options: options, name: 'auth');
+      var app = firebase.initializeApp(options: options, name: 'auth');
 
       tearDownAll(() {
         return app.delete();

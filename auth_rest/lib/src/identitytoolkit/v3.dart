@@ -5,7 +5,8 @@
 // ignore_for_file: unused_import, unnecessary_cast, prefer_collection_literals
 // ignore_for_file: empty_constructor_bodies, constant_identifier_names, invalid_assignment, argument_type_not_assignable, directives_ordering
 // ignore_for_file: non_constant_identifier_names, annotate_overrides
-
+// Pedantic 1.9
+// ignore_for_file: omit_local_variable_types, prefer_single_quotes, unnecessary_this
 library tekartik_firebase_auth_googleapis.identitytoolkit.v3;
 
 import 'dart:core' as core;

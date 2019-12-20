@@ -123,7 +123,7 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   AuthBrowserImpl(this.nativeAuth) {
     // Handle the case where we never receive the information
     // This happens if we register late, simple wait 5s
-    bool _seeded = false;
+    var _seeded = false;
     // Register right away to feed our current user controller
     final nativeCurrentUser = nativeAuth.currentUser;
     // Handle when already known on start
@@ -177,7 +177,7 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
       {AuthSignInOptions options}) async {
-    bool isPopup = (options as AuthBrowserSignInOptions)?.isPopup == true;
+    var isPopup = (options as AuthBrowserSignInOptions)?.isPopup == true;
     if (isPopup) {
       var credential = wrapUserCredential(
           await nativeAuth.signInWithPopup(unwrapAuthProvider(authProvider)));

@@ -161,7 +161,7 @@ abstract class UserInfo {
   /// The photo URL for the linked provider.
   String get photoURL;
 
-  /// The linked provider ID (for example, "google.com" for the Google provider).
+  /// The linked provider ID (for example, 'google.com' for the Google provider).
   String get providerId;
 
   /// The user identifier for the linked provider.

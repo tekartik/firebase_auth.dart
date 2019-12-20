@@ -18,7 +18,7 @@ Future<AppOptions> setup() async {
       var map = (loadYaml(local) as Map).cast<String, dynamic>();
       var options = AppOptions.fromMap(map);
       if (options.projectId == null) {
-        print('Missing "projectId" in local.config.yaml');
+        print("Missing 'projectId' in local.config.yaml");
         return null;
       }
       return options;
