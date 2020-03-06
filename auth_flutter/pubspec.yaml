@@ -28,6 +28,7 @@ dev_dependencies:
   process_run: '>=0.10.3'
 
 dependency_overrides:
+  pedantic: '>=1.9.0'
   tekartik_firebase_auth:
     path: ../auth
   tekartik_firebase_auth_test:

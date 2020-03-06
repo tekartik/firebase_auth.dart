@@ -94,22 +94,18 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   @override
   Future<User> googleSignIn() async {
     _googleSignIn ??= google_sign_in.GoogleSignIn();
-    final google_sign_in.GoogleSignInAccount googleUser =
-        await _googleSignIn.signIn();
+    final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
       return null;
     }
-    final google_sign_in.GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    final googleAuth = await googleUser.authentication;
 
-    final native.AuthCredential credential =
-        native.GoogleAuthProvider.getCredential(
+    final credential = native.GoogleAuthProvider.getCredential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    final native.FirebaseUser nativeUser =
-        (await nativeAuth.signInWithCredential(credential)).user;
+    final nativeUser = (await nativeAuth.signInWithCredential(credential)).user;
     return wrapUser(nativeUser);
   }
 
