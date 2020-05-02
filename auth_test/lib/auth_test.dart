@@ -9,8 +9,9 @@ bool skipConcurrentTransactionTests = false;
 void run(
     {@required fb.Firebase firebase,
     @required AuthService authService,
+    String name,
     fb.AppOptions options}) {
-  var app = firebase.initializeApp(options: options);
+  var app = firebase.initializeApp(name: name, options: options);
 
   tearDownAll(() {
     return app.delete();

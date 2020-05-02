@@ -1,6 +1,6 @@
 name: tekartik_firebase_auth_rest
 description: Firebase auth rest
-version: 0.8.0
+version: 0.8.1
 publish_to: none
 
 environment:
@@ -19,7 +19,7 @@ dependencies:
       url: git://github.com/tekartik/firebase.dart
       path: firebase_rest
       ref: dart2
-    version: '>=0.6.0'
+    version: '>=0.6.3'
   # This is a private package dependency used by the generated client stubs.
   _discoveryapis_commons: '>=0.1.0 <0.2.0'
   http: '>=0.11.1 <0.13.0'

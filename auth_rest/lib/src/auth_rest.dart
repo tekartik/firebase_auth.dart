@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
@@ -283,7 +284,9 @@ class AuthRestImpl with AuthMixin implements AuthRest {
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken,
       {bool checkRevoked}) async {
-    throw UnsupportedError('verifyIdToken');
+    var result = await identitytoolkitApi.relyingparty.verifyAssertion(
+        IdentitytoolkitRelyingpartyVerifyAssertionRequest()..idToken = idToken);
+    devPrint(result.toJson());
   }
 }
 
@@ -316,3 +319,14 @@ AuthServiceRest _authServiceRest;
 AuthServiceRest get authServiceLocal => _authServiceRest ??= AuthServiceRest();
 
 AuthService get authService => authServiceLocal;
+
+class AuthAccountApi {
+  final String apiKey;
+  var client = Client();
+
+  AuthAccountApi({@required this.apiKey});
+//  Future signInWithIdp() {}
+  void dispose() {
+    client.close();
+  }
+}
