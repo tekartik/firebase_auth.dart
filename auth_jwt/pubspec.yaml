@@ -1,14 +1,13 @@
 name: tekartik_firebase_auth_jwt
 description: Firebase JWT auth validation.
-version: 0.1.0
-# homepage: https://www.example.com
+version: 0.1.1
 
 environment:
   sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   path: ^1.6.0
-  corsac_jwt:
+  corsac_jwt: '>=0.2.2'
   http:
   tekartik_firebase:
     git:
@@ -32,5 +31,3 @@ dependency_overrides:
     path: ../auth
   tekartik_firebase_auth_rest:
     path: ../auth_rest
-  rsa_pkcs: '>=1.1.2'
-  asn1lib: '>=0.6.4'
