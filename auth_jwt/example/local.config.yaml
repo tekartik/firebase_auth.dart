@@ -1,0 +1,7 @@
+# Copy this file as "config.local.yaml" in the same folder (.gitignored)
+projectId: "tekartik-free-dev"
+apiKey: "AIzaSyAaC0EuawN0hwIPBzKzCwSBCFrgo0iBWcw"
+authDomain: "tekartik-free-dev.firebaseapp.com"
+databaseURL: "https://tekartik-free-dev.firebaseio.com"
+storageBucket: "tekartik-free-dev.appspot.com"
+messagingSenderId: "29718539056"

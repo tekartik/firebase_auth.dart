@@ -5,9 +5,11 @@ import 'package:tekartik_browser_utils/location_info_utils.dart';
 import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
+import 'package:tekartik_firebase_auth_jwt/src/auth_info.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as fb_impl;
 import 'package:tekartik_firebase_browser/src/interop.dart';
+
 import 'example_common.dart';
 import 'example_setup.dart';
 
@@ -111,6 +113,8 @@ void main() async {
     var idToken = await (auth.currentUser as UserInfoWithIdToken)
         .getIdToken(forceRefresh: false);
     write('IdToken $idToken');
+    var jwt = FirebaseAuthInfo.fromIdToken(idToken);
+    write(jsonPretty(jwt));
   });
 
   querySelector('#onCurrentUser').onClick.listen((_) async {

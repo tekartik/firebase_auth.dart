@@ -8,6 +8,7 @@ Future main() async {
     'auth_browser',
     'auth_node',
     'auth_test',
+    'auth_jwt',
     'auth',
   ]) {
     shell = shell.pushd(dir);

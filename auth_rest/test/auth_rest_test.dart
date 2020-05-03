@@ -18,9 +18,9 @@ Future main() async {
 
   AppOptions accessTokenAppOptions;
   if (context != null) {
-    accessTokenAppOptions = await getAppOptionsFromAccessToken(
+    accessTokenAppOptions = getAppOptionsFromAccessToken(
         Client(), context.accessToken.data,
-        scopes: firebaseBaseScopes);
+        projectId: context.options.projectId, scopes: firebaseBaseScopes);
   }
 
   group('auth_rest', () {
@@ -54,6 +54,10 @@ Future main() async {
         return app.delete();
       });
 
+      test('accessToken', () {
+        print(context.accessToken.data);
+      });
+
       test('getUserInfo', () async {
         var user = auth.currentUser;
         expect(user, isNull);
@@ -70,7 +74,6 @@ Future main() async {
       test('getUsers', () async {
         var user = auth.currentUser;
         expect(user, isNull);
-        devPrint('user: $user');
         var userId = 'gpt1QKVyJMcLHh2MM2x4THAaQW63';
         var userRecords =
             await auth.getUsers([userId, 'NX8geaeHWCcibyp2YWeyU7UqEtN2']);

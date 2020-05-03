@@ -284,9 +284,7 @@ class AuthRestImpl with AuthMixin implements AuthRest {
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken,
       {bool checkRevoked}) async {
-    var result = await identitytoolkitApi.relyingparty.verifyAssertion(
-        IdentitytoolkitRelyingpartyVerifyAssertionRequest()..idToken = idToken);
-    devPrint(result.toJson());
+    throw UnsupportedError('verifyIdToken');
   }
 }
 
