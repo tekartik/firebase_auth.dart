@@ -12,13 +12,12 @@ https://firebase.google.com/docs/auth/admin/verify-id-tokens#verify_id_tokens_us
 
 ```yaml
 dependencies:
-  uuid: '>=1.0.0'
   tekartik_firebase_auth_jwt:
     git:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth_jwt
       ref: dart2
-    version: '>=0.8.0'
+    version: '>=0.1.1'
 ```
 
 ## Usage

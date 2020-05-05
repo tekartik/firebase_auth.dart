@@ -58,6 +58,9 @@ auth_time	Authentication time	Must be in the past. The time when
   /// Firebase user Id info
   final String userId;
 
+  /// Firebase user name
+  final String name;
+
   /// Firebase email
   final String email;
 
@@ -78,6 +81,7 @@ auth_time	Authentication time	Must be in the past. The time when
     this.aud,
     this.sub,
     this.authTime,
+    this.name,
     this.email,
     this.emailVerified,
     this.picture,
@@ -112,6 +116,9 @@ bool debugFirebaseAuthInfo = false;
 
 /// The decoded information
 abstract class FirebaseAuthInfo {
+  /// Decoded user name.
+  String get name;
+
   /// Decoded userId.
   String get userId;
 
@@ -164,6 +171,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
       var iss = claims['iss'] as String;
       var iat = claims['iat'] as int;
       var userId = claims['user_id'] as String;
+      var name = claims['name'] as String;
       var exp = claims['exp'] as int;
       var aud = claims['aud'] as String;
       var sub = claims['sub'] as String;
@@ -179,6 +187,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
           authTime: authTime,
           sub: sub,
           aud: aud,
+          name: name,
           email: email,
           emailVerified: emailVerified,
           picture: picture);
@@ -271,6 +280,9 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
 
   @override
   String get projectId => payload.projectId;
+
+  @override
+  String get name => payload.name;
 }
 /*
 /*

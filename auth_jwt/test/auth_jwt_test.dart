@@ -52,6 +52,7 @@ void main() {
       expect(jwt.userId, 'Ac8ExOw1kIZZWv7ZZyK1eIVw0Mu2');
 
       expect(jwt.email, 'tekatest@tekartik.fr');
+      expect(jwt.name, 'Test Tekartik');
       expect(jwt.emailVerified, true);
       expect(jwt.projectId, 'tekartik-free-dev');
       expect(jwt.picture,
