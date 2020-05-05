@@ -37,7 +37,7 @@ AuthServiceFlutter get authService =>
 UserFlutterImpl wrapUser(native.FirebaseUser nativeUser) =>
     nativeUser != null ? UserFlutterImpl(nativeUser) : null;
 
-class UserFlutterImpl implements User {
+class UserFlutterImpl implements User, UserInfoWithIdToken {
   final native.FirebaseUser nativeInstance;
 
   UserFlutterImpl(this.nativeInstance);
@@ -68,6 +68,10 @@ class UserFlutterImpl implements User {
 
   @override
   String toString() => '$displayName ($email)';
+
+  @override
+  Future<String> getIdToken({bool forceRefresh}) async =>
+      (await nativeInstance.getIdToken(refresh: forceRefresh ?? false)).token;
 }
 
 class AuthFlutterImpl with AuthMixin implements AuthFlutter {
