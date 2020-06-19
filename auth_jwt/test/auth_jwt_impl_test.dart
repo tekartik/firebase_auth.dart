@@ -1,4 +1,3 @@
-import 'package:corsac_jwt/corsac_jwt.dart';
 import 'package:tekartik_firebase_auth_jwt/auth_jwt.dart';
 import 'package:tekartik_firebase_auth_jwt/src/auth_info.dart';
 import 'package:tekartik_firebase_auth_jwt/src/database.dart';
