@@ -8,6 +8,7 @@ Future main() async {
     'auth_browser',
     'auth_node',
     'auth_test',
+    'auth_rest',
     'auth_jwt',
     'auth',
   ]) {

@@ -70,10 +70,16 @@ void main() {
           currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
           fetchKey: fetchKey);
 
-      // Will fail one day...just report and fix the error
-      await jwt.verify(
-        currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
-      );
+      try {
+        // Will fail one day...just report and fix the error
+        await jwt.verify(
+          currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
+        );
+      } on StateError catch (e) {
+        // validator error Bad state: RS256 signer requires public key to verify signatures.
+        expect(e.message,
+            contains('RS256 signer requires public key to verify signatures'));
+      }
     });
 
     test('simple non firebase', () {
