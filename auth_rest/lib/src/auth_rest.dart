@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
@@ -316,3 +317,14 @@ AuthServiceRest _authServiceRest;
 AuthServiceRest get authServiceLocal => _authServiceRest ??= AuthServiceRest();
 
 AuthService get authService => authServiceLocal;
+
+class AuthAccountApi {
+  final String apiKey;
+  var client = Client();
+
+  AuthAccountApi({@required this.apiKey});
+//  Future signInWithIdp() {}
+  void dispose() {
+    client.close();
+  }
+}

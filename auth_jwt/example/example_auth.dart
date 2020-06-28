@@ -5,9 +5,12 @@ import 'package:tekartik_browser_utils/location_info_utils.dart';
 import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
+import 'package:tekartik_firebase_auth_jwt/src/auth_info.dart';
+import 'package:tekartik_firebase_auth_jwt/src/scopes.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as fb_impl;
 import 'package:tekartik_firebase_browser/src/interop.dart';
+
 import 'example_common.dart';
 import 'example_setup.dart';
 
@@ -70,10 +73,19 @@ void main() async {
     write('signed out');
   });
 
+  GoogleAuthProvider _authPovider;
+  GoogleAuthProvider getAuthPovider() =>
+      _authPovider ??
+      () {
+        var provider = GoogleAuthProvider()
+          ..addScope(firebaseGoogleApisFirebaseDatabaseScope)
+          ..addScope(firebaseGoogleApisUserEmailScope);
+        return provider;
+      }();
   querySelector('#googleSignIn').onClick.listen((_) async {
     write('signing in...');
     try {
-      var result = await auth.signIn(GoogleAuthProvider());
+      var result = await auth.signIn(getAuthPovider());
       write('signed in result $result');
     } catch (e) {
       write('signed in error $e');
@@ -83,7 +95,7 @@ void main() async {
   querySelector('#googleSignInWithPopup').onClick.listen((_) async {
     write('popup signing in...');
     try {
-      await auth.signIn(GoogleAuthProvider(),
+      await auth.signIn(getAuthPovider(),
           options: AuthBrowserSignInOptions(isPopup: true));
       write('signed in');
     } catch (e) {
@@ -94,7 +106,7 @@ void main() async {
   querySelector('#googleSignInWithRedirect').onClick.listen((_) async {
     write('signing in...');
     try {
-      await auth.signIn(GoogleAuthProvider(),
+      await auth.signIn(getAuthPovider(),
           options: AuthBrowserSignInOptions(isRedirect: true));
       write('signed in maybe...');
     } catch (e) {
@@ -111,6 +123,25 @@ void main() async {
     var idToken = await (auth.currentUser as UserInfoWithIdToken)
         .getIdToken(forceRefresh: false);
     write('IdToken $idToken');
+    var jwt = FirebaseAuthInfo.fromIdToken(idToken);
+    write(jsonPretty(jwt));
+    write(jsonPretty(jwt.toDebugMap()));
+
+    /*
+    var database = jwt.payload.projectId;
+    var userId = jwt.payload.userId;
+    var record = await databaseGetRecord(
+        idToken: idToken,
+        database: database,
+        path: '/_check_user_access/$userId');
+    write(record);
+     */
+    try {
+      await jwt.verify();
+      write('verified');
+    } catch (e) {
+      write('verified failed $e');
+    }
   });
 
   querySelector('#onCurrentUser').onClick.listen((_) async {

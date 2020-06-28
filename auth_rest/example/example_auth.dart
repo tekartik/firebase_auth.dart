@@ -1,13 +1,17 @@
 import 'dart:html';
 
+import 'package:http/http.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';
 import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
+import 'package:tekartik_firebase_rest/firebase_rest.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as fb_impl;
 import 'package:tekartik_firebase_browser/src/interop.dart';
+
 import 'example_common.dart';
 import 'example_setup.dart';
 
@@ -22,6 +26,7 @@ void main() async {
   var app = firebase.initializeApp(options: options);
 
   var delay = parseInt(locationInfo.arguments['delay']);
+
   write(
       'native.currentUser1: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}');
   (app as fb_impl.AppBrowser)
@@ -102,15 +107,44 @@ void main() async {
     }
   });
 
+  querySelector('#getUser').onClick.listen((_) async {
+    try {
+      if (auth?.currentUser?.uid == null) {
+        write('Not authentified');
+      } else {
+        var result = await auth.getUser(auth.currentUser.uid);
+        write(result);
+      }
+    } catch (e) {
+      write('getUser error $e');
+    }
+  });
+
+  querySelector('#restGetUser').onClick.listen((_) async {
+    try {
+      if (auth?.currentUser?.uid == null) {
+        write('Not authentified');
+      } else {
+        write('getting token');
+        var token =
+            await (auth?.currentUser as UserInfoWithIdToken).getIdToken();
+        write('token: $token');
+        var restApp = firebaseRest.initializeApp(
+            name: 'access_token',
+            options: getAppOptionsFromAccessToken(Client(), token,
+                projectId: options.projectId,
+                scopes: [firebaseGoogleApisUserEmailScope]));
+        var restAuth = authServiceRest.auth(restApp);
+        var result = await restAuth.getUser(auth.currentUser.uid);
+        write(result);
+      }
+    } catch (e) {
+      write('getUser error $e');
+    }
+  });
   querySelector('#currentUser').onClick.listen((_) async {
     write('currentUser ${auth.currentUser}');
     write('providerId: ${auth.currentUser?.providerId}');
-  });
-
-  querySelector('#getIdToken').onClick.listen((_) async {
-    var idToken = await (auth.currentUser as UserInfoWithIdToken)
-        .getIdToken(forceRefresh: false);
-    write('IdToken $idToken');
   });
 
   querySelector('#onCurrentUser').onClick.listen((_) async {

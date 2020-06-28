@@ -14,11 +14,24 @@ import 'auth_browser_api.dart';
 
 abstract class GoogleAuthProvider extends AuthProvider {
   factory GoogleAuthProvider() => GoogleAuthProviderImpl();
+
+  void addScope(String scope);
 }
 
 class GoogleAuthProviderImpl extends AuthProviderImpl
     implements GoogleAuthProvider {
-  GoogleAuthProviderImpl() : super(native.GoogleAuthProvider());
+  GoogleAuthProviderImpl() : super(native.GoogleAuthProvider()) {
+    _nativeAuthProvider = nativeAuthProvider as native.GoogleAuthProvider;
+  }
+
+  native.GoogleAuthProvider _nativeAuthProvider;
+
+  /// Adds additional OAuth 2.0 scopes that you want to request from the
+  /// authentication provider.
+  @override
+  void addScope(String scope) {
+    _nativeAuthProvider = _nativeAuthProvider.addScope(scope);
+  }
 }
 
 class AuthServiceBrowserImpl
