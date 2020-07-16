@@ -52,6 +52,9 @@ abstract class Auth {
   /// only if [AuthService.supportsCurrentUser] is true
   User get currentUser;
 
+  /// Reload user (needed after email verification)
+  Future<User> reloadCurrentUser();
+
   /// Current user stream.
   ///
   /// It also trigger upon start when the current user is ready (can be null if

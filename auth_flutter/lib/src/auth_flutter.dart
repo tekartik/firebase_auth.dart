@@ -79,11 +79,23 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
 
   StreamSubscription onAuthStateChangedSubscription;
 
-  AuthFlutterImpl(this.nativeAuth) {
+  void _listenToCurrentUser() {
+    onAuthStateChangedSubscription?.cancel();
     onAuthStateChangedSubscription =
         nativeAuth.onAuthStateChanged.listen((user) {
       currentUserAdd(wrapUser(user));
     });
+  }
+
+  AuthFlutterImpl(this.nativeAuth) {
+    _listenToCurrentUser();
+  }
+
+  @override
+  Future<User> reloadCurrentUser() async {
+    await (await nativeAuth.currentUser())?.reload();
+    _listenToCurrentUser();
+    return wrapUser((await nativeAuth.currentUser()));
   }
 
   @override

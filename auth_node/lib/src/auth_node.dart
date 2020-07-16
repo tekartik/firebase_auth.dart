@@ -195,6 +195,10 @@ class AuthNode with AuthMixin {
       return DecodedIdTokenNode(nativeDecodedIdToken);
     }
   }
+
+  @override
+  Future<User> reloadCurrentUser() =>
+      throw UnsupportedError('reloadCurrentUser not supported for node');
 }
 
 AuthNode auth(node.Auth _impl) => _impl != null ? AuthNode(_impl) : null;

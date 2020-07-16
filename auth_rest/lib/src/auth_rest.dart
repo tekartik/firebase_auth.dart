@@ -286,6 +286,11 @@ class AuthRestImpl with AuthMixin implements AuthRest {
       {bool checkRevoked}) async {
     throw UnsupportedError('verifyIdToken');
   }
+
+  @override
+  Future<User> reloadCurrentUser() {
+    throw UnsupportedError('reloadCurrentUser');
+  }
 }
 
 class DecodedIdTokenLocal implements DecodedIdToken {
