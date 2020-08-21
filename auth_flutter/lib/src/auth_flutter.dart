@@ -1,7 +1,8 @@
 // ignore_for_file: implementation_imports
 import 'dart:async';
-import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
+
 import 'package:firebase_auth/firebase_auth.dart' as native;
+import 'package:google_sign_in/google_sign_in.dart' as google_sign_in;
 import 'package:tekartik_firebase/firebase.dart' as common;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
@@ -18,7 +19,7 @@ class AuthServiceFlutterImpl
       assert(app is firebase_flutter.AppFlutter, 'invalid firebase app type');
       final appFlutter = app as firebase_flutter.AppFlutter;
       return AuthFlutterImpl(
-          native.FirebaseAuth.fromApp(appFlutter.nativeInstance));
+          native.FirebaseAuth.instanceFor(app: appFlutter.nativeInstance));
     });
   }
 
@@ -34,11 +35,11 @@ AuthServiceFlutter _firebaseAuthServiceFlutter;
 AuthServiceFlutter get authService =>
     _firebaseAuthServiceFlutter ??= AuthServiceFlutterImpl();
 
-UserFlutterImpl wrapUser(native.FirebaseUser nativeUser) =>
+UserFlutterImpl wrapUser(native.User nativeUser) =>
     nativeUser != null ? UserFlutterImpl(nativeUser) : null;
 
 class UserFlutterImpl implements User, UserInfoWithIdToken {
-  final native.FirebaseUser nativeInstance;
+  final native.User nativeInstance;
 
   UserFlutterImpl(this.nativeInstance);
 
@@ -49,7 +50,7 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
   String get email => nativeInstance.email;
 
   @override
-  bool get emailVerified => nativeInstance.isEmailVerified;
+  bool get emailVerified => nativeInstance.emailVerified;
 
   @override
   bool get isAnonymous => nativeInstance.isAnonymous;
@@ -58,10 +59,11 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
   String get phoneNumber => nativeInstance.phoneNumber;
 
   @override
-  String get photoURL => nativeInstance.photoUrl;
+  String get photoURL => nativeInstance.photoURL;
 
   @override
-  String get providerId => nativeInstance.providerId;
+  String get providerId =>
+      null; // no longer supported - nativeInstance.providerId;
 
   @override
   String get uid => nativeInstance.uid;
@@ -71,7 +73,7 @@ class UserFlutterImpl implements User, UserInfoWithIdToken {
 
   @override
   Future<String> getIdToken({bool forceRefresh}) async =>
-      (await nativeInstance.getIdToken(refresh: forceRefresh ?? false)).token;
+      await nativeInstance.getIdToken(forceRefresh ?? false);
 }
 
 class AuthFlutterImpl with AuthMixin implements AuthFlutter {
@@ -82,7 +84,7 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
   void _listenToCurrentUser() {
     onAuthStateChangedSubscription?.cancel();
     onAuthStateChangedSubscription =
-        nativeAuth.onAuthStateChanged.listen((user) {
+        nativeAuth.authStateChanges().listen((user) {
       currentUserAdd(wrapUser(user));
     });
   }
@@ -93,9 +95,9 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
 
   @override
   Future<User> reloadCurrentUser() async {
-    await (await nativeAuth.currentUser())?.reload();
+    await (nativeAuth.currentUser)?.reload();
     _listenToCurrentUser();
-    return wrapUser((await nativeAuth.currentUser()));
+    return wrapUser((nativeAuth.currentUser));
   }
 
   @override
@@ -116,7 +118,7 @@ class AuthFlutterImpl with AuthMixin implements AuthFlutter {
     }
     final googleAuth = await googleUser.authentication;
 
-    final credential = native.GoogleAuthProvider.getCredential(
+    final credential = native.GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );

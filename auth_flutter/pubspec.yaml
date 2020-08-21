@@ -1,8 +1,8 @@
 name: tekartik_firebase_auth_flutter
 description: Firebase auth flutter
-version: 0.9.0
+version: 0.10.0
 environment:
-  sdk: ">=2.4.0 <3.0.0"
+  sdk: ">=2.8.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -20,7 +20,7 @@ dependencies:
       path: firebase_flutter
       ref: dart2
     version: '>=0.4.0+0'
-  firebase_auth: '>=0.14.0+5'
+  firebase_auth: '>=0.18.0+1'
   google_sign_in: '>=4.0.7'
 dev_dependencies:
   flutter_test:
