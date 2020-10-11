@@ -255,6 +255,12 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
     // The id token is the uid itself
     return DecodedIdTokenLocal(uid: idToken);
   }
+
+  @override
+  Future<User> reloadCurrentUser() async {
+    // No-op on local
+    return currentUser;
+  }
 }
 
 class DecodedIdTokenLocal implements DecodedIdToken {

@@ -9,7 +9,7 @@ tekartik_firebase_auth_browser:
     url: git://github.com/tekartik/firebase_auth.dart
     path: auth_browser
     ref: dart2
-  version: '>=0.6.0+1'
+  version: '>=0.8.1'
 ```
 
 ## Test

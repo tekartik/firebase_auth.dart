@@ -133,6 +133,20 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
 
   StreamSubscription onAuthStateChangedSubscription;
 
+  void _listenToCurrentUser() {
+    onAuthStateChangedSubscription?.cancel();
+    onAuthStateChangedSubscription = onAuthStateChanged.listen((user) {
+      currentUserAdd(user);
+    });
+  }
+
+  @override
+  Future<User> reloadCurrentUser() async {
+    await nativeAuth.currentUser?.reload();
+    _listenToCurrentUser();
+    return wrapUser(nativeAuth.currentUser);
+  }
+
   AuthBrowserImpl(this.nativeAuth) {
     // Handle the case where we never receive the information
     // This happens if we register late, simple wait 5s

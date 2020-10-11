@@ -1,6 +1,6 @@
 name: tekartik_firebase_auth_local
 description: Firebase local test
-version: 0.8.0
+version: 0.9.0
 publish_to: none
 
 environment:
@@ -13,7 +13,7 @@ dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
       ref: dart2
-    version: '>=0.8.0'
+    version: '>=0.9.0'
   tekartik_firebase_local:
     git:
       url: git://github.com/tekartik/firebase.dart
