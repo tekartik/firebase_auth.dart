@@ -1,3 +1,4 @@
+@TestOn('vm')
 library tekartik_firebase_sembast.firebase_sembast_memory_test;
 
 import 'package:http/http.dart';
@@ -13,18 +14,26 @@ import 'package:test/test.dart';
 import 'test_setup.dart';
 
 Future main() async {
-  var context = await setup();
+  var firebaseRest = await setup();
   var firebase = firebaseRest;
 
   AppOptions accessTokenAppOptions;
-  if (context != null) {
+  if (firebaseRest != null) {
+    /*
     accessTokenAppOptions = getAppOptionsFromAccessToken(
         Client(), context.accessToken.data,
         projectId: context.options.projectId, scopes: firebaseBaseScopes);
+
+     */
   }
 
   group('auth_rest', () {
-    if (context != null) {
+    if (firebase != null) {
+      test('factory', () {
+        expect(authService.supportsListUsers, isFalse);
+        expect(authService.supportsCurrentUser, isFalse);
+      });
+
       run(firebase: firebase, authService: authServiceRest);
       group('access_token', () {
         run(
@@ -33,20 +42,16 @@ Future main() async {
             name: 'access_token',
             options: accessTokenAppOptions);
       });
+      run(firebase: firebase, authService: authService);
     }
-
-    test('factory', () {
-      expect(authService.supportsListUsers, isFalse);
-      expect(authService.supportsCurrentUser, isFalse);
-    });
-    run(firebase: firebase, authService: authService);
 
     group('auth', () {
       App app;
       AuthRest auth;
 
       setUpAll(() async {
-        app = firebase.initializeApp(name: 'auth', options: context?.options);
+        app = firebase.initializeApp(
+            name: 'auth'); //, options: context?.options);
         auth = authServiceRest.auth(app) as AuthRest;
       });
 
@@ -55,7 +60,7 @@ Future main() async {
       });
 
       test('accessToken', () {
-        print(context.accessToken.data);
+        // print(context.accessToken.data);
       });
 
       test('getUserInfo', () async {
@@ -123,8 +128,8 @@ Future main() async {
       });
 
       test('idToken', () async {
-        if (context.authClient != null) {
-          /*
+        // if (context.authClient != null) {
+        /*
           var provider = AuthLocalProvider();
           var result = await auth.signIn(provider,
               options: AuthLocalSignInOptions(localAdminUser));
@@ -134,8 +139,7 @@ Future main() async {
           expect(decoded.uid, localAdminUser.uid);
 
            */
-        }
       });
-    });
-  }, skip: context == null);
+    }, skip: firebase == null);
+  });
 }
