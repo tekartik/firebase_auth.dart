@@ -4,7 +4,7 @@ version: 0.8.0
 publish_to: none
 
 environment:
-  sdk: '>=2.1.0 <3.0.0'
+  sdk: '>=2.10.0-0 <3.0.0'
 
 dev_dependencies:
   test: ">=1.2.0"
@@ -32,4 +32,3 @@ dev_dependencies:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth_node
       ref: dart2
-

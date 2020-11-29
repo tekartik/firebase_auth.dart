@@ -1,9 +1,10 @@
 name: tekartik_firebase_auth_jwt
 description: Firebase JWT auth validation.
 version: 0.1.2
+publish_to: none
 
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.10.0-0 <3.0.0'
 
 dependencies:
   path: ^1.6.0
