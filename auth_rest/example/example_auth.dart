@@ -3,7 +3,6 @@ import 'dart:html';
 import 'package:http/http.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';
-import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
