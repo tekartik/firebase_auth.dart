@@ -1,11 +1,5 @@
-import 'package:process_run/shell.dart';
+import 'package:dev_test/package.dart';
 
 Future main() async {
-  var shell = Shell();
-
-  await shell.run('''
-dartanalyzer --fatal-warnings --fatal-infos lib test
-pub run build_runner test -- -p vm,chrome
-pub run test -p vm,chrome
-''');
+  await packageRunCi('.');
 }

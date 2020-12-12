@@ -37,6 +37,7 @@ dev_dependencies:
   build_test: ">=0.10.9+1"
   build_web_compilers: ">=2.7.0"
   process_run: '>=0.10.0+1'
+  dev_test:
 
 dependency_overrides:
   tekartik_firebase_auth:

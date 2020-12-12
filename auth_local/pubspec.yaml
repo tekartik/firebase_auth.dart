@@ -23,6 +23,7 @@ dependencies:
 
 dev_dependencies:
   test: ">=1.0.0"
+  dev_test:
   tekartik_firebase_auth_test:
     git:
       url: git://github.com/tekartik/firebase_auth.dart
