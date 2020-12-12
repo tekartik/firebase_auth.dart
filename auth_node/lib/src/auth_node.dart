@@ -8,15 +8,17 @@ import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:tekartik_firebase_node/src/firebase_node.dart';
 // ignore_for_file: implementation_imports
 
-class AuthServiceNode implements AuthService {
+class AuthServiceNode with AuthServiceMixin implements AuthService {
   @override
   bool get supportsListUsers => true;
 
   @override
   Auth auth(App app) {
-    assert(app is AppNode, 'invalid firebase app type');
-    final appNode = app as AppNode;
-    return AuthNode(appNode.nativeInstance.auth());
+    return getInstance(app, () {
+      assert(app is AppNode, 'invalid firebase app type');
+      final appNode = app as AppNode;
+      return AuthNode(appNode.nativeInstance.auth());
+    });
   }
 
   @override

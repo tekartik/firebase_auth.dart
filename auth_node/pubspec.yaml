@@ -37,6 +37,12 @@ dev_dependencies:
   build_node_compilers: ">=0.1.8"
   build_test: ">=0.10.3"
   process_run: '>=0.10.0+1'
+  tekartik_app_node_build:
+    git:
+      url: git://github.com/tekartik/app_node_utils.dart
+      path: app_build
+      ref: dart2
+    version: '>=0.1.0'
 
 dependency_overrides:
   tekartik_firebase_auth_test:
