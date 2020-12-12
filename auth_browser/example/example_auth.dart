@@ -2,12 +2,12 @@ import 'dart:html';
 
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';
-import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as fb_impl;
 import 'package:tekartik_firebase_browser/src/interop.dart';
+
 import 'example_common.dart';
 import 'example_setup.dart';
 
