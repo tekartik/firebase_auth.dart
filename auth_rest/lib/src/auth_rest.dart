@@ -196,13 +196,13 @@ class AuthRestImpl with AuthMixin implements AuthRest {
           var defaultRootUrl = 'https://www.googleapis.com/';
 
           var defaultServicePath = 'identitytoolkit/v3/relyingparty/';
-          return IdentitytoolkitApi(_appRest.authClient,
+          return IdentitytoolkitApi(_appRest.client,
               servicePath: servicePathBase == null
                   ? defaultServicePath
                   : '$servicePathBase/$defaultServicePath',
               rootUrl: rootUrl ?? defaultRootUrl);
         } else {
-          return IdentitytoolkitApi(_appRest.authClient);
+          return IdentitytoolkitApi(_appRest.client);
         }
       }();
 
