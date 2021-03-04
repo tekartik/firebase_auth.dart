@@ -1,6 +1,9 @@
 //@dart=2.9
 
 import 'package:dev_test/package.dart';
+import 'package:path/path.dart';
+
+var topDir = '..';
 
 Future<void> main() async {
   for (var dir in [
@@ -13,6 +16,6 @@ Future<void> main() async {
     'auth_rest',
     'auth_test',
   ]) {
-    await packageRunCi(dir);
+    await packageRunCi(join(topDir, dir));
   }
 }
