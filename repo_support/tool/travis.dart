@@ -1,3 +1,4 @@
+import 'package:path/path.dart';
 import 'package:process_run/shell.dart';
 
 Future main() async {
@@ -12,7 +13,7 @@ Future main() async {
     'auth_jwt',
     'auth',
   ]) {
-    shell = shell.pushd(dir);
+    shell = shell.pushd(join('..', dir));
     await shell.run('''
     
   pub get

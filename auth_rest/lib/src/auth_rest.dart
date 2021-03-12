@@ -187,22 +187,22 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   // ignore: unused_field
   final App _app;
-  IdentitytoolkitApi _identitytoolkitApi;
+  IdentityToolkitApi _identitytoolkitApi;
   String rootUrl;
   String servicePathBase;
 
-  IdentitytoolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
+  IdentityToolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
         if (rootUrl != null || servicePathBase != null) {
           var defaultRootUrl = 'https://www.googleapis.com/';
 
           var defaultServicePath = 'identitytoolkit/v3/relyingparty/';
-          return IdentitytoolkitApi(_appRest.client,
+          return IdentityToolkitApi(_appRest.client,
               servicePath: servicePathBase == null
                   ? defaultServicePath
                   : '$servicePathBase/$defaultServicePath',
               rootUrl: rootUrl ?? defaultRootUrl);
         } else {
-          return IdentitytoolkitApi(_appRest.client);
+          return IdentityToolkitApi(_appRest.client);
         }
       }();
 
