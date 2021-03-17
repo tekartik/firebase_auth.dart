@@ -62,13 +62,14 @@ class AuthCredentialImpl implements AuthCredential {
 }
 
 class UserRecordLocal implements UserRecord {
-  UserRecordLocal({required this.uid});
+  UserRecordLocal(
+      {required this.uid, this.disabled = false, this.emailVerified = true});
 
   @override
   dynamic get customClaims => null;
 
   @override
-  late bool disabled;
+  final bool disabled;
 
   @override
   String? displayName;
@@ -77,7 +78,7 @@ class UserRecordLocal implements UserRecord {
   String? email;
 
   @override
-  late bool emailVerified;
+  final bool emailVerified;
 
   @override
   UserMetadata? get metadata => null;
@@ -118,15 +119,13 @@ class UserRecordLocal implements UserRecord {
 
 UserRecordLocal localAdminUser = UserRecordLocal(uid: '1')
   ..displayName = 'admin'
-  ..email = 'admin@example.com'
-  ..emailVerified = true;
+  ..email = 'admin@example.com';
 
 User adminUserInfo = localAdminUser.toUser();
 
 UserRecordLocal localRegularUser = UserRecordLocal(uid: '2')
   ..displayName = 'user'
-  ..email = 'user@example.com'
-  ..emailVerified = true;
+  ..email = 'user@example.com';
 
 List<UserRecordLocal> allUsers = [
   localAdminUser,

@@ -31,7 +31,7 @@ void main() {
 dependencies:
   tekartik_firebase_auth_node:
     git:
-      url: git://github.com/tekartik/firebase_auth.dart
+      url: git://github.com/tekartik/firebase_node.dart
       path: auth_node
       ref: dart2
     version: '>=0.3.8'

@@ -3,11 +3,13 @@ import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:test/test.dart';
 
 class UserRecordMock implements UserRecord {
+  UserRecordMock({required this.uid});
+
   @override
   dynamic get customClaims => null;
 
   @override
-  late bool disabled;
+  final bool disabled = false;
 
   @override
   String? displayName;
@@ -40,26 +42,23 @@ class UserRecordMock implements UserRecord {
   String? get tokensValidAfterTime => null;
 
   @override
-  String uid = 'uid1';
+  final String uid;
 }
 
 void main() {
   group('utils', () {
     test('userRecordToJson', () {
-      expect(userRecordToJson(UserRecordMock()), {});
-      var record = UserRecordMock()
+      expect(userRecordToJson(UserRecordMock(uid: '1')), {'uid': '1'});
+      var record = UserRecordMock(uid: '1234')
         ..displayName = 'alex'
         ..email = 'alex@alex.com'
-        ..emailVerified = true
-        ..uid = '1234'
-        ..disabled = false;
+        ..emailVerified = true;
 
       expect(userRecordToJson(record), {
         'uid': '1234',
         'displayName': 'alex',
         'email': 'alex@alex.com',
         'emailVerified': true,
-        'disabled': false
       });
     });
   });
