@@ -38,34 +38,34 @@ abstract class Auth {
   /// and starting from the offset as specified by [pageToken].
   ///
   /// This is used to retrieve all the users of a specified project in batches.
-  Future<ListUsersResult> listUsers({int maxResults, String pageToken});
+  Future<ListUsersResult> listUsers({int? maxResults, String? pageToken});
 
   /// Gets the user data for the user corresponding to a given [email].
-  Future<UserRecord> getUserByEmail(String email);
+  Future<UserRecord?> getUserByEmail(String email);
 
   /// Gets the user data for the user corresponding to a given [uid].
-  Future<UserRecord> getUser(String uid);
+  Future<UserRecord?> getUser(String uid);
 
   /// Gets the user data for all the users.
-  Future<List<UserRecord>> getUsers(List<String> uids);
+  Future<List<UserRecord?>> getUsers(List<String> uids);
 
   /// only if [AuthService.supportsCurrentUser] is true
-  User get currentUser;
+  User? get currentUser;
 
   /// Reload user (needed after email verification)
-  Future<User> reloadCurrentUser();
+  Future<User?> reloadCurrentUser();
 
   /// Current user stream.
   ///
   /// It also trigger upon start when the current user is ready (can be null if
   /// none)
-  Stream<User> get onCurrentUser;
+  Stream<User?> get onCurrentUser;
 
   /// only if [AuthService.supportsCurrentUser] is true.
   ///
   /// Credential can be null and the login happen later
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions options});
+      {AuthSignInOptions? options});
 
   /// Signs out the current user.
   Future signOut();
@@ -76,7 +76,7 @@ abstract class Auth {
   /// of [DecodedIdToken]; otherwise, the future is completed with an error.
   /// An optional flag can be passed to additionally check whether the ID token
   /// was revoked.
-  Future<DecodedIdToken> verifyIdToken(String idToken, {bool checkRevoked});
+  Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked});
 }
 
 abstract class UserRecord {
@@ -90,16 +90,16 @@ abstract class UserRecord {
   bool get disabled;
 
   /// The user's display name.
-  String get displayName;
+  String? get displayName;
 
   /// The user's primary email, if set.
-  String get email;
+  String? get email;
 
   /// Whether or not the user's primary email is verified.
   bool get emailVerified;
 
   /// Additional metadata about the user.
-  UserMetadata get metadata;
+  UserMetadata? get metadata;
 
   /// The user’s hashed password (base64-encoded), only if Firebase Auth hashing
   /// algorithm (SCRYPT) is used.
@@ -109,7 +109,7 @@ abstract class UserRecord {
   /// string. If no password is set, this will be`null`.
   ///
   /// This is only available when the user is obtained from [Auth.listUsers].
-  String get passwordHash;
+  String? get passwordHash;
 
   /// The user’s password salt (base64-encoded), only if Firebase Auth hashing
   /// algorithm (SCRYPT) is used.
@@ -119,23 +119,23 @@ abstract class UserRecord {
   /// If no password is set, this will be `null`.
   ///
   /// This is only available when the user is obtained from [Auth.listUsers].
-  String get passwordSalt;
+  String? get passwordSalt;
 
   /// The user's primary phone number or `null`.
-  String get phoneNumber;
+  String? get phoneNumber;
 
   /// The user's photo URL or `null`.
-  String get photoURL;
+  String? get photoURL;
 
   /// An array of providers (for example, Google, Facebook) linked to the user.
-  List<UserInfo> get providerData;
+  List<UserInfo>? get providerData;
 
   /// The date the user's tokens are valid after, formatted as a UTC string.
   ///
   /// This is updated every time the user's refresh token are revoked either from
   /// the [Auth.revokeRefreshTokens] API or from the Firebase Auth backend on big
   /// account changes (password resets, password or email updates, etc).
-  String get tokensValidAfterTime;
+  String? get tokensValidAfterTime;
 
   /// The user's uid.
   String get uid;
@@ -153,19 +153,19 @@ abstract class UserMetadata {
 /// such as Google or Facebook.
 abstract class UserInfo {
   /// The display name for the linked provider.
-  String get displayName;
+  String? get displayName;
 
   /// The email for the linked provider.
-  String get email;
+  String? get email;
 
   /// The phone number for the linked provider.
-  String get phoneNumber;
+  String? get phoneNumber;
 
   /// The photo URL for the linked provider.
-  String get photoURL;
+  String? get photoURL;
 
   /// The linked provider ID (for example, 'google.com' for the Google provider).
-  String get providerId;
+  String? get providerId;
 
   /// The user identifier for the linked provider.
   String get uid;
@@ -208,7 +208,7 @@ abstract class UserCredential {
 /// Client interface.
 abstract class UserInfoWithIdToken {
   /// Get the auth token
-  Future<String> getIdToken({bool forceRefresh});
+  Future<String> getIdToken({bool? forceRefresh});
 }
 
 /// User list result
@@ -217,7 +217,7 @@ abstract class ListUsersResult {
   String get pageToken;
 
   /// The user list, some items can be null
-  List<UserRecord> get users;
+  List<UserRecord?> get users;
 }
 
 /// Interface representing a decoded Firebase ID token, returned from the

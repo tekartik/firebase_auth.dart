@@ -12,32 +12,32 @@ class AuthMock with AuthMixin {
 
 class UserInfoMock implements UserInfo {
   @override
-  final String displayName;
+  final String? displayName;
 
   UserInfoMock({this.displayName});
 
   @override
-  String get email => null;
+  String? get email => null;
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String get photoURL => null;
+  String? get photoURL => null;
 
   @override
-  String get providerId => null;
+  String? get providerId => null;
 
   @override
-  String get uid => null;
+  String get uid => 'uid1';
 }
 
 class UserMock extends UserInfoMock implements User {
   @override
-  bool get emailVerified => null;
+  bool get emailVerified => false;
 
   @override
-  bool get isAnonymous => null;
+  bool get isAnonymous => false;
 }
 
 void main() {

@@ -7,40 +7,40 @@ class UserRecordMock implements UserRecord {
   dynamic get customClaims => null;
 
   @override
-  bool disabled;
+  late bool disabled;
 
   @override
-  String displayName;
+  String? displayName;
 
   @override
-  String email;
+  String? email;
 
   @override
-  bool emailVerified;
+  bool emailVerified = false;
 
   @override
-  UserMetadata get metadata => null;
+  UserMetadata? get metadata => null;
 
   @override
-  String get passwordHash => null;
+  String? get passwordHash => null;
 
   @override
-  String get passwordSalt => null;
+  String? get passwordSalt => null;
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String get photoURL => null;
+  String? get photoURL => null;
 
   @override
-  List<UserInfo> get providerData => null;
+  List<UserInfo>? get providerData => null;
 
   @override
-  String get tokensValidAfterTime => null;
+  String? get tokensValidAfterTime => null;
 
   @override
-  String uid;
+  String uid = 'uid1';
 }
 
 void main() {
