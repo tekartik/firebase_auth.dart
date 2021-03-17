@@ -30,9 +30,9 @@ void main() {
         expect(provider.providerId, isNotNull);
         await auth.signIn(provider,
             options: AuthLocalSignInOptions(localAdminUser));
-        expect(auth.currentUser.uid, localAdminUser.uid);
-        expect((await auth.onCurrentUser.first).uid, localAdminUser.uid);
-        var userInfo = auth.currentUser;
+        expect(auth.currentUser!.uid, localAdminUser.uid);
+        expect((await auth.onCurrentUser.first)!.uid, localAdminUser.uid);
+        var userInfo = auth.currentUser!;
         expect(await (userInfo as UserInfoWithIdToken).getIdToken(),
             localAdminUser.uid);
         expect(userInfo.providerId, provider.providerId);
@@ -41,10 +41,10 @@ void main() {
         expect(auth.currentUser, isNull);
         await auth.signIn(provider,
             options: AuthLocalSignInOptions(localRegularUser));
-        expect(auth.currentUser.uid, localRegularUser.uid);
+        expect(auth.currentUser!.uid, localRegularUser.uid);
         try {
           await auth.signIn(provider,
-              options: AuthLocalSignInOptions(UserRecordLocal()..uid = '-1'));
+              options: AuthLocalSignInOptions(UserRecordLocal(uid: '-1')));
           fail('should fail');
         } catch (e) {
           expect(e, isNot(const TypeMatcher<TestFailure>()));
@@ -52,28 +52,27 @@ void main() {
         expect(auth.currentUser, isNotNull);
       });
       test('listUsers', () async {
-        var user = (await auth.listUsers(maxResults: 1)).users?.first;
+        var user = (await auth.listUsers(maxResults: 1)).users.first!;
         print(userRecordToJson(user));
       });
 
       test('getUser', () async {
-        expect(await auth.getUser(null), isNull);
-        expect((await auth.getUser('1')).displayName, 'admin');
-        expect((await auth.getUser('2')).displayName, 'user');
+        expect((await auth.getUser('1'))!.displayName, 'admin');
+        expect((await auth.getUser('2'))!.displayName, 'user');
       });
 
       test('getUsers', () async {
         expect(await auth.getUsers(<String>[]), []);
         expect(
-            (await auth.getUsers(['1', '2'])).map((user) => user.emailVerified),
+            (await auth.getUsers(['1', '2']))
+                .map((user) => user!.emailVerified),
             [true, true]);
-        expect((await auth.getUser('2')).displayName, 'user');
+        expect((await auth.getUser('2'))!.displayName, 'user');
       });
       test('getUserByEmail', () async {
-        expect(await auth.getUserByEmail(null), isNull);
-        expect((await auth.getUserByEmail('admin@example.com')).displayName,
+        expect((await auth.getUserByEmail('admin@example.com'))!.displayName,
             'admin');
-        expect((await auth.getUserByEmail('user@example.com')).displayName,
+        expect((await auth.getUserByEmail('user@example.com'))!.displayName,
             'user');
       });
 
@@ -93,7 +92,7 @@ void main() {
         var provider = AuthLocalProvider();
         var result = await auth.signIn(provider,
             options: AuthLocalSignInOptions(localAdminUser));
-        var user = result.credential.user;
+        var user = result.credential!.user;
         var idToken = await (user as UserInfoWithIdToken).getIdToken();
         var decoded = await auth.verifyIdToken(idToken);
         expect(decoded.uid, localAdminUser.uid);
