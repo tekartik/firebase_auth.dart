@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:http/http.dart';
-import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
@@ -42,7 +41,7 @@ class ListUsersResultRest implements ListUsersResult {
   @override
   final List<UserRecord> users;
 
-  ListUsersResultRest({@required this.pageToken, @required this.users});
+  ListUsersResultRest({required this.pageToken, required this.users});
 }
 
 class AuthSignInResultImpl implements AuthSignInResult {
@@ -71,55 +70,55 @@ class AuthCredentialImpl implements AuthCredential {
 }
 
 class UserRecordRest implements UserRecord {
+  UserRecordRest({required this.disabled, required this.emailVerified});
+
   @override
   dynamic get customClaims => null;
 
   @override
-  bool disabled;
+  final bool disabled;
 
   @override
-  String displayName;
+  String? displayName;
 
   @override
-  String email;
+  String? email;
 
   @override
-  bool emailVerified;
+  final bool emailVerified;
 
   @override
-  UserMetadata get metadata => null;
+  UserMetadata? get metadata => null;
 
   @override
-  String get passwordHash => null;
+  String? get passwordHash => null;
 
   @override
-  String get passwordSalt => null;
+  String? get passwordSalt => null;
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String photoURL;
+  String? photoURL;
 
   @override
-  List<UserInfo> get providerData => null;
+  List<UserInfo>? get providerData => null;
 
   @override
-  String get tokensValidAfterTime => null;
+  String? get tokensValidAfterTime => null;
 
   @override
-  String uid;
+  late String uid;
 
   UserInfo toUserInfo() {
-    return UserInfoRest()
-      ..uid = uid
+    return UserInfoRest(uid: uid)
       ..email = email
       ..displayName = displayName;
   }
 
   User toUser() {
-    return UserRest()
-      ..uid = uid
+    return UserRest(uid: uid, emailVerified: emailVerified)
       ..email = email
       ..displayName = displayName;
   }
@@ -132,28 +131,30 @@ class UserRecordRest implements UserRecord {
 
 class UserInfoRest implements UserInfo, UserInfoWithIdToken {
   @override
-  String displayName;
+  String? displayName;
 
   @override
-  String email;
+  String? email;
+
+  UserInfoRest({required this.uid});
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String get photoURL => null;
+  String? get photoURL => null;
 
   @override
   String get providerId => localProviderId;
 
   @override
-  String uid;
+  final String uid;
 
   @override
   String toString() => '$uid $email $displayName';
 
   @override
-  Future<String> getIdToken({bool forceRefresh}) async => uid;
+  Future<String> getIdToken({bool? forceRefresh}) async => uid;
 }
 
 /// Top level class
@@ -161,7 +162,8 @@ class UserRest extends UserInfoRest implements User {
   @override
   final bool emailVerified;
 
-  UserRest({this.emailVerified});
+  UserRest({required this.emailVerified, required String uid})
+      : super(uid: uid);
 
   @override
   bool get isAnonymous => false;
@@ -176,33 +178,33 @@ class UserRest extends UserInfoRest implements User {
 abstract class AuthRest implements Auth {
   /// Custom AuthRest
   factory AuthRest(
-      {@required AppRest appRest, String rootUrl, String servicePathBase}) {
+      {required AppRest appRest, String? rootUrl, String? servicePathBase}) {
     return AuthRestImpl(appRest,
         rootUrl: rootUrl, servicePathBase: servicePathBase);
   }
 }
 
 class AuthRestImpl with AuthMixin implements AuthRest {
-  final AppRest _appRest;
+  final AppRest? _appRest;
 
   // ignore: unused_field
   final App _app;
-  IdentityToolkitApi _identitytoolkitApi;
-  String rootUrl;
-  String servicePathBase;
+  IdentityToolkitApi? _identitytoolkitApi;
+  String? rootUrl;
+  String? servicePathBase;
 
   IdentityToolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
         if (rootUrl != null || servicePathBase != null) {
           var defaultRootUrl = 'https://www.googleapis.com/';
 
           var defaultServicePath = 'identitytoolkit/v3/relyingparty/';
-          return IdentityToolkitApi(_appRest.client,
+          return IdentityToolkitApi(_appRest!.client!,
               servicePath: servicePathBase == null
                   ? defaultServicePath
                   : '$servicePathBase/$defaultServicePath',
               rootUrl: rootUrl ?? defaultRootUrl);
         } else {
-          return IdentityToolkitApi(_appRest.client);
+          return IdentityToolkitApi(_appRest!.client!);
         }
       }();
 
@@ -213,13 +215,15 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   @override
   Stream<User> get onCurrentUser => throw UnsupportedError('onCurrentUser');
+
   @override
-  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
+  Future<ListUsersResult> listUsers(
+      {int? maxResults, String? pageToken}) async {
     throw UnsupportedError('listUsers');
   }
 
   @override
-  Future<UserRecord> getUser(String uid) async {
+  Future<UserRecord?> getUser(String uid) async {
     var request = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
       ..localId = [uid];
     if (debugRest) {
@@ -230,19 +234,19 @@ class AuthRestImpl with AuthMixin implements AuthRest {
       print('getAccountInfo: ${jsonPretty(result.toJson())}');
     }
     if (result.users?.isNotEmpty ?? false) {
-      var restUserInfo = result.users.first;
+      var restUserInfo = result.users!.first;
       return toUserRecord(restUserInfo);
     }
     return null;
   }
 
   UserRecord toUserRecord(api.UserInfo restUserInfo) {
-    var userRecord = UserRecordRest();
+    var userRecord = UserRecordRest(
+        emailVerified: restUserInfo.emailVerified ?? false, disabled: false);
     userRecord.email = restUserInfo.email;
     userRecord.displayName = restUserInfo.displayName;
-    userRecord.uid = restUserInfo.localId;
+    userRecord.uid = restUserInfo.localId!;
     userRecord.photoURL = restUserInfo.photoUrl;
-    userRecord.emailVerified = restUserInfo.emailVerified;
     return userRecord;
   }
 
@@ -257,9 +261,10 @@ class AuthRestImpl with AuthMixin implements AuthRest {
     if (debugRest) {
       print('getAccountInfo: ${jsonPretty(result.toJson())}');
     }
-    return result?.users
-        ?.map((restUserInfo) => toUserRecord(restUserInfo))
-        ?.toList(growable: false);
+    var users = (result.users ?? <api.UserInfo>[]);
+    return users
+        .map((restUserInfo) => toUserRecord(restUserInfo))
+        .toList(growable: false);
   }
 
   @override
@@ -269,7 +274,7 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions options}) async {
+      {AuthSignInOptions? options}) async {
     throw UnsupportedError('signIn');
   }
 
@@ -283,7 +288,7 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken,
-      {bool checkRevoked}) async {
+      {bool? checkRevoked}) async {
     throw UnsupportedError('verifyIdToken');
   }
 
@@ -297,7 +302,7 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   @override
   final String uid;
 
-  DecodedIdTokenLocal({this.uid});
+  DecodedIdTokenLocal({required this.uid});
 }
 
 class AuthServiceRest with AuthServiceMixin implements AuthService {
@@ -317,7 +322,7 @@ class AuthServiceRest with AuthServiceMixin implements AuthService {
   bool get supportsCurrentUser => false;
 }
 
-AuthServiceRest _authServiceRest;
+AuthServiceRest? _authServiceRest;
 
 AuthServiceRest get authServiceLocal => _authServiceRest ??= AuthServiceRest();
 
@@ -327,7 +332,8 @@ class AuthAccountApi {
   final String apiKey;
   var client = Client();
 
-  AuthAccountApi({@required this.apiKey});
+  AuthAccountApi({required this.apiKey});
+
 //  Future signInWithIdp() {}
   void dispose() {
     client.close();

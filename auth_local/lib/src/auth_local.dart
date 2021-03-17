@@ -208,12 +208,15 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
   }
 
   @override
-  Future<List<UserRecord?>> getUsers(List<String> uids) async {
+  Future<List<UserRecord>> getUsers(List<String> uids) async {
     var list = <UserRecord?>[];
     for (var uid in uids) {
-      list.add(await getUser(uid));
+      var user = await getUser(uid);
+      if (user != null) {
+        list.add(user);
+      }
     }
-    return list;
+    return list.cast<UserRecord>();
   }
 
   @override

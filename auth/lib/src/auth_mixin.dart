@@ -56,7 +56,7 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   }
 
   @override
-  Future<List<UserRecord?>> getUsers(List<String> uids) {
+  Future<List<UserRecord>> getUsers(List<String> uids) {
     throw UnsupportedError('$runtimeType.getUsers not supported');
   }
 

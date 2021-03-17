@@ -15,7 +15,7 @@ Future main() async {
   var firebaseRest = await setup();
   var firebase = firebaseRest;
 
-  AppOptions accessTokenAppOptions;
+  AppOptions? accessTokenAppOptions;
   if (firebaseRest != null) {
     /*
     accessTokenAppOptions = getAppOptionsFromAccessToken(
@@ -44,12 +44,12 @@ Future main() async {
     }
 
     group('auth', () {
-      App app;
-      AuthRest auth;
+      late App app;
+      late AuthRest auth;
 
       setUpAll(() async {
-        app = firebase.initializeApp(
-            name: 'auth'); //, options: context?.options);
+        app = firebase!
+            .initializeApp(name: 'auth'); //, options: context?.options);
         auth = authServiceRest.auth(app) as AuthRest;
       });
 
@@ -80,7 +80,7 @@ Future main() async {
         var userId = 'gpt1QKVyJMcLHh2MM2x4THAaQW63';
         var userRecords =
             await auth.getUsers([userId, 'NX8geaeHWCcibyp2YWeyU7UqEtN2']);
-        if (userRecords?.isNotEmpty ?? false) {
+        if (userRecords.isNotEmpty) {
           for (var i = 0; i < userRecords.length; i++) {
             var userRecord = userRecords[i];
             expect(userRecord.displayName, isNotNull);
@@ -92,18 +92,17 @@ Future main() async {
 
       test('listUsers', () async {
         try {
-          var users = (await auth.listUsers(maxResults: 1)).users?.first;
-          print(userRecordToJson(users));
+          var user = (await auth.listUsers(maxResults: 1)).users.first!;
+          print(userRecordToJson(user));
           fail('should fail');
         } on UnsupportedError catch (_) {}
       });
 
       test('getUserByEmail', () async {
         try {
-          expect(await auth.getUserByEmail(null), isNull);
-          expect((await auth.getUserByEmail('admin@example.com')).displayName,
+          expect((await auth.getUserByEmail('admin@example.com'))!.displayName,
               'admin');
-          expect((await auth.getUserByEmail('user@example.com')).displayName,
+          expect((await auth.getUserByEmail('user@example.com'))!.displayName,
               'user');
           fail('should fail');
         } on UnsupportedError catch (_) {}

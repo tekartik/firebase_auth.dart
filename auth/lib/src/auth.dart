@@ -47,7 +47,7 @@ abstract class Auth {
   Future<UserRecord?> getUser(String uid);
 
   /// Gets the user data for all the users.
-  Future<List<UserRecord?>> getUsers(List<String> uids);
+  Future<List<UserRecord>> getUsers(List<String> uids);
 
   /// only if [AuthService.supportsCurrentUser] is true
   User? get currentUser;

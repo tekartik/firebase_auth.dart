@@ -24,18 +24,14 @@ void main() async {
   //Firebase firebase = firebaseBrowser;
   var app = firebase.initializeApp(options: options);
 
-  var delay = parseInt(locationInfo.arguments['delay']);
+  var delay = parseInt(locationInfo!.arguments['delay']);
 
   write(
       'native.currentUser1: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}');
-  (app as fb_impl.AppBrowser)
-      .nativeApp
-      .auth()
-      .onAuthStateChanged
-      .listen((user) {
+  app.nativeApp.auth().onAuthStateChanged.listen((user) {
     write('native.onAuthStateChanged1: $user');
   });
-  (app as fb_impl.AppBrowser).nativeApp.auth().onIdTokenChanged.listen((user) {
+  app.nativeApp.auth().onIdTokenChanged.listen((user) {
     write('native.onIdTokenChanged1: $user');
   });
 
@@ -45,36 +41,31 @@ void main() async {
     await sleep(delay);
   }
 
-  write(
-      'native.currentUser2: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}');
-  (app as fb_impl.AppBrowser)
-      .nativeApp
-      .auth()
-      .onAuthStateChanged
-      .listen((user) {
+  write('native.currentUser2: ${app.nativeApp.auth().currentUser}');
+  app.nativeApp.auth().onAuthStateChanged.listen((user) {
     write('native.onAuthStateChanged2: $user');
   });
-  (app as fb_impl.AppBrowser).nativeApp.auth().onIdTokenChanged.listen((user) {
+  app.nativeApp.auth().onIdTokenChanged.listen((user) {
     write('native.onIdTokenChanged2: $user');
   });
 
-  auth.onAuthStateChanged.listen((User user) {
+  auth.onAuthStateChanged.listen((User? user) {
     write('onAuthStateChanged: $user');
   });
 
-  auth.onCurrentUser.listen((User user) {
+  auth.onCurrentUser.listen((User? user) {
     write('onCurrentUser: $user');
   });
   write('app ${app.name}');
   write('currentUser ${auth.currentUser}');
 
-  querySelector('#signOut').onClick.listen((_) async {
+  querySelector('#signOut')!.onClick.listen((_) async {
     write('signing out...');
     await auth.signOut();
     write('signed out');
   });
 
-  querySelector('#googleSignIn').onClick.listen((_) async {
+  querySelector('#googleSignIn')!.onClick.listen((_) async {
     write('signing in...');
     try {
       var result = await auth.signIn(GoogleAuthProvider());
@@ -84,7 +75,7 @@ void main() async {
     }
   });
 
-  querySelector('#googleSignInWithPopup').onClick.listen((_) async {
+  querySelector('#googleSignInWithPopup')!.onClick.listen((_) async {
     write('popup signing in...');
     try {
       await auth.signIn(GoogleAuthProvider(),
@@ -95,7 +86,7 @@ void main() async {
     }
   });
 
-  querySelector('#googleSignInWithRedirect').onClick.listen((_) async {
+  querySelector('#googleSignInWithRedirect')!.onClick.listen((_) async {
     write('signing in...');
     try {
       await auth.signIn(GoogleAuthProvider(),
@@ -106,12 +97,12 @@ void main() async {
     }
   });
 
-  querySelector('#getUser').onClick.listen((_) async {
+  querySelector('#getUser')!.onClick.listen((_) async {
     try {
-      if (auth?.currentUser?.uid == null) {
+      if (auth.currentUser?.uid == null) {
         write('Not authentified');
       } else {
-        var result = await auth.getUser(auth.currentUser.uid);
+        var result = await auth.getUser(auth.currentUser!.uid);
         write(result);
       }
     } catch (e) {
@@ -119,38 +110,38 @@ void main() async {
     }
   });
 
-  querySelector('#restGetUser').onClick.listen((_) async {
+  querySelector('#restGetUser')!.onClick.listen((_) async {
     try {
-      if (auth?.currentUser?.uid == null) {
+      if (auth.currentUser?.uid == null) {
         write('Not authentified');
       } else {
         write('getting token');
         var token =
-            await (auth?.currentUser as UserInfoWithIdToken).getIdToken();
+            await (auth.currentUser as UserInfoWithIdToken).getIdToken();
         write('token: $token');
         var restApp = firebaseRest.initializeApp(
             name: 'access_token',
             options: getAppOptionsFromAccessToken(Client(), token,
-                projectId: options.projectId,
+                projectId: options!.projectId!,
                 scopes: [firebaseGoogleApisUserEmailScope]));
         var restAuth = authServiceRest.auth(restApp);
-        var result = await restAuth.getUser(auth.currentUser.uid);
+        var result = await restAuth.getUser(auth.currentUser!.uid);
         write(result);
       }
     } catch (e) {
       write('getUser error $e');
     }
   });
-  querySelector('#currentUser').onClick.listen((_) async {
+  querySelector('#currentUser')!.onClick.listen((_) async {
     write('currentUser ${auth.currentUser}');
     write('providerId: ${auth.currentUser?.providerId}');
   });
 
-  querySelector('#onCurrentUser').onClick.listen((_) async {
+  querySelector('#onCurrentUser')!.onClick.listen((_) async {
     write('wait for first onCurrentUser');
     write('onCurrentUser ${await auth.onCurrentUser.first}');
   });
-  querySelector('#reloadWithDelay').onClick.listen((_) async {
+  querySelector('#reloadWithDelay')!.onClick.listen((_) async {
     window.location.href = 'example_auth.html?delay=3000';
   });
 }
