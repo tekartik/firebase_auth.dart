@@ -28,7 +28,7 @@ abstract class AuthSignInResult {
   bool get hasInfo;
 
   /// The credentials if any. null might not mean failure if [hasInfo] is true
-  UserCredential get credential;
+  UserCredential? get credential;
 }
 
 /// Represents a Auth Database and is the entry point for all

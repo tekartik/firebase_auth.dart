@@ -28,7 +28,7 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   //void currentUserTokenAdd(String tokenId)
 
   @override
-  User get currentUser => _currentUserSubject.value!;
+  User? get currentUser => _currentUserSubject.value;
 
   @override
   Stream<User?> get onCurrentUser => _currentUserSubject.stream;
@@ -51,17 +51,17 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   }
 
   @override
-  Future<UserRecord> getUser(String uid) {
+  Future<UserRecord?> getUser(String uid) {
     throw UnsupportedError('$runtimeType.getUser not supported');
   }
 
   @override
-  Future<List<UserRecord>> getUsers(List<String> uids) {
+  Future<List<UserRecord?>> getUsers(List<String> uids) {
     throw UnsupportedError('$runtimeType.getUsers not supported');
   }
 
   @override
-  Future<UserRecord> getUserByEmail(String email) {
+  Future<UserRecord?> getUserByEmail(String email) {
     throw UnsupportedError('$runtimeType.getUser not supported');
   }
 

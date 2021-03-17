@@ -4,7 +4,7 @@ import 'package:firebase/firebase.dart' as native;
 
 class FacebookAuthCustomParameters {
   static const displayPopup = 'popup';
-  final String display;
+  final String? display;
 
   FacebookAuthCustomParameters({this.display});
 
@@ -30,7 +30,7 @@ class FacebookAuthProviderImpl extends AuthProviderImpl
     _nativeAuthProvider = nativeAuthProvider as native.FacebookAuthProvider;
   }
 
-  native.FacebookAuthProvider _nativeAuthProvider;
+  late native.FacebookAuthProvider _nativeAuthProvider;
 
   /// Adds additional OAuth 2.0 scopes that you want to request from the
   /// authentication provider.
