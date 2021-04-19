@@ -1,5 +1,6 @@
-import 'package:corsac_jwt/corsac_jwt.dart';
+//import 'package:corsac_jwt/corsac_jwt.dart';
 import 'package:http/http.dart';
+import 'package:jose/jose.dart';
 
 import 'import.dart';
 
@@ -9,19 +10,21 @@ class FirebaseAuthValidationException implements FirebaseAuthException {
   final String message;
 
   FirebaseAuthValidationException(this.message);
+
   @override
   String toString() => 'FirebaseAuthValidationException($message)';
 }
 
 class FirebaseAuthInfoHeader {
   /// alg	Algorithm	"RS256"
-  final String? alg;
+  final String alg;
 
   /// kid	Key ID	Must correspond to one of the public keys listed at
   /// https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com
-  final String? kid;
+  final String kid;
 
   FirebaseAuthInfoHeader({this.alg, this.kid});
+
   @override
   String toString() => toDebugMap().toString();
 
@@ -39,39 +42,39 @@ auth_time	Authentication time	Must be in the past. The time when
    */
 
   /// exp	Expiration time	Must be in the future. The time is measured in seconds since the UNIX epoch.
-  final int? exp;
+  final int exp;
 
   /// iat	Issued-at time	Must be in the past. The time is measured in seconds since the UNIX epoch.
-  final int? iat;
+  final int iat;
 
   /// aud	Audience	Must be your Firebase project ID, the unique identifier for your Firebase project, which can be found in the URL of that project's console.
-  final String? aud;
+  final String aud;
 
   /// iss	Issuer	Must be "https://securetoken.google.com/<projectId>", where <projectId> is the same project ID used for aud above.
-  final String? iss;
+  final String iss;
 
-  final int? authTime;
+  final int authTime;
 
   /// sub	Subject	Must be a non-empty string and must be the uid of the user or device.
-  final String? sub;
+  final String sub;
 
   /// Firebase user Id info
-  final String? userId;
+  final String userId;
 
   /// Firebase user name
-  final String? name;
+  final String name;
 
   /// Firebase email
-  final String? email;
+  final String email;
 
   /// Firebase email
-  final String? picture;
+  final String picture;
 
   /// Firebase email verified
-  final bool? emailVerified;
+  final bool emailVerified;
 
   /// Firebase project Id info
-  String? get projectId => aud;
+  String get projectId => aud;
 
   FirebaseAuthInfoPayload({
     this.exp,
@@ -90,11 +93,12 @@ auth_time	Authentication time	Must be in the past. The time when
   @override
   String toString() => toDebugMap().toString();
 
-  String? _timeToString(int? time) => time == null
+  String _timeToString(int time) => time == null
       ? null
       : DateTime.fromMillisecondsSinceEpoch(time * 1000)
           .toUtc()
           .toIso8601String();
+
   Map toDebugMap() {
     return {
       'exp': _timeToString(exp),
@@ -117,43 +121,94 @@ bool debugFirebaseAuthInfo = false;
 /// The decoded information
 abstract class FirebaseAuthInfo {
   /// Decoded user name.
-  String? get name;
+  String get name;
 
   /// Decoded userId.
-  String? get userId;
+  String get userId;
 
   /// Decoded email.
-  String? get email;
+  String get email;
 
   /// Decoded email verified.
-  bool? get emailVerified;
+  bool get emailVerified;
 
   /// Decoded email verified.
-  String? get picture;
+  String get picture;
 
   /// Decoded projectId.
-  String? get projectId;
+  String get projectId;
 
   Map toDebugMap();
 
   /// Validate using public key fetched
   Future<bool> verify(
-      {DateTime? currentTime,
-      Future<String?> Function(String keyId)? fetchKey});
+      {DateTime currentTime, Future<String> Function(String keyId) fetchKey});
 
   factory FirebaseAuthInfo.fromIdToken(String idToken) =>
       FirebaseAuthInfoImpl.fromIdToken(idToken);
 }
 
-class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
-  @override
-  String? get userId => payload!.userId;
+class JwtAuth {
+  JsonWebToken _jwt;
+  JsonWebSignature _jws;
 
-  late JWT _jwt;
-  FirebaseAuthInfoImpl.fromIdToken(String idToken) {
-    var jwt = _jwt = JWT.parse(idToken);
+  static JwtAuth fromIdToken(String idToken) {
+    var auth = JwtAuth();
+    auth._jwt = JsonWebToken.unverified(idToken);
+    auth._jws = JsonWebSignature.fromCompactSerialization(idToken);
+    return auth;
+  }
+
+  JwtAuthHeaders _headers;
+
+  JwtAuthHeaders get headers => _headers ??= () {
+        return JwtAuthHeaders(this);
+      }();
+  JwtAuthClaims _claims;
+
+  JwtAuthClaims get claims => _claims ??= () {
+        return JwtAuthClaims(this);
+      }();
+}
+
+/// Unsupported
+class JwtAuthHeaders {
+  final JwtAuth _auth;
+
+  JwtAuthHeaders(this._auth);
+
+  Object operator [](String key) {
+    switch (key) {
+      case 'alg':
+        return _auth._jws.recipients.first.header.algorithm;
+      case 'kid':
+        return _auth._jws.recipients.first.header.keyId;
+    }
+    return null;
+  }
+}
+
+class JwtAuthClaims {
+  final JwtAuth _auth;
+
+  JwtAuthClaims(this._auth);
+
+  Object operator [](String key) => _auth._jwt.claims[key];
+}
+
+class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
+  final String idToken;
+
+  @override
+  String get userId => payload.userId;
+
+  //JwtAuth _jwt;
+
+  FirebaseAuthInfoImpl.fromIdToken(String idToken) : idToken = idToken {
+    var jwt = JwtAuth.fromIdToken(idToken);
     var headers = jwt.headers;
     var claims = jwt.claims;
+    //devPrint(_jwt._jwt.claims):
     if (debugFirebaseAuthInfo) {
       print(jsonPretty(headers));
       print(jsonPretty(claims));
@@ -169,17 +224,17 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
 
     // Claims
     {
-      var iss = claims['iss'] as String?;
-      var iat = claims['iat'] as int?;
-      var userId = claims['user_id'] as String?;
-      var name = claims['name'] as String?;
-      var exp = claims['exp'] as int?;
-      var aud = claims['aud'] as String?;
-      var sub = claims['sub'] as String?;
-      var authTime = claims['auth_time'] as int?;
-      var email = claims['email'] as String?;
-      var emailVerified = claims['email_verified'] as bool?;
-      var picture = claims['picture'] as String?;
+      var iss = claims['iss'] as String;
+      var iat = claims['iat'] as int;
+      var userId = claims['user_id'] as String;
+      var name = claims['name'] as String;
+      var exp = claims['exp'] as int;
+      var aud = claims['aud'] as String;
+      var sub = claims['sub'] as String;
+      var authTime = claims['auth_time'] as int;
+      var email = claims['email'] as String;
+      var emailVerified = claims['email_verified'] as bool;
+      var picture = claims['picture'] as String;
       _payload = FirebaseAuthInfoPayload(
           iss: iss,
           iat: iat,
@@ -195,7 +250,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
     }
   }
 
-  Future<String?> httpFetchKey(String? key) async {
+  Future<String> httpFetchKey(String key) async {
     var jsonContent = await read(Uri.parse(
         'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'));
     var map = jsonDecode(jsonContent) as Map;
@@ -205,8 +260,8 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
   /// Validate using public key fetched
   @override
   Future<bool> verify(
-      {DateTime? currentTime,
-      Future<String?> Function(String keyId)? fetchKey}) async {
+      {DateTime currentTime,
+      Future<String> Function(String keyId) fetchKey}) async {
     fetchKey ??= httpFetchKey;
     if (header?.alg != 'RS256') {
       print('invalid jwt alg $header');
@@ -224,26 +279,46 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
 
      */
 
-    var key = await fetchKey(header!.kid!);
-
-    /*
+    var key = await fetchKey(header.kid);
+/*
     key = key.replaceAll(
         '-----BEGIN CERTIFICATE-----', '-----BEGIN RSA PUBLIC KEY-----');
     key = key.replaceAll(
         '-----END CERTIFICATE-----', '-----END RSA PUBLIC KEY-----');
-
-     */
+*/
     // -----BEGIN CERTIFICATE-----
     // static const String pkcs1PublicHeader = '-----BEGIN RSA PUBLIC KEY-----';
     // static const String pkcs1PublicFooter = '-----END RSA PUBLIC KEY-----';
-    var signer = JWTRsaSha256Signer(publicKey: key);
+    // devPrint('key: $key');
+    //var jo = JsonWebEncryption.fromCompactSerialization(key);
+    // Parse PEM encoded private key.
+    //var keyData = PemCodec(PemLabel.privateKey).decode(key);
+
+    //var codec = PemCodec(key);
+    var jwk = JsonWebKey.fromPem(key);
+
+    /*
+    expect(key.keyType, 'EC');
+    expect(key.cryptoKeyPair.publicKey, isA<EcPublicKey>());
+    expect((key.cryptoKeyPair.publicKey as EcKey).curve, curves.p256);
+    expect(key.cryptoKeyPair.privateKey, isA<EcPrivateKey>());
+    expect((key.cryptoKeyPair.privateKey as EcKey).curve, curves.p256);
+
+     */
+
+    var keyStore = JsonWebKeyStore()..addKey(jwk);
+    var jws = JsonWebSignature.fromCompactSerialization(idToken);
+    //var signer = JWTRsaSha256Signer(publicKey: key);
 
     try {
-      var validator = JWTValidator(currentTime: currentTime);
-      var errors = validator.validate(_jwt, signer: signer);
-      if (errors.isNotEmpty) {
-        throw FirebaseAuthValidationException(errors.toString());
+      //var validator = JWTValidator(currentTime: currentTime);
+      if (!await jws.verify(keyStore)) {
+        throw FirebaseAuthValidationException('not verified');
       }
+      // var errors = validator.validate(_jwt, signer: signer);
+      //if (errors.isNotEmpty) {
+      //  throw FirebaseAuthValidationException(errors.toString());
+      //}
     } catch (e) {
       print('validator error $e');
       rethrow;
@@ -257,33 +332,35 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
     return true;
   }
 
-  FirebaseAuthInfoHeader? _header;
-  FirebaseAuthInfoHeader? get header => _header;
-  FirebaseAuthInfoPayload? _payload;
-  FirebaseAuthInfoPayload? get payload => _payload;
+  FirebaseAuthInfoHeader _header;
+
+  FirebaseAuthInfoHeader get header => _header;
+  FirebaseAuthInfoPayload _payload;
+
+  FirebaseAuthInfoPayload get payload => _payload;
 
   @override
   Map toDebugMap() {
-    return {'header': header!.toDebugMap(), 'payload': payload!.toDebugMap()};
+    return {'header': header.toDebugMap(), 'payload': payload.toDebugMap()};
   }
 
   @override
   String toString() => toDebugMap().toString();
 
   @override
-  String? get email => payload!.email;
+  String get email => payload.email;
 
   @override
-  bool? get emailVerified => payload!.emailVerified;
+  bool get emailVerified => payload.emailVerified;
 
   @override
-  String? get picture => payload!.picture;
+  String get picture => payload.picture;
 
   @override
-  String? get projectId => payload!.projectId;
+  String get projectId => payload.projectId;
 
   @override
-  String? get name => payload!.name;
+  String get name => payload.name;
 }
 /*
 /*

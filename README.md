@@ -12,7 +12,7 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth_browser
-      ref: dart2
+      ref: null_safety
     version: '>=0.3.8'
 ```
 
@@ -33,7 +33,7 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_node.dart
       path: auth_node
-      ref: dart2
+      ref: null_safety
     version: '>=0.3.8'
 ```
 
@@ -54,7 +54,7 @@ dependencies:
     git:
       url: git://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: dart2
+      ref: null_safety
     version: '>=0.3.8'
 ```
 

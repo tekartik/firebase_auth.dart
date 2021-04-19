@@ -43,16 +43,16 @@ void main() {
       var jwt = FirebaseAuthInfo.fromIdToken(idToken) as FirebaseAuthInfoImpl;
 
       print(jsonPretty(jwt.toDebugMap()));
-      expect(jwt.header!.alg, 'RS256');
-      expect(jwt.header!.kid, '88848b5aff2d5201331a547d1906e5aadf6513c8');
-      expect(jwt.payload!.userId, 'Ac8ExOw1kIZZWv7ZZyK1eIVw0Mu2');
-      expect(jwt.payload!.userId, jwt.payload!.sub);
-      expect(jwt.payload!.email, 'tekatest@tekartik.fr');
-      expect(jwt.payload!.emailVerified, true);
-      expect(jwt.payload!.projectId, 'tekartik-free-dev');
+      expect(jwt.header.alg, 'RS256');
+      expect(jwt.header.kid, '88848b5aff2d5201331a547d1906e5aadf6513c8');
+      expect(jwt.payload.userId, 'Ac8ExOw1kIZZWv7ZZyK1eIVw0Mu2');
+      expect(jwt.payload.userId, jwt.payload.sub);
+      expect(jwt.payload.email, 'tekatest@tekartik.fr');
+      expect(jwt.payload.emailVerified, true);
+      expect(jwt.payload.projectId, 'tekartik-free-dev');
 
-      var database = jwt.payload!.projectId;
-      var userId = jwt.payload!.userId;
+      var database = jwt.payload.projectId;
+      var userId = jwt.payload.userId;
       try {
         await databaseGetRecord(
             idToken: idToken,
