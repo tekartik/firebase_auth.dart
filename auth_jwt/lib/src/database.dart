@@ -1,5 +1,5 @@
-import 'package:tekartik_firebase_auth_jwt/src/import.dart';
 import 'package:http/http.dart';
+import 'package:tekartik_firebase_auth_jwt/src/import.dart';
 
 //
 // Unused
