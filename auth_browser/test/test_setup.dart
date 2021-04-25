@@ -4,7 +4,7 @@ import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart';
 import 'package:yaml/yaml.dart';
 
-Future<AppOptions> setup() async {
+Future<AppOptions?> setup() async {
   // Load javascript
   await loadFirebaseJs();
   var client = BrowserClient();

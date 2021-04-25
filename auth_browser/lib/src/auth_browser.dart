@@ -24,7 +24,7 @@ class GoogleAuthProviderImpl extends AuthProviderImpl
     _nativeAuthProvider = nativeAuthProvider as native.GoogleAuthProvider;
   }
 
-  native.GoogleAuthProvider _nativeAuthProvider;
+  late native.GoogleAuthProvider _nativeAuthProvider;
 
   /// Adds additional OAuth 2.0 scopes that you want to request from the
   /// authentication provider.
@@ -53,7 +53,7 @@ class AuthServiceBrowserImpl
   bool get supportsCurrentUser => true;
 }
 
-AuthServiceBrowser _firebaseAuthServiceBrowser;
+AuthServiceBrowser? _firebaseAuthServiceBrowser;
 
 AuthService get authService =>
     _firebaseAuthServiceBrowser ??= AuthServiceBrowserImpl();
@@ -76,11 +76,11 @@ class UserCredentialImpl implements UserCredential {
   //AuthCredential get credential => wrapAuthCredential(nativeInstance.credential);
 
   @override
-  User get user => wrapUser(nativeInstance.user);
+  User get user => wrapUser(nativeInstance.user)!;
 
   @override
-  // TODO: implement credential
-  AuthCredential get credential => null;
+  // TODO to implement
+  AuthCredential get credential => throw UnsupportedError('To implement');
 }
 
 class AuthCredentialImpl implements AuthCredential {
@@ -104,34 +104,32 @@ class UserImpl extends UserInfoBrowser implements User {
 
 class AuthSignInResultImpl implements AuthSignInResult {
   @override
-  final UserCredential credential;
+  final UserCredential? credential;
 
   @override
   final bool hasInfo;
 
-  AuthSignInResultImpl({this.credential, bool hasNoInfo})
+  AuthSignInResultImpl({this.credential, bool? hasNoInfo})
       : hasInfo = hasNoInfo ?? credential == null;
 }
 
 //User wrapUser(native.User nativeInstance) => nativeInstance != null ? UserImpl(nativeInstance) : null;
 AuthCredential wrapAuthCredential(native.OAuthCredential nativeInstance) =>
-    nativeInstance != null ? AuthCredentialImpl(nativeInstance) : null;
+    AuthCredentialImpl(nativeInstance);
 
 UserCredential wrapUserCredential(native.UserCredential nativeInstance) =>
-    nativeInstance != null ? UserCredentialImpl(nativeInstance) : null;
+    UserCredentialImpl(nativeInstance);
 
 AuthProvider wrapAuthProvider(native.AuthProvider nativeInstance) =>
-    nativeInstance != null ? AuthProviderImpl(nativeInstance) : null;
+    AuthProviderImpl(nativeInstance);
 
 native.AuthProvider unwrapAuthProvider(AuthProvider authProvider) =>
-    authProvider != null
-        ? (authProvider as AuthProviderImpl).nativeAuthProvider
-        : null;
+    (authProvider as AuthProviderImpl).nativeAuthProvider;
 
 class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   final native.Auth nativeAuth;
 
-  StreamSubscription onAuthStateChangedSubscription;
+  StreamSubscription? onAuthStateChangedSubscription;
 
   void _listenToCurrentUser() {
     onAuthStateChangedSubscription?.cancel();
@@ -141,7 +139,7 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   }
 
   @override
-  Future<User> reloadCurrentUser() async {
+  Future<User?> reloadCurrentUser() async {
     await nativeAuth.currentUser?.reload();
     _listenToCurrentUser();
     return wrapUser(nativeAuth.currentUser);
@@ -176,7 +174,7 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   }
 
   @override
-  Stream<User> get onAuthStateChanged =>
+  Stream<User?> get onAuthStateChanged =>
       nativeAuth.onAuthStateChanged.transform(
           StreamTransformer.fromHandlers(handleData: (nativeUser, sink) {
         sink.add(wrapUser(nativeUser));
@@ -186,43 +184,43 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   Future signOut() => nativeAuth.signOut();
 
   @override
-  Future<UserCredential> signInPopup(AuthProvider authProvider) async =>
+  Future<UserCredential?> signInPopup(AuthProvider authProvider) async =>
       (await signIn(authProvider,
               options: AuthBrowserSignInOptions(isPopup: true)))
-          ?.credential;
+          .credential;
 
   @override
   Future signInWithRedirect(AuthProvider authProvider) =>
       signIn(authProvider, options: AuthBrowserSignInOptions(isRedirect: true));
 
   @override
-  Future close(common.App app) async {
+  Future close(common.App? app) async {
     await super.close(app);
     await onAuthStateChangedSubscription?.cancel();
   }
 
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions options}) async {
-    var isPopup = (options as AuthBrowserSignInOptions)?.isPopup == true;
+      {AuthSignInOptions? options}) async {
+    var isPopup = (options as AuthBrowserSignInOptions?)?.isPopup == true;
     if (isPopup) {
       var credential = wrapUserCredential(
           await nativeAuth.signInWithPopup(unwrapAuthProvider(authProvider)));
       return AuthSignInResultImpl(credential: credential, hasNoInfo: false);
     } else {
       await nativeAuth.signInWithRedirect(unwrapAuthProvider(authProvider));
-      return null;
+      return AuthSignInResultImpl(credential: null, hasNoInfo: true);
     }
   }
 
   @override
-  String toString() => 'AuthBrowser(${nativeAuth?.app?.options?.projectId})';
+  String toString() => 'AuthBrowser(${nativeAuth.app.options.projectId})';
 }
 
 UserInfoBrowser wrapUserInfo(native.User nativeUser) =>
-    nativeUser != null ? UserInfoBrowser(nativeUser) : null;
+    UserInfoBrowser(nativeUser);
 
-UserBrowser wrapUser(native.User nativeUser) =>
+UserBrowser? wrapUser(native.User? nativeUser) =>
     nativeUser != null ? UserBrowser(nativeUser) : null;
 
 abstract class UserInfoMixin {}
@@ -256,7 +254,7 @@ class UserInfoBrowser implements UserInfo, UserInfoWithIdToken {
   }
 
   @override
-  Future<String> getIdToken({bool forceRefresh}) =>
+  Future<String> getIdToken({bool? forceRefresh}) =>
       nativeUser.getIdToken(forceRefresh == true);
 }
 

@@ -5,19 +5,19 @@ import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 
 /// Browser sign in options
 class AuthBrowserSignInOptions implements AuthSignInOptions {
-  bool _isPopup;
+  bool? _isPopup;
 
   bool get isPopup => _isPopup == true;
 
   bool get isRedirect => _isPopup != true;
 
-  AuthBrowserSignInOptions({bool isPopup, bool isRedirect}) {
+  AuthBrowserSignInOptions({bool? isPopup, bool? isRedirect}) {
     _isPopup = isPopup ?? (isRedirect == null ? null : !isRedirect);
   }
 }
 
 abstract class AuthBrowser with AuthMixin {
-  Stream<User> get onAuthStateChanged;
+  Stream<User?> get onAuthStateChanged;
 
   @override
   Future signOut();
@@ -26,7 +26,7 @@ abstract class AuthBrowser with AuthMixin {
   Future signInWithRedirect(AuthProvider authProvider);
 
   @deprecated
-  Future<UserCredential> signInPopup(AuthProvider authProvider);
+  Future<UserCredential?> signInPopup(AuthProvider authProvider);
 }
 
 abstract class AuthServiceBrowser implements AuthService {}

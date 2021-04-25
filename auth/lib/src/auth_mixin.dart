@@ -6,32 +6,32 @@ import 'package:tekartik_firebase_auth/auth.dart';
 
 mixin AuthServiceMixin implements AuthService {
   /// Most implementation need a single instance, keep it in memory!
-  static final _instances = <App, Auth>{};
+  static final _instances = <App, Auth?>{};
 
-  T getInstance<T extends Auth>(App app, T Function() createIfNotFound) {
-    var instance = _instances[app] as T;
+  T getInstance<T extends Auth?>(App app, T Function() createIfNotFound) {
+    var instance = _instances[app] as T?;
     if (instance == null) {
       instance = createIfNotFound();
       _instances[app] = instance;
     }
-    return instance;
+    return instance!;
   }
 }
 
 mixin AuthMixin implements Auth, FirebaseAppService {
-  final _currentUserSubject = Subject<User>();
+  final _currentUserSubject = Subject<User?>();
 
-  void currentUserAdd(User user) {
+  void currentUserAdd(User? user) {
     _currentUserSubject.add(user);
   }
 
   //void currentUserTokenAdd(String tokenId)
 
   @override
-  User get currentUser => _currentUserSubject.value;
+  User? get currentUser => _currentUserSubject.value;
 
   @override
-  Stream<User> get onCurrentUser => _currentUserSubject.stream;
+  Stream<User?> get onCurrentUser => _currentUserSubject.stream;
 
   Future<void> currentUserClose() async {
     await _currentUserSubject.close();
@@ -41,17 +41,17 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   Future init(App app) async => null;
 
   @override
-  Future close(App app) async {
+  Future close(App? app) async {
     await currentUserClose();
   }
 
   @override
-  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) {
+  Future<ListUsersResult> listUsers({int? maxResults, String? pageToken}) {
     throw UnsupportedError('$runtimeType.listUsers not supported');
   }
 
   @override
-  Future<UserRecord> getUser(String uid) {
+  Future<UserRecord?> getUser(String uid) {
     throw UnsupportedError('$runtimeType.getUser not supported');
   }
 
@@ -61,13 +61,13 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   }
 
   @override
-  Future<UserRecord> getUserByEmail(String email) {
+  Future<UserRecord?> getUserByEmail(String email) {
     throw UnsupportedError('$runtimeType.getUser not supported');
   }
 
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions options}) {
+      {AuthSignInOptions? options}) {
     throw UnsupportedError('$runtimeType.signIn not supported');
   }
 
@@ -77,7 +77,7 @@ mixin AuthMixin implements Auth, FirebaseAppService {
   }
 
   @override
-  Future<DecodedIdToken> verifyIdToken(String idToken, {bool checkRevoked}) {
+  Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked}) {
     throw UnsupportedError('$runtimeType.verifyIdToken not supported');
   }
 }

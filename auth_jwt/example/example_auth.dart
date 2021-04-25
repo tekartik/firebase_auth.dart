@@ -23,17 +23,13 @@ void main() async {
   //Firebase firebase = firebaseBrowser;
   var app = firebase.initializeApp(options: options);
 
-  var delay = parseInt(locationInfo.arguments['delay']);
+  var delay = parseInt(locationInfo!.arguments['delay']);
   write(
       'native.currentUser1: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}');
-  (app as fb_impl.AppBrowser)
-      .nativeApp
-      .auth()
-      .onAuthStateChanged
-      .listen((user) {
+  app.nativeApp.auth().onAuthStateChanged.listen((user) {
     write('native.onAuthStateChanged1: $user');
   });
-  (app as fb_impl.AppBrowser).nativeApp.auth().onIdTokenChanged.listen((user) {
+  app.nativeApp.auth().onIdTokenChanged.listen((user) {
     write('native.onIdTokenChanged1: $user');
   });
 
@@ -43,36 +39,31 @@ void main() async {
     await sleep(delay);
   }
 
-  write(
-      'native.currentUser2: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}');
-  (app as fb_impl.AppBrowser)
-      .nativeApp
-      .auth()
-      .onAuthStateChanged
-      .listen((user) {
+  write('native.currentUser2: ${app.nativeApp.auth().currentUser}');
+  app.nativeApp.auth().onAuthStateChanged.listen((user) {
     write('native.onAuthStateChanged2: $user');
   });
-  (app as fb_impl.AppBrowser).nativeApp.auth().onIdTokenChanged.listen((user) {
+  app.nativeApp.auth().onIdTokenChanged.listen((user) {
     write('native.onIdTokenChanged2: $user');
   });
 
-  auth.onAuthStateChanged.listen((User user) {
+  auth.onAuthStateChanged.listen((User? user) {
     write('onAuthStateChanged: $user');
   });
 
-  auth.onCurrentUser.listen((User user) {
+  auth.onCurrentUser.listen((User? user) {
     write('onCurrentUser: $user');
   });
   write('app ${app.name}');
   write('currentUser ${auth.currentUser}');
 
-  querySelector('#signOut').onClick.listen((_) async {
+  querySelector('#signOut')!.onClick.listen((_) async {
     write('signing out...');
     await auth.signOut();
     write('signed out');
   });
 
-  GoogleAuthProvider _authPovider;
+  GoogleAuthProvider? _authPovider;
   GoogleAuthProvider getAuthPovider() =>
       _authPovider ??
       () {
@@ -81,7 +72,7 @@ void main() async {
           ..addScope(firebaseGoogleApisUserEmailScope);
         return provider;
       }();
-  querySelector('#googleSignIn').onClick.listen((_) async {
+  querySelector('#googleSignIn')!.onClick.listen((_) async {
     write('signing in...');
     try {
       var result = await auth.signIn(getAuthPovider());
@@ -91,7 +82,7 @@ void main() async {
     }
   });
 
-  querySelector('#googleSignInWithPopup').onClick.listen((_) async {
+  querySelector('#googleSignInWithPopup')!.onClick.listen((_) async {
     write('popup signing in...');
     try {
       await auth.signIn(getAuthPovider(),
@@ -102,7 +93,7 @@ void main() async {
     }
   });
 
-  querySelector('#googleSignInWithRedirect').onClick.listen((_) async {
+  querySelector('#googleSignInWithRedirect')!.onClick.listen((_) async {
     write('signing in...');
     try {
       await auth.signIn(getAuthPovider(),
@@ -113,12 +104,12 @@ void main() async {
     }
   });
 
-  querySelector('#currentUser').onClick.listen((_) async {
+  querySelector('#currentUser')!.onClick.listen((_) async {
     write('currentUser ${auth.currentUser}');
     write('providerId: ${auth.currentUser?.providerId}');
   });
 
-  querySelector('#getIdToken').onClick.listen((_) async {
+  querySelector('#getIdToken')!.onClick.listen((_) async {
     var idToken = await (auth.currentUser as UserInfoWithIdToken)
         .getIdToken(forceRefresh: false);
     write('IdToken $idToken');
@@ -143,11 +134,11 @@ void main() async {
     }
   });
 
-  querySelector('#onCurrentUser').onClick.listen((_) async {
+  querySelector('#onCurrentUser')!.onClick.listen((_) async {
     write('wait for first onCurrentUser');
     write('onCurrentUser ${await auth.onCurrentUser.first}');
   });
-  querySelector('#reloadWithDelay').onClick.listen((_) async {
+  querySelector('#reloadWithDelay')!.onClick.listen((_) async {
     window.location.href = 'example_auth.html?delay=3000';
   });
 }

@@ -3,63 +3,62 @@ import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:test/test.dart';
 
 class UserRecordMock implements UserRecord {
+  UserRecordMock({required this.uid});
+
   @override
   dynamic get customClaims => null;
 
   @override
-  bool disabled;
+  final bool disabled = false;
 
   @override
-  String displayName;
+  String? displayName;
 
   @override
-  String email;
+  String? email;
 
   @override
-  bool emailVerified;
+  bool emailVerified = false;
 
   @override
-  UserMetadata get metadata => null;
+  UserMetadata? get metadata => null;
 
   @override
-  String get passwordHash => null;
+  String? get passwordHash => null;
 
   @override
-  String get passwordSalt => null;
+  String? get passwordSalt => null;
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String get photoURL => null;
+  String? get photoURL => null;
 
   @override
-  List<UserInfo> get providerData => null;
+  List<UserInfo>? get providerData => null;
 
   @override
-  String get tokensValidAfterTime => null;
+  String? get tokensValidAfterTime => null;
 
   @override
-  String uid;
+  final String uid;
 }
 
 void main() {
   group('utils', () {
     test('userRecordToJson', () {
-      expect(userRecordToJson(UserRecordMock()), {});
-      var record = UserRecordMock()
+      expect(userRecordToJson(UserRecordMock(uid: '1')), {'uid': '1'});
+      var record = UserRecordMock(uid: '1234')
         ..displayName = 'alex'
         ..email = 'alex@alex.com'
-        ..emailVerified = true
-        ..uid = '1234'
-        ..disabled = false;
+        ..emailVerified = true;
 
       expect(userRecordToJson(record), {
         'uid': '1234',
         'displayName': 'alex',
         'email': 'alex@alex.com',
         'emailVerified': true,
-        'disabled': false
       });
     });
   });

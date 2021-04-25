@@ -3,17 +3,17 @@ import 'package:http/browser_client.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:yaml/yaml.dart';
 
-Future<AppOptions> setup() async {
+Future<AppOptions?> setup() async {
   // Load javascript
   // await loadFirebaseJs();
   var client = BrowserClient();
 
   // Load client info
   try {
-    var sample = await client.read('sample.local.config.yaml');
+    var sample = await client.read(Uri.parse('sample.local.config.yaml'));
 
     try {
-      var local = await client.read('local.config.yaml');
+      var local = await client.read(Uri.parse('local.config.yaml'));
       var map = (loadYaml(local) as Map).cast<String, dynamic>();
       var options = AppOptions.fromMap(map);
       if (options.projectId == null) {

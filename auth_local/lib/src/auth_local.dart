@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
 import 'package:tekartik_common_utils/int_utils.dart';
 import 'package:tekartik_common_utils/list_utils.dart';
 import 'package:tekartik_firebase/firebase.dart';
@@ -34,7 +33,7 @@ class ListUsersResultLocal implements ListUsersResult {
   @override
   final List<UserRecord> users;
 
-  ListUsersResultLocal({@required this.pageToken, @required this.users});
+  ListUsersResultLocal({required this.pageToken, required this.users});
 }
 
 class AuthSignInResultImpl implements AuthSignInResult {
@@ -63,73 +62,70 @@ class AuthCredentialImpl implements AuthCredential {
 }
 
 class UserRecordLocal implements UserRecord {
+  UserRecordLocal(
+      {required this.uid, this.disabled = false, this.emailVerified = true});
+
   @override
   dynamic get customClaims => null;
 
   @override
-  bool disabled;
+  final bool disabled;
 
   @override
-  String displayName;
+  String? displayName;
 
   @override
-  String email;
+  String? email;
 
   @override
-  bool emailVerified;
+  final bool emailVerified;
 
   @override
-  UserMetadata get metadata => null;
+  UserMetadata? get metadata => null;
 
   @override
-  String get passwordHash => null;
+  String? get passwordHash => null;
 
   @override
-  String get passwordSalt => null;
+  String? get passwordSalt => null;
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String get photoURL => null;
+  String? get photoURL => null;
 
   @override
-  List<UserInfo> get providerData => null;
+  List<UserInfo>? get providerData => null;
 
   @override
-  String get tokensValidAfterTime => null;
+  String? get tokensValidAfterTime => null;
 
   @override
-  String uid;
+  final String uid;
 
   UserInfo toUserInfo() {
-    return UserInfoLocal()
-      ..uid = uid
+    return UserInfoLocal(uid: uid)
       ..email = email
       ..displayName = displayName;
   }
 
   User toUser() {
-    return UserLocal()
-      ..uid = uid
+    return UserLocal(uid: uid)
       ..email = email
       ..displayName = displayName;
   }
 }
 
-UserRecordLocal localAdminUser = UserRecordLocal()
+UserRecordLocal localAdminUser = UserRecordLocal(uid: '1')
   ..displayName = 'admin'
-  ..email = 'admin@example.com'
-  ..emailVerified = true
-  ..uid = '1';
+  ..email = 'admin@example.com';
 
 User adminUserInfo = localAdminUser.toUser();
 
-UserRecordLocal localRegularUser = UserRecordLocal()
+UserRecordLocal localRegularUser = UserRecordLocal(uid: '2')
   ..displayName = 'user'
-  ..email = 'user@example.com'
-  ..emailVerified = true
-  ..uid = '2';
+  ..email = 'user@example.com';
 
 List<UserRecordLocal> allUsers = [
   localAdminUser,
@@ -138,31 +134,35 @@ List<UserRecordLocal> allUsers = [
 
 class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   @override
-  String displayName;
+  String? displayName;
 
   @override
-  String email;
+  String? email;
+
+  UserInfoLocal({required this.uid});
 
   @override
-  String get phoneNumber => null;
+  String? get phoneNumber => null;
 
   @override
-  String get photoURL => null;
+  String? get photoURL => null;
 
   @override
   String get providerId => localProviderId;
 
   @override
-  String uid;
+  final String uid;
 
   @override
   String toString() => '$uid $email $displayName';
 
   @override
-  Future<String> getIdToken({bool forceRefresh}) async => uid;
+  Future<String> getIdToken({bool? forceRefresh}) async => uid;
 }
 
 class UserLocal extends UserInfoLocal implements User {
+  UserLocal({required String uid}) : super(uid: uid);
+
   @override
   bool get emailVerified => true;
 
@@ -173,7 +173,8 @@ class UserLocal extends UserInfoLocal implements User {
 abstract class AuthLocal implements Auth {}
 
 class AuthLocalImpl with AuthMixin implements AuthLocal {
-  final AppLocal _appLocal;
+  final AppLocal? _appLocal;
+
   // ignore: unused_field
   final App _app;
 
@@ -184,8 +185,9 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
   //String get localPath => _appLocal?.localPath;
 
   @override
-  Future<ListUsersResult> listUsers({int maxResults, String pageToken}) async {
-    var startIndex = parseInt(pageToken, 0);
+  Future<ListUsersResult> listUsers(
+      {int? maxResults, String? pageToken}) async {
+    var startIndex = parseInt(pageToken, 0)!;
     var lastIndex = startIndex + (maxResults ?? 10);
     var result = ListUsersResultLocal(
         pageToken: lastIndex.toString(),
@@ -195,7 +197,7 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
   }
 
   @override
-  Future<UserRecord> getUser(String uid) async {
+  Future<UserRecord?> getUser(String? uid) async {
     for (var user in allUsers) {
       if (user.uid == uid) {
         return user;
@@ -206,15 +208,18 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
 
   @override
   Future<List<UserRecord>> getUsers(List<String> uids) async {
-    var list = <UserRecord>[];
+    var list = <UserRecord?>[];
     for (var uid in uids) {
-      list.add(await getUser(uid));
+      var user = await getUser(uid);
+      if (user != null) {
+        list.add(user);
+      }
     }
-    return list;
+    return list.cast<UserRecord>();
   }
 
   @override
-  Future<UserRecord> getUserByEmail(String email) async {
+  Future<UserRecord?> getUserByEmail(String email) async {
     for (var user in allUsers) {
       if (user.email == email) {
         return user;
@@ -225,10 +230,10 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
 
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions options}) async {
-    var localOptions = options as AuthLocalSignInOptions;
-    var uid = localOptions?._userRecordLocal?.uid;
-    var userRecord = await getUser(uid) as UserRecordLocal;
+      {AuthSignInOptions? options}) async {
+    var localOptions = options as AuthLocalSignInOptions?;
+    var uid = localOptions?._userRecordLocal.uid;
+    var userRecord = await getUser(uid) as UserRecordLocal?;
 
     if (userRecord == null) {
       throw StateError('user $uid not found');
@@ -251,13 +256,13 @@ class AuthLocalImpl with AuthMixin implements AuthLocal {
 
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken,
-      {bool checkRevoked}) async {
+      {bool? checkRevoked}) async {
     // The id token is the uid itself
     return DecodedIdTokenLocal(uid: idToken);
   }
 
   @override
-  Future<User> reloadCurrentUser() async {
+  Future<User?> reloadCurrentUser() async {
     // No-op on local
     return currentUser;
   }
@@ -267,7 +272,7 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   @override
   final String uid;
 
-  DecodedIdTokenLocal({this.uid});
+  DecodedIdTokenLocal({required this.uid});
 }
 
 class AuthServiceLocal with AuthServiceMixin implements AuthService {
@@ -287,7 +292,7 @@ class AuthServiceLocal with AuthServiceMixin implements AuthService {
   bool get supportsCurrentUser => true;
 }
 
-AuthServiceLocal _authServiceLocal;
+AuthServiceLocal? _authServiceLocal;
 
 AuthServiceLocal get authServiceLocal =>
     _authServiceLocal ??= AuthServiceLocal();
