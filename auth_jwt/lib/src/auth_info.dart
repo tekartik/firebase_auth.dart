@@ -195,11 +195,11 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
     }
   }
 
-  Future<String?> httpFetchKey(String? key) async {
+  Future<String?> httpFetchKey(String key) async {
     var jsonContent = await read(Uri.parse(
         'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'));
     var map = jsonDecode(jsonContent) as Map;
-    return map[key];
+    return map[key] as String?;
   }
 
   /// Validate using public key fetched
