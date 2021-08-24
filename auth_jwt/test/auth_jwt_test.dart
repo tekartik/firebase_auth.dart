@@ -47,7 +47,7 @@ void main() {
       expect(jwt.picture,
           'https://lh3.googleusercontent.com/-GlXO6JJAgiI/AAAAAAAAAAI/AAAAAAAAAAA/ACevoQN11E8L_4YI8-lu16tYmWfgT90Usw/mo/photo.jpg');
 
-      var fetchKey = (String key) async => keys20201009[key];
+      Future<String?> fetchKey(String key) async => keys20201009[key];
 
       try {
         await jwt.verify(fetchKey: fetchKey);

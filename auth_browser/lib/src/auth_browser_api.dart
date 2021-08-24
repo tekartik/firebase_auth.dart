@@ -22,10 +22,10 @@ abstract class AuthBrowser with AuthMixin {
   @override
   Future signOut();
 
-  @deprecated
+  @Deprecated('Use custom signing than sign with credentials instead')
   Future signInWithRedirect(AuthProvider authProvider);
 
-  @deprecated
+  @Deprecated('Use custom signing than sign with credentials instead')
   Future<UserCredential?> signInPopup(AuthProvider authProvider);
 }
 
