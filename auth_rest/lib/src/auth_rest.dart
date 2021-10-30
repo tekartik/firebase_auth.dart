@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:http/http.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart';
@@ -9,6 +7,8 @@ import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart'
     hide UserInfo;
 import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart' as api;
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
+
+import 'google_auth_rest.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
@@ -62,11 +62,16 @@ class UserCredentialImpl implements UserCredential {
   final User user;
 
   UserCredentialImpl(this.credential, this.user);
+
+  @override
+  String toString() => '$user $credential';
 }
 
 class AuthCredentialImpl implements AuthCredential {
   @override
-  String get providerId => localProviderId;
+  final String providerId;
+
+  AuthCredentialImpl({this.providerId = localProviderId});
 }
 
 class UserRecordRest implements UserRecord {
@@ -176,6 +181,8 @@ class UserRest extends UserInfoRest implements User {
 
 /// Custom auth rest
 abstract class AuthRest implements Auth {
+  Client? get client;
+
   /// Custom AuthRest
   factory AuthRest(
       {required AppRest appRest, String? rootUrl, String? servicePathBase}) {
@@ -185,6 +192,9 @@ abstract class AuthRest implements Auth {
 }
 
 class AuthRestImpl with AuthMixin implements AuthRest {
+  @override
+  Client? client;
+  AuthSignInResultRest? signInResultRest;
   final AppRest? _appRest;
 
   // ignore: unused_field
@@ -192,6 +202,16 @@ class AuthRestImpl with AuthMixin implements AuthRest {
   IdentityToolkitApi? _identitytoolkitApi;
   String? rootUrl;
   String? servicePathBase;
+
+  @override
+  User? get currentUser {
+    if (signInResultRest != null) {
+      return UserRest(
+          emailVerified: signInResultRest!.credential.user.emailVerified,
+          uid: signInResultRest!.credential.user.uid);
+    }
+    return null;
+  }
 
   IdentityToolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
         if (rootUrl != null || servicePathBase != null) {
@@ -240,16 +260,6 @@ class AuthRestImpl with AuthMixin implements AuthRest {
     return null;
   }
 
-  UserRecord toUserRecord(api.UserInfo restUserInfo) {
-    var userRecord = UserRecordRest(
-        emailVerified: restUserInfo.emailVerified ?? false, disabled: false);
-    userRecord.email = restUserInfo.email;
-    userRecord.displayName = restUserInfo.displayName;
-    userRecord.uid = restUserInfo.localId!;
-    userRecord.photoURL = restUserInfo.photoUrl;
-    return userRecord;
-  }
-
   @override
   Future<List<UserRecord>> getUsers(List<String> uids) async {
     var request = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
@@ -275,7 +285,19 @@ class AuthRestImpl with AuthMixin implements AuthRest {
   @override
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
       {AuthSignInOptions? options}) async {
-    throw UnsupportedError('signIn');
+    if (authProvider is AuthProviderRest) {
+      var result = await authProvider.signIn();
+      if (result is AuthSignInResultRest) {
+        client = result.client;
+        // Set in global too.
+        // ignore: deprecated_member_use
+        (_appRest as AppRest).client = client;
+        signInResultRest = result;
+      }
+      return result;
+    } else {
+      throw UnsupportedError('signIn');
+    }
   }
 
   @override
@@ -319,7 +341,7 @@ class AuthServiceRest with AuthServiceMixin implements AuthService {
   }
 
   @override
-  bool get supportsCurrentUser => false;
+  bool get supportsCurrentUser => true;
 }
 
 AuthServiceRest? _authServiceRest;
@@ -338,4 +360,19 @@ class AuthAccountApi {
   void dispose() {
     client.close();
   }
+}
+
+/// Extra rest information
+abstract class AuthProviderRest implements AuthProvider {
+  Future<AuthSignInResult> signIn();
+}
+
+UserRecord toUserRecord(api.UserInfo restUserInfo) {
+  var userRecord = UserRecordRest(
+      emailVerified: restUserInfo.emailVerified ?? false, disabled: false);
+  userRecord.email = restUserInfo.email;
+  userRecord.displayName = restUserInfo.displayName;
+  userRecord.uid = restUserInfo.localId!;
+  userRecord.photoURL = restUserInfo.photoUrl;
+  return userRecord;
 }

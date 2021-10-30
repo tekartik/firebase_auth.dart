@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:http/http.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';

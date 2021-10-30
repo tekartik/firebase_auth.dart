@@ -96,6 +96,24 @@ void main() {
         var decoded = await auth.verifyIdToken(idToken);
         expect(decoded.uid, localAdminUser.uid);
       });
+
+      test('newAuth', () async {
+        var auth1 = newAuthLocal();
+        var auth2 = newAuthLocal();
+        expect(auth1, isNot(auth2));
+
+        var app = newFirebaseAppLocal();
+        var service = newAuthServiceLocal();
+        auth1 = service.auth(app);
+        auth2 = service.auth(app);
+        expect(auth1, auth2);
+
+        auth2 = newAuthServiceLocal().auth(app);
+        expect(auth1, auth2);
+
+        auth2 = service.auth(newFirebaseAppLocal());
+        expect(auth1, isNot(auth2));
+      });
     });
   });
 }
