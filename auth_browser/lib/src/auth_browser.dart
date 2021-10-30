@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:firebase/firebase.dart' as native;
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
 import 'package:tekartik_firebase/firebase.dart' as common;

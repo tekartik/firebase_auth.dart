@@ -1,4 +1,4 @@
-# Copy this file as "config.local.yaml" in the same folder (.gitignored)
+# Copy this file as "local.config.yaml" in the same folder (.gitignored)
 projectId: [YOUR-FIREBASE-PROJECT-ID]
 apiKey: [YOURS]
 authDomain: [YOURS]
