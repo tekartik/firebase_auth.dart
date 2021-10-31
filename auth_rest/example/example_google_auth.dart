@@ -2,6 +2,7 @@
 import 'package:googleapis/oauth2/v2.dart';
 import 'package:googleapis_auth/auth_browser.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart';
 import 'package:tekartik_firebase_auth_rest/src/google_auth_rest_web.dart';
@@ -26,8 +27,29 @@ Future<void> main() async {
   auth = authServiceRest.auth(app) as AuthRest;
   auth.addProvider(GoogleAuthProviderRestWeb(options: options));
   write('loaded');
-  auth.onCurrentUser.listen((event) {
-    write('current user: $event');
+  auth.onCurrentUser.listen((user) async {
+    write('current user: $user');
+
+    var oauth2Api = Oauth2Api(auth.client!);
+    // oauth2Api.tokeninfo(accessToken: )
+    var tokenInfoResult = await oauth2Api.tokeninfo();
+    //write('token: ${tokenInfoResult.accessToken}');
+    write(jsonPretty(tokenInfoResult.toJson()));
+
+    var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
+    //var _identitytoolkitApi = (auth as AuthRestImpl)
+    //  .identitytoolkitApi; //IdentityToolkitApi(auth.client!);
+    final request = IdentitytoolkitRelyingpartyVerifyAssertionRequest()
+      ..returnSecureToken = true
+      ..autoCreate = true
+      ..returnIdpCredential = true
+      ..requestUri = Uri.base.toString()
+      ..returnRefreshToken;
+    var assertionResult =
+        await _identitytoolkitApi.relyingparty.verifyAssertion(request);
+    write('verifyAssertion: ${jsonPretty(assertionResult.toJson())}');
+
+    write('idToken: ${await ((user as UserInfoWithIdToken).getIdToken())}');
     //app.
   });
   /*
@@ -90,14 +112,26 @@ Future<void> main() async {
     var tokenInfoResult = await oauth2Api.tokeninfo();
     write(jsonPretty(tokenInfoResult.toJson()));
 
-    var request = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
+    // var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
+    var _identitytoolkitApi = (auth as AuthRestImpl)
+        .identitytoolkitApi; //IdentityToolkitApi(auth.client!);
+    final request = IdentitytoolkitRelyingpartyVerifyAssertionRequest()
+      ..returnSecureToken = true
+      ..autoCreate = true
+      ..returnIdpCredential = true
+      ..requestUri = Uri.base.toString();
+    var assertionResult =
+        await _identitytoolkitApi.relyingparty.verifyAssertion(request);
+    write('verifyAssertion: ${jsonPretty(assertionResult.toJson())}');
+
+    var getAccountRequest = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
       ..localId = [tokenInfoResult.userId!];
     if (debugRest) {
       print('getAccountInfoRequest2: ${jsonPretty(request.toJson())}');
     }
-    var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
-    var accountResult =
-        await _identitytoolkitApi.relyingparty.getAccountInfo(request);
+
+    var accountResult = await _identitytoolkitApi.relyingparty
+        .getAccountInfo(getAccountRequest);
 
     write('getAccountInfo: ${jsonPretty(accountResult.toJson())}');
 
@@ -135,6 +169,9 @@ Future<void> main() async {
 
        */
       var oauth2Api = Oauth2Api(client);
+      // oauth2Api.tokeninfo(accessToken: )
+      var tokenInfoResult = await oauth2Api.tokeninfo();
+      write(jsonPretty(tokenInfoResult.toJson()));
 
       // Get me special!
       final person = await oauth2Api.userinfo.get();

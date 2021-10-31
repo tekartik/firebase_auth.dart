@@ -14,6 +14,13 @@ class GoogleAuthProviderRestImpl
     with GoogleRestAuthProviderMixin
     implements GoogleAuthProviderRestWeb {
   final GoogleAuthOptions googleAuthOptions;
+  AuthClient? _authClient;
+  @override
+  AuthClient get currentAuthClient => _authClient!;
+  @override
+  AuthClient get client => _authClient!;
+  @override
+  String get apiKey => googleAuthOptions.apiKey!;
   late final List<String> scopes;
   GoogleAuthProviderRestImpl(this.googleAuthOptions, {List<String>? scopes}) {
     this.scopes = scopes ??
@@ -24,6 +31,7 @@ class GoogleAuthProviderRestImpl
           // OAuth scope
           // 'https://www.googleapis.com/auth/firebase'
           //'https://www.googleapis.com/auth/contacts.readonly',
+          'https://www.googleapis.com/auth/contacts.readonly'
         ];
   }
 
@@ -37,7 +45,7 @@ class GoogleAuthProviderRestImpl
     return _auth2flow!;
   }
 
-  StreamController<User?>? currentUserController;
+  StreamController<UserRest?>? currentUserController;
   User? _currentUser;
   User? get currentUser => _currentUser;
   @override
@@ -48,8 +56,8 @@ class GoogleAuthProviderRestImpl
       var auth2flow = await this.auth2flow;
       try {
         var client = await auth2flow.clientViaUserConsent(immediate: true);
+        _authClient = client;
         var credentials = client.credentials;
-        // devPrint('credentials: $credentials');
         _setCurrent(toUserRest(credentials));
       } catch (_) {
         _setCurrent(null);
@@ -60,15 +68,44 @@ class GoogleAuthProviderRestImpl
   }
 
   void _setCurrent(User? user) {
-    _currentUser = user;
+    _currentUser = user as UserRest?;
     var ctlr = currentUserController;
     if (ctlr != null) {
       ctlr.add(user);
     }
   }
 
+  // Future<String> getIdToken() async {}
+  Future<UserRest?> getUserMe() async {
+    return null;
+    /*
+    final SecureTokenApi secureTokenApi = SecureTokenApi(
+      client: auth._apiKeyClient,
+      accessToken: accessToken,
+      accessTokenExpirationDate: accessTokenExpirationDate,
+      refreshToken: refreshToken,
+    );
+
+    final FirebaseUser user =
+        FirebaseUser._(secureTokenApi: secureTokenApi, auth: auth);
+    final String newAccessToken = await user._getToken();
+
+    final IdentitytoolkitRelyingpartyGetAccountInfoRequest request =
+        IdentitytoolkitRelyingpartyGetAccountInfoRequest()
+          ..idToken = newAccessToken;
+
+    final GetAccountInfoResponse response =
+        await auth._firebaseAuthApi.getAccountInfo(request);
+
+    return user
+      .._isAnonymous = anonymous
+      .._updateWithUserDataResponse(response);
+     */
+  }
+
   UserRest toUserRest(AccessCredentials credentials) {
-    return UserRest(emailVerified: true, uid: '');
+    return UserRest(emailVerified: true, uid: '', provider: this)
+      ..accessCredentials = credentials;
   }
 
   @override
@@ -80,14 +117,15 @@ class GoogleAuthProviderRestImpl
     try {
       _auth2flow?.close();
       var auth2flow = await this.auth2flow;
-      //var result = await auth2flow.runHybridFlow(immediate: false);
-      var client = await auth2flow.clientViaUserConsent();
+      var runResult = await auth2flow.runHybridFlow(immediate: false);
+      var client = runResult.newClient();
+      //var client = await auth2flow.clientViaUserConsent();
 
       // devPrint('ID token: ${client.credentials.idToken}');
       client.credentialUpdates.listen((event) {
         // devPrint('update: token ${event.idToken}');
       });
-      authClient = client;
+      _authClient = authClient = client;
       // devPrint(authClient);
       // devPrint(client.credentials.accessToken);
       /*
@@ -107,12 +145,14 @@ class GoogleAuthProviderRestImpl
       // devPrint(jsonPretty(person.toJson()));
       // devPrint(auth.currentUser);
 
-      var result = AuthSignInResultRest(client: authClient)
+      var result = AuthSignInResultRest(client: authClient, provider: this)
         ..hasInfo = true
         ..credential = UserCredentialImpl(
             AuthCredentialImpl(providerId: providerId),
             UserRest(
-                uid: person.id!, emailVerified: person.verifiedEmail ?? false));
+                uid: person.id!,
+                emailVerified: person.verifiedEmail ?? false,
+                provider: this));
       return result;
     } catch (e) {
       // devPrint('error $e');
