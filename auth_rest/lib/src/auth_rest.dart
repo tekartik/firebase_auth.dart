@@ -189,9 +189,19 @@ abstract class AuthRest implements Auth {
     return AuthRestImpl(appRest,
         rootUrl: rootUrl, servicePathBase: servicePathBase);
   }
+
+  void addProvider(AuthProviderRest authProviderRest);
 }
 
-class AuthRestImpl with AuthMixin implements AuthRest {
+/// Common management
+mixin AuthRestMixin {
+  final providers = <AuthProviderRest>[];
+  void addProvider(AuthProviderRest authProviderRest) {
+    providers.add(authProviderRest);
+  }
+}
+
+class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   @override
   Client? client;
   AuthSignInResultRest? signInResultRest;
@@ -233,8 +243,16 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   //String get localPath => _appLocal?.localPath;
 
+  // Take first provider
   @override
-  Stream<User> get onCurrentUser => throw UnsupportedError('onCurrentUser');
+  Stream<User?> get onCurrentUser {
+    for (var provider in providers) {
+      try {
+        return provider.onCurrentUser;
+      } catch (_) {}
+    }
+    throw UnsupportedError('onCurrentUser');
+  }
 
   @override
   Future<ListUsersResult> listUsers(
@@ -365,6 +383,7 @@ class AuthAccountApi {
 /// Extra rest information
 abstract class AuthProviderRest implements AuthProvider {
   Future<AuthSignInResult> signIn();
+  Stream<User?> get onCurrentUser;
 }
 
 UserRecord toUserRecord(api.UserInfo restUserInfo) {

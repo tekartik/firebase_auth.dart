@@ -51,10 +51,15 @@ class GoogleAuthOptions {
   // The Client Secret obtained from the Google Cloud Console.
   String? clientSecret;
 
+  // The API key for auth
+  String? apiKey;
   String? projectId;
+
+  GoogleAuthOptions();
 
   GoogleAuthOptions.fromMap(Map<String, dynamic> map) {
     developerKey = map['developerKey']?.toString();
+    apiKey = map['apiKey']?.toString();
     clientId = map['clientId']?.toString();
     clientSecret = map['clientSecret']?.toString();
     projectId = map['projectId']?.toString();
@@ -65,7 +70,8 @@ class GoogleAuthOptions {
         'developerKey': developerKey,
         'clientId': clientId,
         'clientSecret': clientSecret,
-        'projectId': projectId
+        'projectId': projectId,
+        'apiKey': apiKey
       }.toString();
 }
 

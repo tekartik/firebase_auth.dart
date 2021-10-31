@@ -14,24 +14,72 @@ class GoogleAuthProviderRestImpl
     with GoogleRestAuthProviderMixin
     implements GoogleAuthProviderRestWeb {
   final GoogleAuthOptions googleAuthOptions;
-  GoogleAuthProviderRestImpl(this.googleAuthOptions);
+  late final List<String> scopes;
+  GoogleAuthProviderRestImpl(this.googleAuthOptions, {List<String>? scopes}) {
+    this.scopes = scopes ??
+        [
+          ...firebaseBaseScopes,
+          'https://www.googleapis.com/auth/devstorage.read_write',
+          'https://www.googleapis.com/auth/datastore',
+          // OAuth scope
+          // 'https://www.googleapis.com/auth/firebase'
+          //'https://www.googleapis.com/auth/contacts.readonly',
+        ];
+  }
+
+  BrowserOAuth2Flow? _auth2flow;
+
+  Future<BrowserOAuth2Flow> get auth2flow async {
+    var clientId = googleAuthOptions.clientId!;
+    _auth2flow ??=
+        await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
+
+    return _auth2flow!;
+  }
+
+  StreamController<User?>? currentUserController;
+  User? _currentUser;
+  User? get currentUser => _currentUser;
+  @override
+  Stream<User?> get onCurrentUser {
+    late StreamController<User?> ctlr;
+    ctlr = currentUserController ??=
+        StreamController.broadcast(onListen: () async {
+      var auth2flow = await this.auth2flow;
+      try {
+        var client = await auth2flow.clientViaUserConsent(immediate: true);
+        var credentials = client.credentials;
+        // devPrint('credentials: $credentials');
+        _setCurrent(toUserRest(credentials));
+      } catch (_) {
+        _setCurrent(null);
+      }
+    });
+
+    return ctlr.stream;
+  }
+
+  void _setCurrent(User? user) {
+    _currentUser = user;
+    var ctlr = currentUserController;
+    if (ctlr != null) {
+      ctlr.add(user);
+    }
+  }
+
+  UserRest toUserRest(AccessCredentials credentials) {
+    return UserRest(emailVerified: true, uid: '');
+  }
 
   @override
   Future<AuthSignInResult> signIn() async {
     AuthClient authClient;
-    var scopes = [
-      ...firebaseBaseScopes,
-      'https://www.googleapis.com/auth/devstorage.read_write',
-      'https://www.googleapis.com/auth/datastore',
-      // OAuth scope
-      // 'https://www.googleapis.com/auth/firebase'
-      //'https://www.googleapis.com/auth/contacts.readonly',
-    ];
-    var clientId = googleAuthOptions.clientId!;
+
+    // var clientId = googleAuthOptions.clientId!;
     // devPrint('signing in...$clientId');
     try {
-      var auth2flow =
-          await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
+      _auth2flow?.close();
+      var auth2flow = await this.auth2flow;
       //var result = await auth2flow.runHybridFlow(immediate: false);
       var client = await auth2flow.clientViaUserConsent();
 

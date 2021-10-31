@@ -1,5 +1,6 @@
 //import 'package:googleapis/people/v1.dart';
 import 'package:googleapis/oauth2/v2.dart';
+import 'package:googleapis_auth/auth_browser.dart';
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart';
@@ -23,7 +24,12 @@ Future<void> main() async {
   var app = firebaseRest.initializeApp(
       options: AppOptionsRest()..projectId = options.projectId);
   auth = authServiceRest.auth(app) as AuthRest;
+  auth.addProvider(GoogleAuthProviderRestWeb(options: options));
   write('loaded');
+  auth.onCurrentUser.listen((event) {
+    write('current user: $event');
+    //app.
+  });
   /*
   var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
@@ -101,8 +107,8 @@ Future<void> main() async {
     write(verifyResult.toJson());
 
      */
-
-    /*
+  });
+  querySelector('#rawGoogleSignIn')!.onClick.listen((_) async {
     //write('signing in');
     // var options = await setup();
     var scopes = [
@@ -116,8 +122,9 @@ Future<void> main() async {
       var auth2flow =
           await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
       //var result = await auth2flow.runHybridFlow(immediate: false);
-      var client = await auth2flow.clientViaUserConsent();
+      var client = await auth2flow.clientViaUserConsent(immediate: true);
 
+      /*
       authClient = client;
       write(authClient);
       write(client.credentials.accessToken);
@@ -125,7 +132,9 @@ Future<void> main() async {
         ..projectId = options.projectId;
       var app = await firebaseRest.initializeAppAsync(options: appOptions);
       auth = authServiceRest.auth(app);
-      var oauth2Api = Oauth2Api(authClient);
+
+       */
+      var oauth2Api = Oauth2Api(client);
 
       // Get me special!
       final person = await oauth2Api.userinfo.get();
@@ -144,8 +153,59 @@ Future<void> main() async {
     } catch (e) {
       write('signed in error $e');
     }*/
-    
-     */
+  });
+
+  querySelector('#rawGoogleCredentials')!.onClick.listen((_) async {
+    //write('signing in');
+    // var options = await setup();
+    var scopes = [
+      ...firebaseBaseScopes,
+      'https://www.googleapis.com/auth/devstorage.read_write',
+      'https://www.googleapis.com/auth/datastore'
+    ];
+    var clientId = options.clientId!;
+    write('auto signing in...$clientId');
+    try {
+      var auth2flow =
+          await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
+      //var result = await auth2flow.runHybridFlow(immediate: false);
+      write('#2');
+      var credentials = await auth2flow.obtainAccessCredentialsViaUserConsent(
+          immediate: true);
+      write('#3');
+      write(credentials.accessToken);
+      var authClient = await auth2flow.clientViaUserConsent(immediate: true);
+
+      /*
+      authClient = client;
+      write(authClient);
+      write(client.credentials.accessToken);
+      var appOptions = AppOptionsRest(client: authClient)
+        ..projectId = options.projectId;
+      var app = await firebaseRest.initializeAppAsync(options: appOptions);
+      auth = authServiceRest.auth(app);
+
+       */
+
+      var oauth2Api = Oauth2Api(authClient);
+
+      // Get me special!
+      final person = await oauth2Api.userinfo.get();
+      write(jsonPretty(person.toJson()));
+      //write(auth.currentUser);
+    } catch (e) {
+      write('error $e');
+    }
+    write('signing done');
+
+    /*
+    write('signing in...');
+    try {
+      var result = await auth.signIn(GoogleAuthProvider());
+      write('signed in result $result');
+    } catch (e) {
+      write('signed in error $e');
+    }*/
   });
 /*
   querySelector('#googleSignInWithPopup')!.onClick.listen((_) async {

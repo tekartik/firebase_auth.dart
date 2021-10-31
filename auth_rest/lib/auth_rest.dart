@@ -1,7 +1,10 @@
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart' as auth_rest;
+
 export 'package:tekartik_firebase_auth_rest/src/auth_rest.dart'
     show AuthRest, AuthRestProvider, UserRecordRest;
+export 'package:tekartik_firebase_auth_rest/src/google_auth_rest.dart'
+    show GoogleAuthOptions;
 
 AuthService get authServiceRest => auth_rest.authService;
 AuthService get authService => authServiceRest;
