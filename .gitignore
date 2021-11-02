@@ -22,3 +22,4 @@ local.*
 
 # Local
 .local/
+/auth_rest/deploy/

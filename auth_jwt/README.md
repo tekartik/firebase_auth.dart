@@ -14,9 +14,9 @@ https://firebase.google.com/docs/auth/admin/verify-id-tokens#verify_id_tokens_us
 dependencies:
   tekartik_firebase_auth_jwt:
     git:
-      url: git://github.com/tekartik/firebase_auth.dart
+      url: https://github.com/tekartik/firebase_auth.dart
       path: auth_jwt
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.1.1'
 ```
 

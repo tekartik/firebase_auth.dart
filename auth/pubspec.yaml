@@ -11,14 +11,14 @@ dependencies:
   meta:
   tekartik_firebase:
     git:
-      url: git://github.com/tekartik/firebase.dart
+      url: https://github.com/tekartik/firebase.dart
       path: firebase
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.4.0+0'
   tekartik_common_utils:
     git:
-      url: git://github.com/tekartik/common_utils.dart
-      ref: null_safety
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart2_3
     version: '>=0.10.2+1'
 
 dev_dependencies:

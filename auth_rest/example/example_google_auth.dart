@@ -45,9 +45,25 @@ Future<void> main() async {
       ..returnIdpCredential = true
       ..requestUri = Uri.base.toString()
       ..returnRefreshToken;
+    var providerId = 'google.com';
+    var authToken = (auth.client as AuthClient).credentials.accessToken.data;
+    request
+          ..postBody =
+              'providerId=$providerId&access_token=$authToken' //&oauth_token_secret=$authTokenSecret'
+        //..requestUri = 'http://localhost'
+        ;
     var assertionResult =
         await _identitytoolkitApi.relyingparty.verifyAssertion(request);
     write('verifyAssertion: ${jsonPretty(assertionResult.toJson())}');
+    var idToken = assertionResult.idToken!;
+    final IdentitytoolkitRelyingpartyGetAccountInfoRequest
+        getAccountInfoRequest =
+        IdentitytoolkitRelyingpartyGetAccountInfoRequest()..idToken = idToken;
+
+    final GetAccountInfoResponse response = await _identitytoolkitApi
+        .relyingparty
+        .getAccountInfo(getAccountInfoRequest);
+    write('getAccountInfo: ${jsonPretty(response.toJson())}');
 
     write('idToken: ${await ((user as UserInfoWithIdToken).getIdToken())}');
     //app.
