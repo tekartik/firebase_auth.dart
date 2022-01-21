@@ -23,6 +23,5 @@ dev_dependencies:
 
   test:
   dev_test:
-  pedantic:
 
 
