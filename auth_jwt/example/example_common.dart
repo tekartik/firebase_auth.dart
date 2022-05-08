@@ -1,6 +1,6 @@
 import 'dart:html';
 
-import 'package:tekartik_common_utils/out_buffer.dart';
+import 'package:tekartik_firebase_auth_jwt/src/import.dart';
 
 OutBuffer _outBuffer = OutBuffer(100);
 Element? _output = document.getElementById('output');

@@ -1,6 +1,7 @@
 //import 'package:googleapis/people/v1.dart';
 import 'package:googleapis/oauth2/v2.dart';
 import 'package:googleapis_auth/auth_browser.dart';
+// ignore: depend_on_referenced_packages
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
@@ -36,6 +37,7 @@ Future<void> main() async {
     //write('token: ${tokenInfoResult.accessToken}');
     write(jsonPretty(tokenInfoResult.toJson()));
 
+    // ignore: no_leading_underscores_for_local_identifiers
     var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
     //var _identitytoolkitApi = (auth as AuthRestImpl)
     //  .identitytoolkitApi; //IdentityToolkitApi(auth.client!);
@@ -126,6 +128,7 @@ Future<void> main() async {
     write(jsonPretty(tokenInfoResult.toJson()));
 
     // var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
+    // ignore: no_leading_underscores_for_local_identifiers
     var _identitytoolkitApi = (auth as AuthRestImpl)
         .identitytoolkitApi; //IdentityToolkitApi(auth.client!);
     final request = IdentitytoolkitRelyingpartyVerifyAssertionRequest()
@@ -306,6 +309,7 @@ Future<void> main() async {
     if (debugRest) {
       print('getAccountInfoRequest: ${jsonPretty(request.toJson())}');
     }
+    // ignore: no_leading_underscores_for_local_identifiers
     var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
     var result = await _identitytoolkitApi.relyingparty.getAccountInfo(request);
     // var api = IdentityToolkitApi(auth.client!);

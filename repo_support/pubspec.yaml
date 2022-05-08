@@ -20,7 +20,7 @@ dev_dependencies:
       url: https://github.com/tekartik/build_utils.dart
       ref: dart2_3
     version: '>=0.7.8'
-
+  fs_shim:
   test:
   dev_test:
 

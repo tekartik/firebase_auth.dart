@@ -1,7 +1,6 @@
 import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:http/http.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart'
@@ -10,6 +9,7 @@ import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart' as api;
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
 
 import 'google_auth_rest.dart';
+import 'import.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
@@ -186,7 +186,7 @@ class UserRest extends UserInfoRest implements User {
 
   @override
   String toString() {
-    return super.toString() + ', emailVerified: $emailVerified';
+    return '${super}, emailVerified: $emailVerified';
   }
 }
 
@@ -207,6 +207,7 @@ abstract class AuthRest implements Auth {
 /// Common management
 mixin AuthRestMixin {
   final providers = <AuthProviderRest>[];
+
   void addProvider(AuthProviderRest authProviderRest) {
     providers.add(authProviderRest);
   }
@@ -399,7 +400,9 @@ class AuthAccountApi {
 /// Extra rest information
 abstract class AuthProviderRest implements AuthProvider {
   Future<AuthSignInResult> signIn();
+
   Stream<User?> get onCurrentUser;
+
   Future<String> getIdToken({bool? forceRefresh});
 
   /// Current auto client

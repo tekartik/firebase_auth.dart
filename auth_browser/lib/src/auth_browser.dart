@@ -1,14 +1,10 @@
-import 'package:firebase/firebase.dart' as native;
 import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
-import 'package:tekartik_firebase/firebase.dart' as common;
-import 'package:tekartik_firebase_auth/auth.dart';
-import 'package:tekartik_firebase_auth/src/auth.dart';
-import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
-import 'package:tekartik_firebase_browser/src/firebase_browser.dart'
-    as firebase_browser;
 
 import 'auth_browser_api.dart';
-// ignore_for_file: implementation_imports
+import 'import_browser.dart';
+import 'import_browser.dart' as firebase_browser;
+import 'import_browser.dart' as common;
+import 'import_native.dart' as native;
 
 abstract class GoogleAuthProvider extends AuthProvider {
   factory GoogleAuthProvider() => GoogleAuthProviderImpl();
@@ -146,21 +142,21 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
   AuthBrowserImpl(this.nativeAuth) {
     // Handle the case where we never receive the information
     // This happens if we register late, simple wait 5s
-    var _seeded = false;
+    var seeded = false;
     // Register right away to feed our current user controller
     final nativeCurrentUser = nativeAuth.currentUser;
     // Handle when already known on start
     if (nativeCurrentUser != null) {
-      _seeded = true;
+      seeded = true;
       currentUserAdd(wrapUser(nativeCurrentUser));
     }
     onAuthStateChangedSubscription = onAuthStateChanged.listen((user) {
-      _seeded = true;
+      seeded = true;
       currentUserAdd(user);
     });
-    if (!_seeded) {
+    if (!seeded) {
       sleep(3000).then((_) {
-        if (!_seeded) {
+        if (!seeded) {
           currentUserAdd(null);
         }
       });

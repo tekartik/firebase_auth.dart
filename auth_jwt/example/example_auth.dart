@@ -15,6 +15,7 @@ void main() async {
   write('require :$hasRequire');
   var options = await setup();
   write('loaded');
+  // ignore: deprecated_member_use
   var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
 
@@ -61,6 +62,7 @@ void main() async {
     write('signed out');
   });
 
+  // ignore: no_leading_underscores_for_local_identifiers
   GoogleAuthProvider? _authPovider;
   GoogleAuthProvider getAuthPovider() =>
       _authPovider ??

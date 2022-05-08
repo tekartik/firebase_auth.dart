@@ -15,13 +15,17 @@ class GoogleAuthProviderRestImpl
     implements GoogleAuthProviderRestWeb {
   final GoogleAuthOptions googleAuthOptions;
   AuthClient? _authClient;
+
   @override
   AuthClient get currentAuthClient => _authClient!;
+
   @override
   AuthClient get client => _authClient!;
+
   @override
   String get apiKey => googleAuthOptions.apiKey!;
   late final List<String> scopes;
+
   GoogleAuthProviderRestImpl(this.googleAuthOptions, {List<String>? scopes}) {
     this.scopes = scopes ??
         [
@@ -47,7 +51,9 @@ class GoogleAuthProviderRestImpl
 
   StreamController<UserRest?>? currentUserController;
   User? _currentUser;
+
   User? get currentUser => _currentUser;
+
   @override
   Stream<User?> get onCurrentUser {
     late StreamController<User?> ctlr;

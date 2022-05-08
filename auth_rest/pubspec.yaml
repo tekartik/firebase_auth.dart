@@ -27,10 +27,13 @@ dependencies:
       ref: dart2_3
     version: '>=0.3.0'
   googleapis_auth:
+  googleapis:
   tekartik_common_utils:
     git:
       url: https://github.com/tekartik/common_utils.dart
       ref: dart2_3
+  http:
+  yaml:
 dev_dependencies:
   test: ">=1.0.0"
   tekartik_firebase_auth_test:

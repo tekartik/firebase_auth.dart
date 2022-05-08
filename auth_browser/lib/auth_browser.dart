@@ -1,6 +1,10 @@
+@Deprecated('This package will receive no further updates.')
+library tekartik_firebase_auth_browser_deprecated;
+
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_browser/src/auth_browser.dart'
     as auth_browser;
+
 export 'package:tekartik_firebase_auth_browser/src/auth_browser.dart'
     show GoogleAuthProvider;
 export 'package:tekartik_firebase_auth_browser/src/auth_browser_facebook.dart'

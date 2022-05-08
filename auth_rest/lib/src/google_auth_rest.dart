@@ -15,8 +15,8 @@ Future<UserRecord?> getUser(AuthClient client, String uid) async {
   if (debugRest) {
     print('getAccountInfoRequest2: ${jsonPretty(request.toJson())}');
   }
-  var _identitytoolkitApi = IdentityToolkitApi(client);
-  var result = await _identitytoolkitApi.relyingparty.getAccountInfo(request);
+  var identitytoolkitApi = IdentityToolkitApi(client);
+  var result = await identitytoolkitApi.relyingparty.getAccountInfo(request);
   if (debugRest) {
     print('getAccountInfo: ${jsonPretty(result.toJson())}');
   }
