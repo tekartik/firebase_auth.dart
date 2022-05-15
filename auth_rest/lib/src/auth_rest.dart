@@ -186,7 +186,7 @@ class UserRest extends UserInfoRest implements User {
 
   @override
   String toString() {
-    return '${super}, emailVerified: $emailVerified';
+    return '${super.toString()}, emailVerified: $emailVerified';
   }
 }
 
