@@ -1,6 +1,9 @@
 //import 'package:googleapis/people/v1.dart';
 import 'package:googleapis/oauth2/v2.dart';
+import 'package:googleapis_auth/auth_browser.dart';
+// ignore: depend_on_referenced_packages
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart';
 import 'package:tekartik_firebase_auth_rest/src/google_auth_rest_web.dart';
@@ -23,7 +26,47 @@ Future<void> main() async {
   var app = firebaseRest.initializeApp(
       options: AppOptionsRest()..projectId = options.projectId);
   auth = authServiceRest.auth(app) as AuthRest;
+  auth.addProvider(GoogleAuthProviderRestWeb(options: options));
   write('loaded');
+  auth.onCurrentUser.listen((user) async {
+    write('current user: $user');
+
+    var oauth2Api = Oauth2Api(auth.client!);
+    // oauth2Api.tokeninfo(accessToken: )
+    var tokenInfoResult = await oauth2Api.tokeninfo();
+    //write('token: ${tokenInfoResult.accessToken}');
+    write(jsonPretty(tokenInfoResult.toJson()));
+
+    // ignore: no_leading_underscores_for_local_identifiers
+    var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
+    //var _identitytoolkitApi = (auth as AuthRestImpl)
+    //  .identitytoolkitApi; //IdentityToolkitApi(auth.client!);
+    final request = IdentitytoolkitRelyingpartyVerifyAssertionRequest()
+      ..returnSecureToken = true
+      ..autoCreate = true
+      ..returnIdpCredential = true
+      ..requestUri = Uri.base.toString()
+      ..returnRefreshToken;
+    var providerId = 'google.com';
+    var authToken = (auth.client as AuthClient).credentials.accessToken.data;
+    request.postBody =
+            'providerId=$providerId&access_token=$authToken' //&oauth_token_secret=$authTokenSecret'
+        //..requestUri = 'http://localhost'
+        ;
+    var assertionResult =
+        await _identitytoolkitApi.relyingparty.verifyAssertion(request);
+    write('verifyAssertion: ${jsonPretty(assertionResult.toJson())}');
+    var idToken = assertionResult.idToken!;
+    final getAccountInfoRequest =
+        IdentitytoolkitRelyingpartyGetAccountInfoRequest()..idToken = idToken;
+
+    final response = await _identitytoolkitApi.relyingparty
+        .getAccountInfo(getAccountInfoRequest);
+    write('getAccountInfo: ${jsonPretty(response.toJson())}');
+
+    write('idToken: ${await ((user as UserInfoWithIdToken).getIdToken())}');
+    //app.
+  });
   /*
   var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
@@ -84,14 +127,27 @@ Future<void> main() async {
     var tokenInfoResult = await oauth2Api.tokeninfo();
     write(jsonPretty(tokenInfoResult.toJson()));
 
-    var request = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
+    // var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
+    // ignore: no_leading_underscores_for_local_identifiers
+    var _identitytoolkitApi = (auth as AuthRestImpl)
+        .identitytoolkitApi; //IdentityToolkitApi(auth.client!);
+    final request = IdentitytoolkitRelyingpartyVerifyAssertionRequest()
+      ..returnSecureToken = true
+      ..autoCreate = true
+      ..returnIdpCredential = true
+      ..requestUri = Uri.base.toString();
+    var assertionResult =
+        await _identitytoolkitApi.relyingparty.verifyAssertion(request);
+    write('verifyAssertion: ${jsonPretty(assertionResult.toJson())}');
+
+    var getAccountRequest = IdentitytoolkitRelyingpartyGetAccountInfoRequest()
       ..localId = [tokenInfoResult.userId!];
     if (debugRest) {
       print('getAccountInfoRequest2: ${jsonPretty(request.toJson())}');
     }
-    var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
-    var accountResult =
-        await _identitytoolkitApi.relyingparty.getAccountInfo(request);
+
+    var accountResult = await _identitytoolkitApi.relyingparty
+        .getAccountInfo(getAccountRequest);
 
     write('getAccountInfo: ${jsonPretty(accountResult.toJson())}');
 
@@ -101,8 +157,8 @@ Future<void> main() async {
     write(verifyResult.toJson());
 
      */
-
-    /*
+  });
+  querySelector('#rawGoogleSignIn')!.onClick.listen((_) async {
     //write('signing in');
     // var options = await setup();
     var scopes = [
@@ -116,8 +172,9 @@ Future<void> main() async {
       var auth2flow =
           await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
       //var result = await auth2flow.runHybridFlow(immediate: false);
-      var client = await auth2flow.clientViaUserConsent();
+      var client = await auth2flow.clientViaUserConsent(immediate: true);
 
+      /*
       authClient = client;
       write(authClient);
       write(client.credentials.accessToken);
@@ -125,7 +182,12 @@ Future<void> main() async {
         ..projectId = options.projectId;
       var app = await firebaseRest.initializeAppAsync(options: appOptions);
       auth = authServiceRest.auth(app);
-      var oauth2Api = Oauth2Api(authClient);
+
+       */
+      var oauth2Api = Oauth2Api(client);
+      // oauth2Api.tokeninfo(accessToken: )
+      var tokenInfoResult = await oauth2Api.tokeninfo();
+      write(jsonPretty(tokenInfoResult.toJson()));
 
       // Get me special!
       final person = await oauth2Api.userinfo.get();
@@ -144,8 +206,59 @@ Future<void> main() async {
     } catch (e) {
       write('signed in error $e');
     }*/
-    
-     */
+  });
+
+  querySelector('#rawGoogleCredentials')!.onClick.listen((_) async {
+    //write('signing in');
+    // var options = await setup();
+    var scopes = [
+      ...firebaseBaseScopes,
+      'https://www.googleapis.com/auth/devstorage.read_write',
+      'https://www.googleapis.com/auth/datastore'
+    ];
+    var clientId = options.clientId!;
+    write('auto signing in...$clientId');
+    try {
+      var auth2flow =
+          await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
+      //var result = await auth2flow.runHybridFlow(immediate: false);
+      write('#2');
+      var credentials = await auth2flow.obtainAccessCredentialsViaUserConsent(
+          immediate: true);
+      write('#3');
+      write(credentials.accessToken);
+      var authClient = await auth2flow.clientViaUserConsent(immediate: true);
+
+      /*
+      authClient = client;
+      write(authClient);
+      write(client.credentials.accessToken);
+      var appOptions = AppOptionsRest(client: authClient)
+        ..projectId = options.projectId;
+      var app = await firebaseRest.initializeAppAsync(options: appOptions);
+      auth = authServiceRest.auth(app);
+
+       */
+
+      var oauth2Api = Oauth2Api(authClient);
+
+      // Get me special!
+      final person = await oauth2Api.userinfo.get();
+      write(jsonPretty(person.toJson()));
+      //write(auth.currentUser);
+    } catch (e) {
+      write('error $e');
+    }
+    write('signing done');
+
+    /*
+    write('signing in...');
+    try {
+      var result = await auth.signIn(GoogleAuthProvider());
+      write('signed in result $result');
+    } catch (e) {
+      write('signed in error $e');
+    }*/
   });
 /*
   querySelector('#googleSignInWithPopup')!.onClick.listen((_) async {
@@ -196,6 +309,7 @@ Future<void> main() async {
     if (debugRest) {
       print('getAccountInfoRequest: ${jsonPretty(request.toJson())}');
     }
+    // ignore: no_leading_underscores_for_local_identifiers
     var _identitytoolkitApi = IdentityToolkitApi(auth.client!);
     var result = await _identitytoolkitApi.relyingparty.getAccountInfo(request);
     // var api = IdentityToolkitApi(auth.client!);

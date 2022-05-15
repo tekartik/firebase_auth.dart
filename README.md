@@ -10,9 +10,9 @@ Firebase Auth dart common interface and implementation for Browser, VM, node and
 dependencies:
   tekartik_firebase_auth_browser:
     git:
-      url: git://github.com/tekartik/firebase_auth.dart
+      url: https://github.com/tekartik/firebase_auth.dart
       path: auth_browser
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.8'
 ```
 
@@ -31,9 +31,9 @@ void main() {
 dependencies:
   tekartik_firebase_auth_node:
     git:
-      url: git://github.com/tekartik/firebase_node.dart
+      url: https://github.com/tekartik/firebase_node.dart
       path: auth_node
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.8'
 ```
 
@@ -52,9 +52,9 @@ void main() {
 dependencies:
   tekartik_firebase_auth:
     git:
-      url: git://github.com/tekartik/firebase_auth.dart
+      url: https://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.3.8'
 ```
 

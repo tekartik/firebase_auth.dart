@@ -1,6 +1,7 @@
 name: Run CI
 on:
   push:
+  workflow_dispatch:
   schedule:
     - cron: '0 0 * * 0'  # every sunday at midnight
 
@@ -15,17 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        flutter: [stable, beta, dev]
+        dart: [stable, beta, dev]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+      - uses: dart-lang/setup-dart@v1.3
         with:
-          java-version: '12.x'
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: ${{ matrix.flutter }}
-      - run: dart --version
-      - run: flutter --version
-      - run: flutter upgrade
+          sdk: ${{ matrix.dart }}
       - run: dart pub get
       - run: dart run tool/run_ci.dart

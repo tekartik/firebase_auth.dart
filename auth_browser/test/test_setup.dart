@@ -1,7 +1,7 @@
 import 'dart:async';
+
 import 'package:http/browser_client.dart';
-import 'package:tekartik_firebase/firebase.dart';
-import 'package:tekartik_firebase_browser/firebase_browser.dart';
+import 'package:tekartik_firebase_auth_browser/src/import_browser.dart';
 import 'package:yaml/yaml.dart';
 
 Future<AppOptions?> setup() async {

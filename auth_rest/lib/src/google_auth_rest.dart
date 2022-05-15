@@ -2,6 +2,7 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart';
+import 'package:tekartik_firebase_auth_rest/src/fb_api/secureapi.dart';
 import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart'
     hide UserInfo;
 
@@ -14,8 +15,8 @@ Future<UserRecord?> getUser(AuthClient client, String uid) async {
   if (debugRest) {
     print('getAccountInfoRequest2: ${jsonPretty(request.toJson())}');
   }
-  var _identitytoolkitApi = IdentityToolkitApi(client);
-  var result = await _identitytoolkitApi.relyingparty.getAccountInfo(request);
+  var identitytoolkitApi = IdentityToolkitApi(client);
+  var result = await identitytoolkitApi.relyingparty.getAccountInfo(request);
   if (debugRest) {
     print('getAccountInfo: ${jsonPretty(result.toJson())}');
   }
@@ -26,7 +27,9 @@ Future<UserRecord?> getUser(AuthClient client, String uid) async {
   return null;
 }
 
-abstract class GoogleRestAuthProviderMixin implements GoogleRestAuthProvider {
+mixin GoogleRestAuthProviderMixin implements GoogleRestAuthProvider {
+  AuthClient get client;
+  String get apiKey;
   final _scopes = <String>[];
   @override
   String get providerId => 'googleapis_auth';
@@ -36,6 +39,13 @@ abstract class GoogleRestAuthProviderMixin implements GoogleRestAuthProvider {
   @override
   void addScope(String scope) {
     _scopes.add(scope);
+  }
+
+  @override
+  Future<String> getIdToken({bool? forceRefresh}) async {
+    var secuApi = SecureTokenApi(apiKey: apiKey, client: client);
+    var token = await secuApi.getIdToken(forceRefresh: forceRefresh);
+    return token;
   }
 }
 
@@ -51,10 +61,15 @@ class GoogleAuthOptions {
   // The Client Secret obtained from the Google Cloud Console.
   String? clientSecret;
 
+  // The API key for auth
+  String? apiKey;
   String? projectId;
+
+  GoogleAuthOptions();
 
   GoogleAuthOptions.fromMap(Map<String, dynamic> map) {
     developerKey = map['developerKey']?.toString();
+    apiKey = map['apiKey']?.toString();
     clientId = map['clientId']?.toString();
     clientSecret = map['clientSecret']?.toString();
     projectId = map['projectId']?.toString();
@@ -65,11 +80,13 @@ class GoogleAuthOptions {
         'developerKey': developerKey,
         'clientId': clientId,
         'clientSecret': clientSecret,
-        'projectId': projectId
+        'projectId': projectId,
+        'apiKey': apiKey
       }.toString();
 }
 
 class AuthSignInResultRest implements AuthSignInResult {
+  final AuthProviderRest provider;
   final AuthClient client;
   @override
   late UserCredential credential;
@@ -77,7 +94,7 @@ class AuthSignInResultRest implements AuthSignInResult {
   @override
   late bool hasInfo;
 
-  AuthSignInResultRest({required this.client});
+  AuthSignInResultRest({required this.provider, required this.client});
   @override
   String toString() => 'Result($hasInfo, $credential)';
 }

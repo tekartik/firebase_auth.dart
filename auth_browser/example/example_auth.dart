@@ -1,6 +1,7 @@
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+// ignore: deprecated_member_use_from_same_package
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as fb_impl;
@@ -13,6 +14,7 @@ void main() async {
   write('require :$hasRequire');
   var options = await setup();
   write('loaded');
+  // ignore: deprecated_member_use
   var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
 

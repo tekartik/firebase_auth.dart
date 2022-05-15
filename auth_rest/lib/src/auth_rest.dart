@@ -1,6 +1,6 @@
+import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:http/http.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart'
@@ -9,6 +9,7 @@ import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart' as api;
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
 
 import 'google_auth_rest.dart';
+import 'import.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
@@ -117,13 +118,13 @@ class UserRecordRest implements UserRecord {
   late String uid;
 
   UserInfo toUserInfo() {
-    return UserInfoRest(uid: uid)
+    return UserInfoRest(uid: uid, provider: null)
       ..email = email
       ..displayName = displayName;
   }
 
   User toUser() {
-    return UserRest(uid: uid, emailVerified: emailVerified)
+    return UserRest(uid: uid, emailVerified: emailVerified, provider: null)
       ..email = email
       ..displayName = displayName;
   }
@@ -135,13 +136,15 @@ class UserRecordRest implements UserRecord {
 }
 
 class UserInfoRest implements UserInfo, UserInfoWithIdToken {
+  AccessCredentials? accessCredentials; // For current user only
+  final AuthProviderRest? provider;
   @override
   String? displayName;
 
   @override
   String? email;
 
-  UserInfoRest({required this.uid});
+  UserInfoRest({required this.uid, this.provider});
 
   @override
   String? get phoneNumber => null;
@@ -159,7 +162,12 @@ class UserInfoRest implements UserInfo, UserInfoWithIdToken {
   String toString() => '$uid $email $displayName';
 
   @override
-  Future<String> getIdToken({bool? forceRefresh}) async => uid;
+  Future<String> getIdToken({bool? forceRefresh}) async {
+    if (provider != null) {
+      return provider!.getIdToken(forceRefresh: forceRefresh);
+    }
+    throw UnsupportedError('message');
+  }
 }
 
 /// Top level class
@@ -167,15 +175,18 @@ class UserRest extends UserInfoRest implements User {
   @override
   final bool emailVerified;
 
-  UserRest({required this.emailVerified, required String uid})
-      : super(uid: uid);
+  UserRest(
+      {required this.emailVerified,
+      required String uid,
+      required AuthProviderRest? provider})
+      : super(uid: uid, provider: provider);
 
   @override
   bool get isAnonymous => false;
 
   @override
   String toString() {
-    return super.toString() + ', emailVerified: $emailVerified';
+    return '${super}, emailVerified: $emailVerified';
   }
 }
 
@@ -189,9 +200,20 @@ abstract class AuthRest implements Auth {
     return AuthRestImpl(appRest,
         rootUrl: rootUrl, servicePathBase: servicePathBase);
   }
+
+  void addProvider(AuthProviderRest authProviderRest);
 }
 
-class AuthRestImpl with AuthMixin implements AuthRest {
+/// Common management
+mixin AuthRestMixin {
+  final providers = <AuthProviderRest>[];
+
+  void addProvider(AuthProviderRest authProviderRest) {
+    providers.add(authProviderRest);
+  }
+}
+
+class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   @override
   Client? client;
   AuthSignInResultRest? signInResultRest;
@@ -205,10 +227,12 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   @override
   User? get currentUser {
-    if (signInResultRest != null) {
+    var result = signInResultRest;
+    if (result != null) {
       return UserRest(
-          emailVerified: signInResultRest!.credential.user.emailVerified,
-          uid: signInResultRest!.credential.user.uid);
+          provider: result.provider,
+          emailVerified: result.credential.user.emailVerified,
+          uid: result.credential.user.uid);
     }
     return null;
   }
@@ -233,8 +257,19 @@ class AuthRestImpl with AuthMixin implements AuthRest {
 
   //String get localPath => _appLocal?.localPath;
 
+  // Take first provider
   @override
-  Stream<User> get onCurrentUser => throw UnsupportedError('onCurrentUser');
+  Stream<User?> get onCurrentUser {
+    for (var provider in providers) {
+      try {
+        return provider.onCurrentUser.map((event) {
+          client = provider.currentAuthClient;
+          return event;
+        });
+      } catch (_) {}
+    }
+    throw UnsupportedError('onCurrentUser');
+  }
 
   @override
   Future<ListUsersResult> listUsers(
@@ -365,6 +400,13 @@ class AuthAccountApi {
 /// Extra rest information
 abstract class AuthProviderRest implements AuthProvider {
   Future<AuthSignInResult> signIn();
+
+  Stream<User?> get onCurrentUser;
+
+  Future<String> getIdToken({bool? forceRefresh});
+
+  /// Current auto client
+  AuthClient get currentAuthClient;
 }
 
 UserRecord toUserRecord(api.UserInfo restUserInfo) {

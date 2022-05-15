@@ -1,6 +1,6 @@
 name: tekartik_firebase_auth_browser
 description: Firebase auth browser
-version: 0.9.0
+version: 0.10.0
 publish_to: none
 #homepage: https://www.example.com
 #author: alex <email@example.com>
@@ -11,20 +11,20 @@ environment:
 dependencies:
   tekartik_firebase_auth:
     git:
-      url: git://github.com/tekartik/firebase_auth.dart
+      url: https://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: null_safety
+      ref: dart2_3
     version: '>=0.9.0'
   tekartik_firebase_browser:
     git:
-      url: git://github.com/tekartik/firebase.dart
+      url: https://github.com/tekartik/firebase.dart
       path: firebase_browser
-      ref: null_safety
-    version: '>=0.6.0'
+      ref: dart2_3
+    version: '>=0.9.0'
   tekartik_browser_utils:
     git:
-      url: git://github.com/tekartik/browser_utils.dart
-      ref: null_safety
+      url: https://github.com/tekartik/browser_utils.dart
+      ref: dart2_3
     version: '>=0.1.0'
   googleapis_auth:
   service_worker:
@@ -39,6 +39,12 @@ dev_dependencies:
   build_test: ">=0.10.8"
   build_web_compilers: ">=2.4.0"
   process_run: '>=0.10.3'
+  tekartik_firebase_auth_test:
+    git:
+      url: https://github.com/tekartik/firebase_auth.dart
+      path: auth_test
+      ref: dart2_3
+    version: '>=0.9.0'
 
 dependency_overrides:
   tekartik_firebase_auth:

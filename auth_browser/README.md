@@ -6,9 +6,9 @@ In your `pubspec.yaml`:
 ```yaml
 tekartik_firebase_auth_browser:
   git:
-    url: git://github.com/tekartik/firebase_auth.dart
+    url: https://github.com/tekartik/firebase_auth.dart
     path: auth_browser
-    ref: null_safety
+    ref: dart2_3
   version: '>=0.8.1'
 ```
 

@@ -1,6 +1,7 @@
-import 'package:firebase/firebase.dart' as native;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_browser/src/auth_browser.dart';
+
+import 'import_native.dart' as native;
 
 class FacebookAuthCustomParameters {
   static const displayPopup = 'popup';

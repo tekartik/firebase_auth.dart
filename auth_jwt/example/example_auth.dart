@@ -1,6 +1,7 @@
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+// ignore: deprecated_member_use
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
 import 'package:tekartik_firebase_auth_jwt/src/auth_info.dart';
 import 'package:tekartik_firebase_auth_jwt/src/scopes.dart';
@@ -15,6 +16,7 @@ void main() async {
   write('require :$hasRequire');
   var options = await setup();
   write('loaded');
+  // ignore: deprecated_member_use
   var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
 
@@ -61,6 +63,7 @@ void main() async {
     write('signed out');
   });
 
+  // ignore: no_leading_underscores_for_local_identifiers
   GoogleAuthProvider? _authPovider;
   GoogleAuthProvider getAuthPovider() =>
       _authPovider ??

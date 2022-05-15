@@ -2,7 +2,9 @@
 library tekartik_firebase_auth_browser.auth_browser_test;
 
 import 'package:tekartik_firebase_auth/auth.dart';
+// ignore: deprecated_member_use_from_same_package
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';
+// ignore: deprecated_member_use_from_same_package
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart'
     as auth_browser;
 import 'package:tekartik_firebase_auth_test/auth_test.dart';
@@ -16,6 +18,7 @@ void main() async {
   if (options == null) {
     return;
   }
+  // ignore: deprecated_member_use
   var firebase = firebaseBrowser;
 
   group('browser', () {
