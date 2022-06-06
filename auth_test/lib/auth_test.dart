@@ -50,7 +50,7 @@ void runApp(
 
     group('currentUser', () {
       test('currentUser', () async {
-        Future _checkUser(UserInfo? user) async {
+        Future checkUser(UserInfo? user) async {
           if (user != null) {
             if (user is UserInfoWithIdToken) {
               print(
@@ -62,11 +62,11 @@ void runApp(
 
         var user = auth.currentUser;
         print('currentUser: $user');
-        await _checkUser(user);
+        await checkUser(user);
 
         user = await auth.onCurrentUser.first;
         print('currentUser: $user');
-        await _checkUser(user);
+        await checkUser(user);
       });
     }, skip: !authService.supportsCurrentUser);
   });
