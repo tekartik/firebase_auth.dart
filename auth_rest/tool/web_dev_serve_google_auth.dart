@@ -9,7 +9,7 @@ Future main() async {
   print('http://localhost:$port/example_google_auth.html');
   await shell.run('''
   
-  pub global run webdev serve example:$port --auto=refresh
+  dart pub global run webdev serve example:$port --auto=refresh
   
   ''');
 }
