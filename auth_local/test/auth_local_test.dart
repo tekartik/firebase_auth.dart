@@ -62,7 +62,7 @@ void main() {
       });
 
       test('getUsers', () async {
-        expect(await auth.getUsers(<String>[]), []);
+        expect(await auth.getUsers(<String>[]), isEmpty);
         expect(
             (await auth.getUsers(['1', '2'])).map((user) => user.emailVerified),
             [true, true]);

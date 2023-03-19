@@ -65,7 +65,12 @@ class GoogleAuthOptions {
   String? apiKey;
   String? projectId;
 
-  GoogleAuthOptions();
+  GoogleAuthOptions(
+      {this.developerKey,
+      this.clientId,
+      this.clientSecret,
+      this.apiKey,
+      this.projectId});
 
   GoogleAuthOptions.fromMap(Map<String, dynamic> map) {
     developerKey = map['developerKey']?.toString();

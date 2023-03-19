@@ -24,10 +24,14 @@ Future<void> main() async {
   }
   late AuthRest auth;
   var app = firebaseRest.initializeApp(
-      options: AppOptionsRest()..projectId = options.projectId);
+      options: AppOptionsRest()
+        ..projectId = options.projectId
+        ..apiKey = options.apiKey);
   auth = authServiceRest.auth(app) as AuthRest;
-  auth.addProvider(GoogleAuthProviderRestWeb(options: options));
-  write('loaded');
+  if (options.clientId != null) {
+    auth.addProvider(GoogleAuthProviderRestWeb(options: options));
+  }
+  write('loaded, listening for rest current user');
   auth.onCurrentUser.listen((user) async {
     write('current user: $user');
 
@@ -67,6 +71,7 @@ Future<void> main() async {
     write('idToken: ${await ((user as UserInfoWithIdToken).getIdToken())}');
     //app.
   });
+  write('done');
   /*
   var firebase = fb.firebaseBrowser;
   var authService = authServiceBrowser;
