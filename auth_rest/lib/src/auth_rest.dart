@@ -263,7 +263,9 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
     for (var provider in providers) {
       try {
         return provider.onCurrentUser.map((event) {
-          client = provider.currentAuthClient;
+          if (event != null) {
+            client = provider.currentAuthClient;
+          }
           return event;
         });
       } catch (_) {}
@@ -337,7 +339,11 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
 
   @override
   Future signOut() async {
-    throw UnsupportedError('signOut');
+    try {
+      await signInResultRest?.provider.signOut();
+    } catch (e) {
+      print('signOut error $e');
+    }
   }
 
   @override
@@ -404,6 +410,8 @@ abstract class AuthProviderRest implements AuthProvider {
   Stream<User?> get onCurrentUser;
 
   Future<String> getIdToken({bool? forceRefresh});
+
+  Future<void> signOut();
 
   /// Current auto client
   AuthClient get currentAuthClient;

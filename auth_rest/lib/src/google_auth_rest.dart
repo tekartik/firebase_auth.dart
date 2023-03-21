@@ -2,7 +2,6 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart';
-import 'package:tekartik_firebase_auth_rest/src/fb_api/secureapi.dart';
 import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart'
     hide UserInfo;
 
@@ -29,8 +28,11 @@ Future<UserRecord?> getUser(AuthClient client, String uid) async {
 
 mixin GoogleRestAuthProviderMixin implements GoogleRestAuthProvider {
   AuthClient get client;
+
   String get apiKey;
+
   final _scopes = <String>[];
+
   @override
   String get providerId => 'googleapis_auth';
 
@@ -43,9 +45,23 @@ mixin GoogleRestAuthProviderMixin implements GoogleRestAuthProvider {
 
   @override
   Future<String> getIdToken({bool? forceRefresh}) async {
-    var secuApi = SecureTokenApi(apiKey: apiKey, client: client);
-    var token = await secuApi.getIdToken(forceRefresh: forceRefresh);
-    return token;
+    /*
+    devPrint(
+        'getIdToken($forceRefresh) apiKey: $apiKey ${client.credentials.accessToken}');
+    /*
+    var secureTokenApi = SecureTokenApi(apiKey: apiKey, client: client);
+    var token = await secureTokenApi.getIdToken(forceRefresh: forceRefresh);
+
+     */
+    var identitytoolkitApi = IdentityToolkitApi(client);
+    var response = await identitytoolkitApi.relyingparty
+        .verifyCustomToken(IdentitytoolkitRelyingpartyVerifyCustomTokenRequest(
+      returnSecureToken: true,
+    ));
+    return response.idToken!;
+
+     */
+    return client.credentials.accessToken.data;
   }
 }
 
@@ -56,8 +72,10 @@ abstract class GoogleRestAuthProvider implements AuthProviderRest {
 class GoogleAuthOptions {
   // The developer key needed for the picker API
   String? developerKey;
+
   // The Client ID obtained from the Google Cloud Console.
   String? clientId;
+
   // The Client Secret obtained from the Google Cloud Console.
   String? clientSecret;
 
@@ -100,6 +118,7 @@ class AuthSignInResultRest implements AuthSignInResult {
   late bool hasInfo;
 
   AuthSignInResultRest({required this.provider, required this.client});
+
   @override
   String toString() => 'Result($hasInfo, $credential)';
 }

@@ -1,9 +1,10 @@
 import 'package:googleapis/oauth2/v2.dart';
-import 'package:googleapis_auth/auth_browser.dart';
+import 'package:googleapis_auth/auth_browser.dart' as auth_browser;
+import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:http/browser_client.dart';
+import 'package:http/http.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
-//import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth_rest/src/auth_rest.dart';
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
 import 'package:yaml/yaml.dart';
@@ -27,6 +28,7 @@ class GoogleAuthProviderRestImpl
   late final List<String> scopes;
 
   GoogleAuthProviderRestImpl(this.googleAuthOptions, {List<String>? scopes}) {
+    // devPrint('GoogleAuthProviderRestImpl($googleAuthOptions, $scopes');
     this.scopes = scopes ??
         [
           ...firebaseBaseScopes,
@@ -39,16 +41,6 @@ class GoogleAuthProviderRestImpl
         ];
   }
 
-  BrowserOAuth2Flow? _auth2flow;
-
-  Future<BrowserOAuth2Flow> get auth2flow async {
-    var clientId = googleAuthOptions.clientId!;
-    _auth2flow ??=
-        await createImplicitBrowserFlow(ClientId(clientId, null), scopes);
-
-    return _auth2flow!;
-  }
-
   StreamController<UserRest?>? currentUserController;
   User? _currentUser;
 
@@ -59,12 +51,15 @@ class GoogleAuthProviderRestImpl
     late StreamController<User?> ctlr;
     ctlr = currentUserController ??=
         StreamController.broadcast(onListen: () async {
-      var auth2flow = await this.auth2flow;
+      // Get first client, next will sent through currentUserController
       try {
-        var client = await auth2flow.clientViaUserConsent(immediate: true);
-        _authClient = client;
-        var credentials = client.credentials;
-        _setCurrent(toUserRest(credentials));
+        var client = _authClient;
+        if (client != null) {
+          var credentials = client.credentials;
+          _setCurrent(toUserRest(credentials));
+        } else {
+          _setCurrent(null);
+        }
       } catch (_) {
         _setCurrent(null);
       }
@@ -75,13 +70,15 @@ class GoogleAuthProviderRestImpl
 
   void _setCurrent(User? user) {
     _currentUser = user as UserRest?;
+
     var ctlr = currentUserController;
+    // devPrint('currentUserController $ctlr');
     if (ctlr != null) {
       ctlr.add(user);
     }
   }
 
-  // Future<String> getIdToken() async {}
+  //Future<String> getIdToken() async {}
   Future<UserRest?> getUserMe() async {
     return null;
     /*
@@ -114,24 +111,42 @@ class GoogleAuthProviderRestImpl
       ..accessCredentials = credentials;
   }
 
+  void _closeClient() {
+    _authClient?.close();
+    _authClient = null;
+  }
+
   @override
   Future<AuthSignInResult> signIn() async {
-    AuthClient authClient;
-
     // var clientId = googleAuthOptions.clientId!;
-    // devPrint('signing in...$clientId');
+    // devPrint('signing in...rest_web');
     try {
-      _auth2flow?.close();
-      var auth2flow = await this.auth2flow;
-      var runResult = await auth2flow.runHybridFlow(immediate: false);
-      var client = runResult.newClient();
-      //var client = await auth2flow.clientViaUserConsent();
+      _closeClient();
+      var clientId = googleAuthOptions.clientId!;
+      // var authClientId = ClientId(clientId, googleAuthOptions.clientSecret);
+      /*
+      var responseCode = await auth_browser.requestAuthorizationCode(
+          clientId: clientId, scopes: scopes);
+      
+      devPrint(responseCode.toString());
+      var accessCredentials = await obtainAccessCredentialsViaCodeExchange(
+          Client(), authClientId, responseCode.code);
+      var authClient = auth_browser.autoRefreshingClient(
+          authClientId, accessCredentials, Client());
+          
+                 */
+      var accessCredentials = await auth_browser.requestAccessCredentials(
+          clientId: clientId, scopes: scopes);
+      var authClient = auth_browser.authenticatedClient(
+          Client(), accessCredentials,
+          closeUnderlyingClient: true);
 
+      /*
       // devPrint('ID token: ${client.credentials.idToken}');
-      client.credentialUpdates.listen((event) {
+      authClient.credentialUpdates.listen((event) {
         // devPrint('update: token ${event.idToken}');
-      });
-      _authClient = authClient = client;
+      });*/
+      _authClient = authClient;
       // devPrint(authClient);
       // devPrint(client.credentials.accessToken);
       /*
@@ -159,12 +174,24 @@ class GoogleAuthProviderRestImpl
                 uid: person.id!,
                 emailVerified: person.verifiedEmail ?? false,
                 provider: this));
+      () async {
+        var user = toUserRest(authClient.credentials);
+        // devPrint('adding user $user ($currentUserController)');
+        _setCurrent(user);
+      }()
+          .unawait();
       return result;
     } catch (e) {
       // devPrint('error $e');
       rethrow;
     }
     // devPrint('signing done');
+  }
+
+  @override
+  Future<void> signOut() async {
+    _setCurrent(null);
+    _closeClient();
   }
 }
 

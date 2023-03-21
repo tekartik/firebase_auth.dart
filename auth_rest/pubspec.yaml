@@ -26,7 +26,7 @@ dependencies:
       path: auth_jwt
       ref: dart2_3
     version: '>=0.3.0'
-  googleapis_auth:
+  googleapis_auth: '>=1.4.0'
   googleapis:
   tekartik_common_utils:
     git:
