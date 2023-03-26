@@ -73,6 +73,9 @@ class AuthCredentialImpl implements AuthCredential {
   final String providerId;
 
   AuthCredentialImpl({this.providerId = localProviderId});
+
+  @override
+  String toString() => 'AuthCredential($providerId)';
 }
 
 class UserRecordRest implements UserRecord {

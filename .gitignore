@@ -23,3 +23,4 @@ local.*
 # Local
 .local/
 /auth_rest/deploy/
+/auth_rest/example/sample.local.config_io.yaml

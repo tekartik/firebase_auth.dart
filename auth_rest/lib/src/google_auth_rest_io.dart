@@ -1,7 +1,8 @@
+import 'dart:io';
+import 'package:fs_shim/utils/io/read_write.dart';
 import 'package:googleapis/oauth2/v2.dart';
-import 'package:googleapis_auth/auth_browser.dart' as auth_browser;
+import 'package:googleapis_auth/auth_io.dart' as auth_io;
 import 'package:googleapis_auth/googleapis_auth.dart';
-import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
@@ -11,9 +12,9 @@ import 'package:yaml/yaml.dart';
 
 import 'google_auth_rest.dart';
 
-class GoogleAuthProviderRestImpl
+class GoogleAuthProviderRestIoImpl
     with GoogleRestAuthProviderMixin
-    implements GoogleAuthProviderRestWeb {
+    implements GoogleAuthProviderRestIo {
   AuthClient? _authClient;
 
   @override
@@ -25,9 +26,18 @@ class GoogleAuthProviderRestImpl
   @override
   String get apiKey => googleAuthOptions.apiKey!;
 
-  GoogleAuthProviderRestImpl(GoogleAuthOptions googleAuthOptions,
-      {List<String>? scopes}) {
+  /// Optional io path for saving credentials.
+  final String? credentialPath;
+  late auth_io.PromptUserForConsent userPrompt;
+  GoogleAuthProviderRestIoImpl(final GoogleAuthOptions googleAuthOptions,
+      {List<String>? scopes,
+      auth_io.PromptUserForConsent? userPrompt,
+      this.credentialPath}) {
     this.googleAuthOptions = googleAuthOptions;
+    this.userPrompt = userPrompt ??
+        (prompt) {
+          print('userPrompt: $prompt');
+        };
     // devPrint('GoogleAuthProviderRestImpl($googleAuthOptions, $scopes');
     this.scopes = scopes ??
         [
@@ -108,23 +118,54 @@ class GoogleAuthProviderRestImpl
     try {
       _closeClient();
       var clientId = googleAuthOptions.clientId!;
-      // var authClientId = ClientId(clientId, googleAuthOptions.clientSecret);
+      var authClientId = ClientId(clientId, googleAuthOptions.clientSecret);
       /*
       var responseCode = await auth_browser.requestAuthorizationCode(
           clientId: clientId, scopes: scopes);
-      
+
       devPrint(responseCode.toString());
       var accessCredentials = await obtainAccessCredentialsViaCodeExchange(
           Client(), authClientId, responseCode.code);
       var authClient = auth_browser.autoRefreshingClient(
           authClientId, accessCredentials, Client());
-          
+
                  */
-      var accessCredentials = await auth_browser.requestAccessCredentials(
-          clientId: clientId, scopes: scopes);
+
+      print('todo');
+      var httpClient = Client();
+
+      auth_io.AccessCredentials? accessCredentials;
+      if (credentialPath != null) {
+        var file = File(credentialPath!);
+        if (!file.existsSync()) {
+          stderr.writeln('Credential file not found, logging in');
+        } else {
+          try {
+            final yaml =
+                jsonDecode(jsonEncode(loadYaml(file.readAsStringSync())))
+                    as Map;
+            //devPrint(yaml);
+            accessCredentials = auth_io.AccessCredentials.fromJson(
+                yaml.cast<String, Object?>());
+          } catch (e, st) {
+            stderr.writeln('error $e loading credentials, logging in');
+            stderr.writeln(st);
+            // exit(1);
+          }
+        }
+      }
+      accessCredentials ??= await auth_io.obtainAccessCredentialsViaUserConsent(
+          authClientId, scopes, httpClient, userPrompt);
+
+      // devPrint('accessCredentials: ${accessCredentials.toJson()}');
+      var authClient = auth_io.autoRefreshingClient(
+          authClientId, accessCredentials, httpClient);
+      /*
+      var accessCredentials = await clientViaUserConsent(
+          clientId, scopes);
       var authClient = auth_browser.authenticatedClient(
           Client(), accessCredentials,
-          closeUnderlyingClient: true);
+          closeUnderlyingClient: true);*/
 
       /*
       // devPrint('ID token: ${client.credentials.idToken}');
@@ -148,6 +189,11 @@ class GoogleAuthProviderRestImpl
       // Get me special!
       final person = await oauth2Api.userinfo.get();
 
+      // On success, write credentials
+      if (credentialPath != null) {
+        var file = File(credentialPath!);
+        await writeString(file, jsonEncode(accessCredentials.toJson()));
+      }
       // devPrint(jsonPretty(person.toJson()));
       // devPrint(auth.currentUser);
 
@@ -180,11 +226,16 @@ class GoogleAuthProviderRestImpl
   }
 }
 
-abstract class GoogleAuthProviderRestWeb implements GoogleRestAuthProvider {
-  factory GoogleAuthProviderRestWeb({required GoogleAuthOptions options}) =>
-      GoogleAuthProviderRestImpl(options);
+abstract class GoogleAuthProviderRestIo implements GoogleRestAuthProvider {
+  factory GoogleAuthProviderRestIo(
+          {required GoogleAuthOptions options,
+          auth_io.PromptUserForConsent? userPrompt,
+          String? credentialPath}) =>
+      GoogleAuthProviderRestIoImpl(options,
+          userPrompt: userPrompt, credentialPath: credentialPath);
 }
 
+/*
 Future<GoogleAuthOptions?> loadGoogleAuthOptions() async {
   // Load javascript
   // await loadFirebaseJs();
@@ -218,3 +269,4 @@ Future<GoogleAuthOptions?> loadGoogleAuthOptions() async {
   }
   return null;
 }
+*/

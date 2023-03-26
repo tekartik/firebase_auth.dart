@@ -27,6 +27,23 @@ Future<UserRecord?> getUser(AuthClient client, String uid) async {
 }
 
 mixin GoogleRestAuthProviderMixin implements GoogleRestAuthProvider {
+  // must be initialized.
+  late final GoogleAuthOptions googleAuthOptions;
+  late final List<String> scopes;
+  UserRest? currentUser;
+
+  StreamController<UserRest?>? currentUserController;
+
+  void setCurrentUser(User? user) {
+    currentUser = user as UserRest?;
+
+    var ctlr = currentUserController;
+    // devPrint('currentUserController $ctlr');
+    if (ctlr != null) {
+      ctlr.add(user);
+    }
+  }
+
   AuthClient get client;
 
   String get apiKey;
@@ -90,12 +107,17 @@ class GoogleAuthOptions {
       this.apiKey,
       this.projectId});
 
-  GoogleAuthOptions.fromMap(Map<String, dynamic> map) {
+  GoogleAuthOptions.fromMap(Map map) {
+    // Web (?)
     developerKey = map['developerKey']?.toString();
-    apiKey = map['apiKey']?.toString();
-    clientId = map['clientId']?.toString();
-    clientSecret = map['clientSecret']?.toString();
-    projectId = map['projectId']?.toString();
+    // web/io
+    apiKey = (map['apiKey'] ?? map['api_key'])?.toString();
+    // web/io
+    clientId = (map['clientId'] ?? map['client_id'])?.toString();
+    // Web (?)
+    clientSecret = (map['clientSecret'] ?? map['client_secret'])?.toString();
+    // web/io
+    projectId = (map['projectId'] ?? map['project_id'])?.toString();
   }
 
   @override
