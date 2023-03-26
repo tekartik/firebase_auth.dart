@@ -13,6 +13,7 @@ import 'import.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
+@Deprecated('Use AuthProviderRest')
 abstract class AuthRestProvider implements AuthProvider {
   factory AuthRestProvider() {
     return AuthLocalProviderImpl();
@@ -21,6 +22,7 @@ abstract class AuthRestProvider implements AuthProvider {
 
 const localProviderId = '_local';
 
+// ignore: deprecated_member_use_from_same_package
 class AuthLocalProviderImpl implements AuthRestProvider {
   @override
   String get providerId => localProviderId;
@@ -204,21 +206,38 @@ abstract class AuthRest implements Auth {
         rootUrl: rootUrl, servicePathBase: servicePathBase);
   }
 
-  void addProvider(AuthProviderRest authProviderRest);
+  void addProviderImpl(AuthProviderRest authProviderRest);
+}
+
+/// Rest specific helper for adding a provider.
+extension AuthRestExt on Auth {
+  void addProvider(AuthProviderRest authProviderRest) =>
+      (this as AuthRest).addProviderImpl(authProviderRest);
 }
 
 /// Common management
 mixin AuthRestMixin {
   final providers = <AuthProviderRest>[];
 
-  void addProvider(AuthProviderRest authProviderRest) {
+  void addProviderImpl(AuthProviderRest authProviderRest) {
     providers.add(authProviderRest);
   }
+}
+
+class _ProviderUser {
+  final AuthProvider provider;
+  final UserRest? user;
+
+  _ProviderUser(this.provider, this.user);
 }
 
 class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   @override
   Client? client;
+
+  final _providerUserController = StreamController<_ProviderUser?>.broadcast();
+  _ProviderUser? _currentProviderUser;
+
   AuthSignInResultRest? signInResultRest;
   final AppRest? _appRest;
 
@@ -229,16 +248,7 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   String? servicePathBase;
 
   @override
-  User? get currentUser {
-    var result = signInResultRest;
-    if (result != null) {
-      return UserRest(
-          provider: result.provider,
-          emailVerified: result.credential.user.emailVerified,
-          uid: result.credential.user.uid);
-    }
-    return null;
-  }
+  User? get currentUser => _currentProviderUser?.user;
 
   IdentityToolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
         if (rootUrl != null || servicePathBase != null) {
@@ -255,25 +265,49 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
         }
       }();
 
+  void _setCurrentProviderUser(_ProviderUser? providerUser) {
+    _currentProviderUser = providerUser;
+    _providerUserController.sink.add(providerUser);
+
+    if (providerUser?.user != null) {
+      // Needed?
+      client = (providerUser!.provider as AuthProviderRest).currentAuthClient;
+    } else if (providerUser != null) {
+      if (_currentProviderUser?.provider == providerUser.provider) {
+        client = null;
+      }
+    }
+    // ignore: deprecated_member_use
+    _appRest!.client = client;
+  }
+
   AuthRestImpl(this._app, {this.rootUrl, this.servicePathBase})
-      : _appRest = (_app is AppRest ? _app : null);
+      : _appRest = (_app is AppRest ? _app : null) {
+    // Copy auth client upon connection
+
+    // Wait providers to be added.
+    Future.value(null).then((_) {
+      for (var provider in providers) {
+        () async {
+          await for (var user in provider.onCurrentUser) {
+            if (user != null) {
+              _setCurrentProviderUser(
+                  _ProviderUser(provider, user as UserRest));
+            }
+          }
+        }();
+      }
+    });
+  }
 
   //String get localPath => _appLocal?.localPath;
 
   // Take first provider
   @override
-  Stream<User?> get onCurrentUser {
-    for (var provider in providers) {
-      try {
-        return provider.onCurrentUser.map((event) {
-          if (event != null) {
-            client = provider.currentAuthClient;
-          }
-          return event;
-        });
-      } catch (_) {}
+  Stream<User?> get onCurrentUser async* {
+    await for (var providerUser in _providerUserController.stream) {
+      yield providerUser?.user;
     }
-    throw UnsupportedError('onCurrentUser');
   }
 
   @override
@@ -429,3 +463,5 @@ UserRecord toUserRecord(api.UserInfo restUserInfo) {
   userRecord.photoURL = restUserInfo.photoUrl;
   return userRecord;
 }
+
+typedef PromptUserForConsentRest = void Function(String uri);

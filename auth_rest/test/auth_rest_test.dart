@@ -28,8 +28,8 @@ Future main() async {
   group('auth_rest', () {
     if (firebase != null) {
       test('factory', () {
-        expect(authService.supportsListUsers, isFalse);
-        expect(authService.supportsCurrentUser, isFalse);
+        expect(authServiceRest.supportsListUsers, isFalse);
+        expect(authServiceRest.supportsCurrentUser, isFalse);
       });
 
       run(firebase: firebase, authService: authServiceRest);
@@ -40,7 +40,7 @@ Future main() async {
             name: 'access_token',
             options: accessTokenAppOptions);
       });
-      run(firebase: firebase, authService: authService);
+      run(firebase: firebase, authService: authServiceRest);
     }
 
     group('auth', () {
