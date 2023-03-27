@@ -281,23 +281,36 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
     _appRest!.client = client;
   }
 
+  final _currentUserInitLock = Lock();
+
   AuthRestImpl(this._app, {this.rootUrl, this.servicePathBase})
       : _appRest = (_app is AppRest ? _app : null) {
     // Copy auth client upon connection
 
+    var firstCurrentUserCompleter = Completer<_ProviderUser?>();
     // Wait providers to be added.
-    Future.value(null).then((_) {
-      for (var provider in providers) {
-        () async {
-          await for (var user in provider.onCurrentUser) {
-            if (user != null) {
-              _setCurrentProviderUser(
-                  _ProviderUser(provider, user as UserRest));
-            }
+    _currentUserInitLock.synchronized(() => Future.value(null).then((_) {
+          // Get initial user
+          var futures = <Future>[];
+          for (var provider in providers) {
+            futures.add(provider.onCurrentUser.first.then((user) {
+              if (user != null) {
+                if (!firstCurrentUserCompleter.isCompleted) {
+                  firstCurrentUserCompleter
+                      .complete(_ProviderUser(provider, user as UserRest));
+                }
+              }
+            }));
           }
-        }();
-      }
-    });
+          Future.wait(futures).then((_) {
+            if (!firstCurrentUserCompleter.isCompleted) {
+              firstCurrentUserCompleter.complete(null);
+            }
+          });
+          return firstCurrentUserCompleter.future;
+        }).then((firstCurrentUser) {
+          _setCurrentProviderUser(firstCurrentUser);
+        }));
   }
 
   //String get localPath => _appLocal?.localPath;
@@ -305,6 +318,9 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   // Take first provider
   @override
   Stream<User?> get onCurrentUser async* {
+    await _currentUserInitLock.synchronized(() {});
+    yield _currentProviderUser?.user;
+
     await for (var providerUser in _providerUserController.stream) {
       yield providerUser?.user;
     }

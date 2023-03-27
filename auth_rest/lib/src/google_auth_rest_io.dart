@@ -55,41 +55,52 @@ class GoogleAuthProviderRestIoImpl
   @override
   Stream<User?> get onCurrentUser {
     late StreamController<User?> ctlr;
-    ctlr = currentUserController ??=
-        StreamController.broadcast(onListen: () async {
-      // Get first client, next will sent through currentUserController
-      try {
-        var client = _authClient;
-        if (client == null) {
-          if (credentialPath != null) {
-            auth_io.AccessCredentials? accessCredentials;
-            var file = File(credentialPath!);
-            if (!file.existsSync()) {
-              stderr.writeln('Credential file not found, logging in');
-            } else {
-              try {
-                final yaml = jsonDecode(file.readAsStringSync()) as Map;
-                //devPrint(yaml);
-                accessCredentials = auth_io.AccessCredentials.fromJson(
-                    yaml.cast<String, Object?>());
-              } catch (e, st) {
-                stderr.writeln('error $e loading credentials, logging in');
-                stderr.writeln(st);
-                // exit(1);
+    if (currentUserController == null) {
+      ctlr = currentUserController ??=
+          StreamController.broadcast(onListen: () async {
+        // Get first client, next will sent through currentUserController
+        try {
+          var client = _authClient;
+          if (client == null) {
+            if (credentialPath != null) {
+              auth_io.AccessCredentials? accessCredentials;
+              var file = File(credentialPath!);
+              if (!file.existsSync()) {
+                stderr.writeln('Credential file not found, logging in');
+              } else {
+                try {
+                  final yaml = jsonDecode(file.readAsStringSync()) as Map;
+                  //devPrint(yaml);
+                  accessCredentials = auth_io.AccessCredentials.fromJson(
+                      yaml.cast<String, Object?>());
+                } catch (e, st) {
+                  stderr.writeln('error $e loading credentials, logging in');
+                  stderr.writeln(st);
+                  // exit(1);
+                }
+              }
+              if (accessCredentials != null) {
+                await _initWithAccessCredentials(accessCredentials);
+                return;
               }
             }
-            if (accessCredentials != null) {
-              await _initWithAccessCredentials(accessCredentials);
-              return;
-            }
+            setCurrentUser(null);
+          } else {
+            // Handle on init.
+            setCurrentUser(currentUser);
           }
-          setCurrentUser(null);
-        }
-      } catch (_) {}
-      setCurrentUser(null);
-    });
+        } catch (_) {}
+        setCurrentUser(null);
+      });
+      return ctlr.stream;
+    } else {
+      return _onCurrentUser;
+    }
+  }
 
-    return ctlr.stream;
+  Stream<User?> get _onCurrentUser async* {
+    yield currentUser;
+    yield* currentUserController!.stream;
   }
 
   //Future<String> getIdToken() async {}
