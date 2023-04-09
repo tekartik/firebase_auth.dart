@@ -11,4 +11,3 @@ pubspec.lock
 
 # auth
 /test/local.*
-/example/local.config.yaml

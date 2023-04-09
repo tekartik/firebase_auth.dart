@@ -13,6 +13,7 @@ import 'import.dart';
 
 bool debugRest = false; // devWarning(true); // false
 
+@Deprecated('Use AuthProviderRest')
 abstract class AuthRestProvider implements AuthProvider {
   factory AuthRestProvider() {
     return AuthLocalProviderImpl();
@@ -21,6 +22,7 @@ abstract class AuthRestProvider implements AuthProvider {
 
 const localProviderId = '_local';
 
+// ignore: deprecated_member_use_from_same_package
 class AuthLocalProviderImpl implements AuthRestProvider {
   @override
   String get providerId => localProviderId;
@@ -73,6 +75,9 @@ class AuthCredentialImpl implements AuthCredential {
   final String providerId;
 
   AuthCredentialImpl({this.providerId = localProviderId});
+
+  @override
+  String toString() => 'AuthCredential($providerId)';
 }
 
 class UserRecordRest implements UserRecord {
@@ -201,21 +206,38 @@ abstract class AuthRest implements Auth {
         rootUrl: rootUrl, servicePathBase: servicePathBase);
   }
 
-  void addProvider(AuthProviderRest authProviderRest);
+  void addProviderImpl(AuthProviderRest authProviderRest);
+}
+
+/// Rest specific helper for adding a provider.
+extension AuthRestExt on Auth {
+  void addProvider(AuthProviderRest authProviderRest) =>
+      (this as AuthRest).addProviderImpl(authProviderRest);
 }
 
 /// Common management
 mixin AuthRestMixin {
   final providers = <AuthProviderRest>[];
 
-  void addProvider(AuthProviderRest authProviderRest) {
+  void addProviderImpl(AuthProviderRest authProviderRest) {
     providers.add(authProviderRest);
   }
+}
+
+class _ProviderUser {
+  final AuthProvider provider;
+  final UserRest? user;
+
+  _ProviderUser(this.provider, this.user);
 }
 
 class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   @override
   Client? client;
+
+  final _providerUserController = StreamController<_ProviderUser?>.broadcast();
+  _ProviderUser? _currentProviderUser;
+
   AuthSignInResultRest? signInResultRest;
   final AppRest? _appRest;
 
@@ -226,16 +248,7 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   String? servicePathBase;
 
   @override
-  User? get currentUser {
-    var result = signInResultRest;
-    if (result != null) {
-      return UserRest(
-          provider: result.provider,
-          emailVerified: result.credential.user.emailVerified,
-          uid: result.credential.user.uid);
-    }
-    return null;
-  }
+  User? get currentUser => _currentProviderUser?.user;
 
   IdentityToolkitApi get identitytoolkitApi => _identitytoolkitApi ??= () {
         if (rootUrl != null || servicePathBase != null) {
@@ -252,23 +265,65 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
         }
       }();
 
+  void _setCurrentProviderUser(_ProviderUser? providerUser) {
+    _currentProviderUser = providerUser;
+    _providerUserController.sink.add(providerUser);
+
+    if (providerUser?.user != null) {
+      // Needed?
+      client = (providerUser!.provider as AuthProviderRest).currentAuthClient;
+    } else if (providerUser != null) {
+      if (_currentProviderUser?.provider == providerUser.provider) {
+        client = null;
+      }
+    }
+    // ignore: deprecated_member_use
+    _appRest!.client = client;
+  }
+
+  final _currentUserInitLock = Lock();
+
   AuthRestImpl(this._app, {this.rootUrl, this.servicePathBase})
-      : _appRest = (_app is AppRest ? _app : null);
+      : _appRest = (_app is AppRest ? _app : null) {
+    // Copy auth client upon connection
+
+    var firstCurrentUserCompleter = Completer<_ProviderUser?>();
+    // Wait providers to be added.
+    _currentUserInitLock.synchronized(() => Future.value(null).then((_) {
+          // Get initial user
+          var futures = <Future>[];
+          for (var provider in providers) {
+            futures.add(provider.onCurrentUser.first.then((user) {
+              if (user != null) {
+                if (!firstCurrentUserCompleter.isCompleted) {
+                  firstCurrentUserCompleter
+                      .complete(_ProviderUser(provider, user as UserRest));
+                }
+              }
+            }));
+          }
+          Future.wait(futures).then((_) {
+            if (!firstCurrentUserCompleter.isCompleted) {
+              firstCurrentUserCompleter.complete(null);
+            }
+          });
+          return firstCurrentUserCompleter.future;
+        }).then((firstCurrentUser) {
+          _setCurrentProviderUser(firstCurrentUser);
+        }));
+  }
 
   //String get localPath => _appLocal?.localPath;
 
   // Take first provider
   @override
-  Stream<User?> get onCurrentUser {
-    for (var provider in providers) {
-      try {
-        return provider.onCurrentUser.map((event) {
-          client = provider.currentAuthClient;
-          return event;
-        });
-      } catch (_) {}
+  Stream<User?> get onCurrentUser async* {
+    await _currentUserInitLock.synchronized(() {});
+    yield _currentProviderUser?.user;
+
+    await for (var providerUser in _providerUserController.stream) {
+      yield providerUser?.user;
     }
-    throw UnsupportedError('onCurrentUser');
   }
 
   @override
@@ -337,7 +392,11 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
 
   @override
   Future signOut() async {
-    throw UnsupportedError('signOut');
+    try {
+      await signInResultRest?.provider.signOut();
+    } catch (e) {
+      print('signOut error $e');
+    }
   }
 
   @override
@@ -405,6 +464,8 @@ abstract class AuthProviderRest implements AuthProvider {
 
   Future<String> getIdToken({bool? forceRefresh});
 
+  Future<void> signOut();
+
   /// Current auto client
   AuthClient get currentAuthClient;
 }
@@ -418,3 +479,5 @@ UserRecord toUserRecord(api.UserInfo restUserInfo) {
   userRecord.photoURL = restUserInfo.photoUrl;
   return userRecord;
 }
+
+typedef PromptUserForConsentRest = void Function(String uri);

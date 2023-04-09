@@ -2,6 +2,7 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth_rest/src/import.dart';
 
+@Deprecated('do not use')
 class SecureTokenApi {
   AuthClient client;
   final String apiKey;
