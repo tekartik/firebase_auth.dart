@@ -23,9 +23,9 @@ void main() async {
 
   group('browser', () {
     test('factory', () {
-      expect(authService.supportsListUsers, isFalse);
+      expect(authServiceBrowser.supportsListUsers, isFalse);
     });
-    run(firebase: firebase, authService: authService, options: options);
+    run(firebase: firebase, authService: authServiceBrowser, options: options);
 
     group('auth', () {
       var app = firebase.initializeApp(options: options, name: 'auth');
