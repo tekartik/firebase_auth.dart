@@ -4,7 +4,7 @@ version: 0.4.0
 publish_to: none
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   path: ^1.6.0
@@ -14,14 +14,14 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.4.0+0'
 
   tekartik_firebase_auth:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.1.0'
 
   rsa_pkcs: '>=1.1.2'
@@ -29,12 +29,12 @@ dependencies:
     git:
       url: https://github.com/tekartik/http.dart
       path: http
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.5.5'
   tekartik_app_crypto:
     git:
       url: https://github.com/tekartik/app_common_utils.dart
-      ref: dart2_3
+      ref: dart3a
       path: app_crypto
     version: '>=0.1.0'
 dev_dependencies:
@@ -49,18 +49,18 @@ dev_dependencies:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_browser
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.1.0'
   tekartik_firebase_auth_browser:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth_browser
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.1.0'
   tekartik_browser_utils:
     git:
       url: https://github.com/tekartik/browser_utils.dart
-      ref: dart2_3
+      ref: dart3a
     version: '>=0.1.0'
 dependency_overrides:
 #  tekartik_firebase_auth_browser:
