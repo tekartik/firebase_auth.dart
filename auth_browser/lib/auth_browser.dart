@@ -13,4 +13,5 @@ export 'package:tekartik_firebase_auth_browser/src/auth_browser_facebook.dart'
 export 'auth_browser_api.dart';
 
 AuthService get authServiceBrowser => auth_browser.authService;
+@Deprecated('Use authServiceBrowser')
 AuthService get authService => authServiceBrowser;
