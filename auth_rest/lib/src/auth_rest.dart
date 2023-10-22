@@ -182,9 +182,8 @@ class UserRest extends UserInfoRest implements User {
 
   UserRest(
       {required this.emailVerified,
-      required String uid,
-      required AuthProviderRest? provider})
-      : super(uid: uid, provider: provider);
+      required super.uid,
+      required super.provider});
 
   @override
   bool get isAnonymous => false;

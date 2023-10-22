@@ -7,7 +7,7 @@ import 'package:tekartik_firebase_auth_jwt/src/import.dart';
 
 //
 class UnauthorizedDatabaseAuthException extends DatabaseAuthException {
-  UnauthorizedDatabaseAuthException(String message) : super(message);
+  UnauthorizedDatabaseAuthException(super.message);
 
   @override
   String toString() => 'UnauthorizedDatabaseAuthException($message)';

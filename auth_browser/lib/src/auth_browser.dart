@@ -87,7 +87,7 @@ class AuthCredentialImpl implements AuthCredential {
 }
 
 class UserImpl extends UserInfoBrowser implements User {
-  UserImpl(native.User nativeUser) : super(nativeUser);
+  UserImpl(super.nativeUser);
 
   @override
   bool get emailVerified => nativeUser.emailVerified;
@@ -253,7 +253,7 @@ class UserInfoBrowser implements UserInfo, UserInfoWithIdToken {
 }
 
 class UserBrowser extends UserInfoBrowser implements User {
-  UserBrowser(native.User nativeUser) : super(nativeUser);
+  UserBrowser(super.nativeUser);
 
   @override
   bool get emailVerified => nativeUser.emailVerified;
