@@ -160,7 +160,7 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
 }
 
 class UserLocal extends UserInfoLocal implements User {
-  UserLocal({required String uid}) : super(uid: uid);
+  UserLocal({required super.uid});
 
   @override
   bool get emailVerified => true;
