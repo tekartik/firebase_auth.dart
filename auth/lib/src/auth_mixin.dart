@@ -4,11 +4,12 @@ import 'package:tekartik_common_utils/stream/subject.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 
-mixin AuthServiceMixin implements AuthService {
+mixin AuthServiceMixin implements FirebaseAuthService {
   /// Most implementation need a single instance, keep it in memory!
-  static final _instances = <App, Auth?>{};
+  static final _instances = <App, FirebaseAuth?>{};
 
-  T getInstance<T extends Auth?>(App app, T Function() createIfNotFound) {
+  T getInstance<T extends FirebaseAuth?>(
+      App app, T Function() createIfNotFound) {
     var instance = _instances[app] as T?;
     if (instance == null) {
       instance = createIfNotFound();
@@ -18,7 +19,7 @@ mixin AuthServiceMixin implements AuthService {
   }
 }
 
-mixin AuthMixin implements Auth, FirebaseAppService {
+mixin AuthMixin implements FirebaseAuth, FirebaseAppService {
   final _currentUserSubject = Subject<User?>();
 
   void currentUserAdd(User? user) {

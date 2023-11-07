@@ -13,9 +13,9 @@ export 'package:tekartik_firebase_auth_rest/src/auth_rest.dart'
 export 'package:tekartik_firebase_auth_rest/src/google_auth_rest.dart'
     show GoogleAuthOptions;
 
-AuthService get authServiceRest => auth_rest.authService;
+FirebaseAuthService get authServiceRest => auth_rest.authService;
 @Deprecated('Use authServiceRest')
-AuthService get authService => authServiceRest;
+FirebaseAuthService get authService => authServiceRest;
 
 /// Build an authorization header.
 String getAuthorizationHeader(String token) => 'Bearer $token';

@@ -32,7 +32,7 @@ class AuthServiceBrowserImpl
     with AuthServiceMixin
     implements AuthServiceBrowser {
   @override
-  Auth auth(common.App app) {
+  FirebaseAuth auth(common.App app) {
     return getInstance(app, () {
       assert(app is firebase_browser.AppBrowser, 'invalid firebase app type');
       final appBrowser = app as firebase_browser.AppBrowser;
@@ -49,7 +49,7 @@ class AuthServiceBrowserImpl
 
 AuthServiceBrowser? _firebaseAuthServiceBrowser;
 
-AuthService get authService =>
+FirebaseAuthService get authService =>
     _firebaseAuthServiceBrowser ??= AuthServiceBrowserImpl();
 
 class AuthProviderImpl implements AuthProvider {

@@ -2,13 +2,19 @@ import 'dart:async';
 
 import 'package:tekartik_firebase/firebase.dart';
 
-abstract class AuthService {
+/// To deprecate: Use FirebaseAuthService
+typedef AuthService = FirebaseAuthService;
+
+/// To deprecate: Use FirebaseAuthService
+typedef Auth = FirebaseAuth;
+
+abstract class FirebaseAuthService {
   // true if it supports listing and finding users
   bool get supportsListUsers;
 
   bool get supportsCurrentUser;
 
-  Auth auth(App app);
+  FirebaseAuth auth(App app);
 }
 
 /// Represents an auth provider.
@@ -33,7 +39,7 @@ abstract class AuthSignInResult {
 
 /// Represents a Auth Database and is the entry point for all
 /// Auth operations.
-abstract class Auth {
+abstract class FirebaseAuth {
   /// Retrieves a list of users (single batch only) with a size of [maxResults]
   /// and starting from the offset as specified by [pageToken].
   ///
@@ -49,7 +55,7 @@ abstract class Auth {
   /// Gets the user data for all the users.
   Future<List<UserRecord>> getUsers(List<String> uids);
 
-  /// only if [AuthService.supportsCurrentUser] is true
+  /// only if [FirebaseAuthService.supportsCurrentUser] is true
   User? get currentUser;
 
   /// Reload user (needed after email verification)
@@ -61,7 +67,7 @@ abstract class Auth {
   /// none)
   Stream<User?> get onCurrentUser;
 
-  /// only if [AuthService.supportsCurrentUser] is true.
+  /// only if [FirebaseAuthService.supportsCurrentUser] is true.
   ///
   /// Credential can be null and the login happen later
   Future<AuthSignInResult> signIn(AuthProvider authProvider,
@@ -83,7 +89,7 @@ abstract class UserRecord {
   /// The user's custom claims object if available, typically used to define user
   /// roles and propagated to an authenticated user's ID token.
   ///
-  /// This is set via [Auth.setCustomUserClaims].
+  /// This is set via [FirebaseAuth.setCustomUserClaims].
   dynamic get customClaims;
 
   /// Whether or not the user is disabled: true for disabled; false for enabled.
@@ -108,7 +114,7 @@ abstract class UserRecord {
   /// typical when migrating from another Auth system, this will be an empty
   /// string. If no password is set, this will be`null`.
   ///
-  /// This is only available when the user is obtained from [Auth.listUsers].
+  /// This is only available when the user is obtained from [FirebaseAuth.listUsers].
   String? get passwordHash;
 
   /// The user’s password salt (base64-encoded), only if Firebase Auth hashing
@@ -118,7 +124,7 @@ abstract class UserRecord {
   /// when migrating from another Auth system, this will be an empty string.
   /// If no password is set, this will be `null`.
   ///
-  /// This is only available when the user is obtained from [Auth.listUsers].
+  /// This is only available when the user is obtained from [FirebaseAuth.listUsers].
   String? get passwordSalt;
 
   /// The user's primary phone number or `null`.
@@ -133,7 +139,7 @@ abstract class UserRecord {
   /// The date the user's tokens are valid after, formatted as a UTC string.
   ///
   /// This is updated every time the user's refresh token are revoked either from
-  /// the [Auth.revokeRefreshTokens] API or from the Firebase Auth backend on big
+  /// the [FirebaseAuth.revokeRefreshTokens] API or from the Firebase Auth backend on big
   /// account changes (password resets, password or email updates, etc).
   String? get tokensValidAfterTime;
 
@@ -221,7 +227,7 @@ abstract class ListUsersResult {
 }
 
 /// Interface representing a decoded Firebase ID token, returned from the
-/// [Auth.verifyIdToken] method.
+/// [FirebaseAuth.verifyIdToken] method.
 abstract class DecodedIdToken {
   /// The uid corresponding to the user who the ID token belonged to.
   String get uid;

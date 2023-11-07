@@ -11,12 +11,13 @@ export 'package:tekartik_firebase_auth_local/src/auth_local.dart'
         AuthLocalProvider,
         UserRecordLocal;
 
-AuthService get authServiceLocal => auth_local.authService;
+FirebaseAuthService get authServiceLocal => auth_local.authService;
 @Deprecated('Use authServiceLocal')
-AuthService get authService => authServiceLocal;
+FirebaseAuthService get authService => authServiceLocal;
 
 /// For unit test
-AuthService newAuthServiceLocal() => auth_local.AuthServiceLocal();
+FirebaseAuthService newAuthServiceLocal() => auth_local.AuthServiceLocal();
 
 /// Quick firestore test helper
-Auth newAuthLocal() => newAuthServiceLocal().auth(newFirebaseAppLocal());
+FirebaseAuth newAuthLocal() =>
+    newAuthServiceLocal().auth(newFirebaseAppLocal());
