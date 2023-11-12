@@ -29,4 +29,4 @@ abstract class AuthBrowser with AuthMixin {
   Future<UserCredential?> signInPopup(AuthProvider authProvider);
 }
 
-abstract class AuthServiceBrowser implements AuthService {}
+abstract class AuthServiceBrowser implements FirebaseAuthService {}

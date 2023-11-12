@@ -7,7 +7,7 @@ bool skipConcurrentTransactionTests = false;
 
 void run(
     {required fb.Firebase firebase,
-    required AuthService authService,
+    required FirebaseAuthService authService,
     String? name,
     fb.AppOptions? options}) {
   var app = firebase.initializeApp(name: name, options: options);
@@ -21,8 +21,8 @@ void run(
 }
 
 void runApp(
-    {required AuthService authService,
-    required Auth auth,
+    {required FirebaseAuthService authService,
+    required FirebaseAuth auth,
     required fb.App app}) {
   setUpAll(() async {});
   group('auth', () {

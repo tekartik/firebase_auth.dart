@@ -169,7 +169,7 @@ class UserLocal extends UserInfoLocal implements User {
   bool get isAnonymous => false;
 }
 
-abstract class AuthLocal implements Auth {}
+abstract class AuthLocal implements FirebaseAuth {}
 
 class AuthLocalImpl with AuthMixin implements AuthLocal {
   final AppLocal? _appLocal;
@@ -274,12 +274,12 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   DecodedIdTokenLocal({required this.uid});
 }
 
-class AuthServiceLocal with AuthServiceMixin implements AuthService {
+class AuthServiceLocal with AuthServiceMixin implements FirebaseAuthService {
   @override
   bool get supportsListUsers => true;
 
   @override
-  Auth auth(App app) {
+  FirebaseAuth auth(App app) {
     return getInstance(app, () {
       // assert(app is AppLocal, 'invalid app type - not AppLocal');
       // final appLocal = app as AppLocal;
@@ -296,4 +296,4 @@ AuthServiceLocal? _authServiceLocal;
 AuthServiceLocal get authServiceLocal =>
     _authServiceLocal ??= AuthServiceLocal();
 
-AuthService get authService => authServiceLocal;
+FirebaseAuthService get authService => authServiceLocal;

@@ -195,7 +195,7 @@ class UserRest extends UserInfoRest implements User {
 }
 
 /// Custom auth rest
-abstract class AuthRest implements Auth {
+abstract class AuthRest implements FirebaseAuth {
   Client? get client;
 
   /// Custom AuthRest
@@ -209,7 +209,7 @@ abstract class AuthRest implements Auth {
 }
 
 /// Rest specific helper for adding a provider.
-extension AuthRestExt on Auth {
+extension AuthRestExt on FirebaseAuth {
   void addProvider(AuthProviderRest authProviderRest) =>
       (this as AuthRest).addProviderImpl(authProviderRest);
 }
@@ -420,12 +420,12 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   DecodedIdTokenLocal({required this.uid});
 }
 
-class AuthServiceRest with AuthServiceMixin implements AuthService {
+class AuthServiceRest with AuthServiceMixin implements FirebaseAuthService {
   @override
   bool get supportsListUsers => false;
 
   @override
-  Auth auth(App app) {
+  FirebaseAuth auth(App app) {
     return getInstance(app, () {
       // assert(app is AppLocal, 'invalid app type - not AppLocal');
       // final appLocal = app as AppLocal;
@@ -441,7 +441,7 @@ AuthServiceRest? _authServiceRest;
 
 AuthServiceRest get authServiceLocal => _authServiceRest ??= AuthServiceRest();
 
-AuthService get authService => authServiceLocal;
+FirebaseAuthService get authService => authServiceLocal;
 
 class AuthAccountApi {
   final String apiKey;
