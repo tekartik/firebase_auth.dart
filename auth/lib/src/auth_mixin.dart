@@ -19,7 +19,9 @@ mixin AuthServiceMixin implements FirebaseAuthService {
   }
 }
 
-mixin AuthMixin implements FirebaseAuth, FirebaseAppService {
+typedef AuthMixin = FirebaseAuthMixin;
+
+mixin FirebaseAuthMixin implements FirebaseAuth, FirebaseAppService {
   final _currentUserSubject = Subject<User?>();
 
   void currentUserAdd(User? user) {
@@ -80,5 +82,12 @@ mixin AuthMixin implements FirebaseAuth, FirebaseAppService {
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked}) {
     throw UnsupportedError('$runtimeType.verifyIdToken not supported');
+  }
+
+  @override
+  Future<UserCredential> signInWithEmailAndPassword(
+      {required String email, required String password}) {
+    throw UnsupportedError(
+        '$runtimeType.signInWithEmailAndPassword not supported');
   }
 }

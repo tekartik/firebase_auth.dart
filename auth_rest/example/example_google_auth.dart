@@ -1,7 +1,9 @@
 //import 'package:googleapis/people/v1.dart';
+import 'dart:html';
+
 import 'package:googleapis/oauth2/v2.dart';
-import 'package:googleapis_auth/auth_browser.dart';
 import 'package:googleapis_auth/auth_browser.dart' as auth_browser;
+import 'package:googleapis_auth/auth_browser.dart';
 import 'package:http/http.dart';
 // ignore: depend_on_referenced_packages
 import 'package:tekartik_browser_utils/browser_utils_import.dart';

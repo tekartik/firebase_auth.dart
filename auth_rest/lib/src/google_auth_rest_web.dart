@@ -153,8 +153,8 @@ class GoogleAuthProviderRestImpl
 
       var result = AuthSignInResultRest(client: authClient, provider: this)
         ..hasInfo = true
-        ..credential = UserCredentialImpl(
-            AuthCredentialImpl(providerId: providerId),
+        ..credential = UserCredentialRestImpl(
+            AuthCredentialRestImpl(providerId: providerId),
             UserRest(
                 uid: person.id!,
                 emailVerified: person.verifiedEmail ?? false,

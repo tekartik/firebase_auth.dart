@@ -1,4 +1,4 @@
-import 'package:tekartik_browser_utils/browser_utils_import.dart' hide Blob;
+import 'package:tekartik_browser_utils/browser_utils_import.dart';
 
 import 'auth_browser_api.dart';
 import 'import_browser.dart';

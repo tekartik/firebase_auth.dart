@@ -225,8 +225,8 @@ class GoogleAuthProviderRestIoImpl
       var user = await _initWithAccessCredentials(accessCredentials);
       var result = AuthSignInResultRest(client: _authClient!, provider: this)
         ..hasInfo = true
-        ..credential = UserCredentialImpl(
-            AuthCredentialImpl(providerId: providerId), user);
+        ..credential = UserCredentialRestImpl(
+            AuthCredentialRestImpl(providerId: providerId), user);
       return result;
     } catch (e) {
       // devPrint('error $e');

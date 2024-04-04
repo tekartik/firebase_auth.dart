@@ -1,3 +1,4 @@
+import 'package:googleapis/identitytoolkit/v3.dart' as identitytoolkit_v3;
 import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:http/http.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
@@ -8,6 +9,7 @@ import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart'
 import 'package:tekartik_firebase_auth_rest/src/identitytoolkit/v3.dart' as api;
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
 
+import 'email_password_auth_rest.dart';
 import 'google_auth_rest.dart';
 import 'import.dart';
 
@@ -37,6 +39,38 @@ class AuthLocalSignInOptions implements AuthSignInOptions {
 
  */
 
+class EmailPasswordAuthProviderRest implements AuthProviderRest {
+  @override
+  // TODO: implement currentAuthClient
+  AuthClient get currentAuthClient => throw UnimplementedError();
+
+  @override
+  Future<String> getIdToken({bool? forceRefresh}) {
+    // TODO: implement getIdToken
+    throw UnimplementedError();
+  }
+
+  @override
+  // TODO: implement onCurrentUser
+  Stream<User?> get onCurrentUser => throw UnimplementedError();
+
+  @override
+  // TODO: implement providerId
+  String get providerId => throw UnimplementedError();
+
+  @override
+  Future<AuthSignInResult> signIn() {
+    // TODO: implement signIn
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> signOut() {
+    // TODO: implement signOut
+    throw UnimplementedError();
+  }
+}
+
 class ListUsersResultRest implements ListUsersResult {
   @override
   final String pageToken;
@@ -57,14 +91,28 @@ class AuthSignInResultImpl implements AuthSignInResult {
   bool get hasInfo => true;
 }
 
-class UserCredentialImpl implements UserCredential {
+const restProviderId = '_rest';
+
+abstract class AuthCredentialRest implements AuthCredential {}
+
+class AuthCredentialRestImpl implements AuthCredentialRest {
   @override
-  final AuthCredential credential;
+  final String providerId;
+
+  AuthCredentialRestImpl({this.providerId = restProviderId});
 
   @override
-  final User user;
+  String toString() => 'AuthCredentialRest($providerId)';
+}
 
-  UserCredentialImpl(this.credential, this.user);
+class UserCredentialRestImpl implements UserCredential {
+  @override
+  final AuthCredentialRestImpl credential;
+
+  @override
+  final UserRest user;
+
+  UserCredentialRestImpl(this.credential, this.user);
 
   @override
   String toString() => '$user $credential';
@@ -173,6 +221,23 @@ class UserInfoRest implements UserInfo, UserInfoWithIdToken {
     }
     throw UnsupportedError('message');
   }
+}
+
+abstract class UserCredentialRest implements UserCredential {}
+
+class UserCredentialEmailPasswordRestImpl implements UserCredentialRest {
+  final identitytoolkit_v3.VerifyPasswordResponse signInResponse;
+  @override
+  final AuthCredential credential;
+
+  @override
+  final User user;
+
+  UserCredentialEmailPasswordRestImpl(
+      this.signInResponse, this.credential, this.user);
+
+  @override
+  String toString() => '$user $credential';
 }
 
 /// Top level class
@@ -410,6 +475,37 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
   @override
   Future<User> reloadCurrentUser() {
     throw UnsupportedError('reloadCurrentUser');
+  }
+
+  @override
+  Future<UserCredential> signInWithEmailAndPassword(
+      {required String email, required String password}) async {
+    var client = EmailPasswordLoginClient(apiKey: _appRest!.options.apiKey!);
+    var apiV3 = identitytoolkit_v3.IdentityToolkitApi(client);
+    var response = await apiV3.relyingparty.verifyPassword(
+        identitytoolkit_v3.IdentitytoolkitRelyingpartyVerifyPasswordRequest()
+          ..email = email
+          ..password = password
+          ..returnSecureToken = true);
+
+    // devPrint('signInWithPassword response: ${jsonEncode(response.toJson())}');
+    var userCredential = UserCredentialEmailPasswordRestImpl(
+        response,
+        AuthCredentialRestImpl(),
+        UserRest(
+            emailVerified: false,
+            provider: EmailPasswordAuthProviderRest(),
+            uid: response.localId!));
+    // ignore: deprecated_member_use
+    _appRest!.client =
+        EmailPasswordLoggedInClient(userCredential: userCredential);
+    return UserCredentialEmailPasswordRestImpl(
+        response,
+        AuthCredentialRestImpl(),
+        UserRest(
+            emailVerified: false,
+            provider: EmailPasswordAuthProviderRest(),
+            uid: response.localId!));
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:http/http.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
