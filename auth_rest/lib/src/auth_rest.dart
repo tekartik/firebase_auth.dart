@@ -497,7 +497,7 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
             provider: EmailPasswordAuthProviderRest(),
             uid: response.localId!));
     // ignore: deprecated_member_use
-    _appRest!.client =
+    _appRest.client =
         EmailPasswordLoggedInClient(userCredential: userCredential);
     return UserCredentialEmailPasswordRestImpl(
         response,
