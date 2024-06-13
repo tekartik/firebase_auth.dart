@@ -9,13 +9,13 @@ import 'package:test/test.dart';
 
 void main() {
   var firebase = FirebaseLocal();
-  run(firebase: firebase, authService: authServiceLocal);
+  runAuthTests(firebase: firebase, authService: authServiceLocal);
 
   group('browser', () {
     test('factory', () {
       expect(authServiceLocal.supportsListUsers, isTrue);
     });
-    run(firebase: firebase, authService: authServiceLocal);
+    runAuthTests(firebase: firebase, authService: authServiceLocal);
 
     group('auth', () {
       var app = firebase.initializeApp(name: 'auth');

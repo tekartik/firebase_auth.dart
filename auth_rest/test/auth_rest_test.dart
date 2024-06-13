@@ -1,5 +1,5 @@
 @TestOn('vm')
-library tekartik_firebase_sembast.firebase_sembast_memory_test;
+library;
 
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
@@ -32,15 +32,15 @@ Future main() async {
         expect(authServiceRest.supportsCurrentUser, isFalse);
       });
 
-      run(firebase: firebase, authService: authServiceRest);
+      runAuthTests(firebase: firebase, authService: authServiceRest);
       group('access_token', () {
-        run(
+        runAuthTests(
             firebase: firebase,
             authService: authServiceRest,
             name: 'access_token',
             options: accessTokenAppOptions);
       });
-      run(firebase: firebase, authService: authServiceRest);
+      runAuthTests(firebase: firebase, authService: authServiceRest);
     }
 
     group('auth', () {

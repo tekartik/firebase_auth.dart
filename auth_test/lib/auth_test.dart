@@ -1,11 +1,24 @@
+// ignore: depend_on_referenced_packages
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
-import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:test/test.dart';
 
 bool skipConcurrentTransactionTests = false;
 
+@Deprecated('Use runAuthTests instead')
 void run(
+        {required fb.Firebase firebase,
+        required FirebaseAuthService authService,
+        String? name,
+        fb.AppOptions? options}) =>
+    runAuthTests(
+        firebase: firebase,
+        authService: authService,
+        name: name,
+        options: options);
+
+void runAuthTests(
     {required fb.Firebase firebase,
     required FirebaseAuthService authService,
     String? name,
@@ -17,23 +30,31 @@ void run(
   });
 
   var auth = authService.auth(app);
-  runApp(authService: authService, auth: auth, app: app);
+  runAuthAppTests(authService: authService, auth: auth, app: app);
 }
 
+@Deprecated('Use runAuthAppTests instead')
 void runApp(
+        {required FirebaseAuthService authService,
+        required FirebaseAuth auth,
+        required fb.App app}) =>
+    runAuthAppTests(authService: authService, auth: auth, app: app);
+void runAuthAppTests(
     {required FirebaseAuthService authService,
-    required FirebaseAuth auth,
+    FirebaseAuth? auth,
     required fb.App app}) {
+  var firebaseAuth = auth ?? authService.auth(app);
   setUpAll(() async {});
   group('auth', () {
     test('unique', () {
-      expect(authService.auth(app), auth);
+      expect(authService.auth(app), firebaseAuth);
     });
     group('listUsers', () {
       test('one', () async {
         try {
-          var user = (await auth.listUsers(maxResults: 1)).users.first!;
-          print(userRecordToJson(user));
+          var user =
+              (await firebaseAuth.listUsers(maxResults: 1)).users.firstOrNull;
+          print('user: $user');
         } catch (e) {
           // Error: Credential implementation provided to initializeApp() via the 'credential' property has insufficient permission to access the requested resource. See https://firebase.google.com/docs/admin/setup for details on how to authenticate this SDK with appropriate permissions.
           if (e.toString().contains('insufficient permission')) {
@@ -60,11 +81,11 @@ void runApp(
           }
         }
 
-        var user = auth.currentUser;
+        var user = firebaseAuth.currentUser;
         print('currentUser: $user');
         await checkUser(user);
 
-        user = await auth.onCurrentUser.first;
+        user = await firebaseAuth.onCurrentUser.first;
         print('currentUser: $user');
         await checkUser(user);
       });

@@ -1,7 +1,7 @@
 import 'package:tekartik_firebase_auth/auth.dart';
 
 Map<String, dynamic> userRecordToJson(UserRecord userRecord) {
-  var map = <String, dynamic>{'uid': userRecord.uid};
+  var map = <String, Object?>{'uid': userRecord.uid};
 
   if (userRecord.displayName != null) {
     map['displayName'] = userRecord.displayName;
