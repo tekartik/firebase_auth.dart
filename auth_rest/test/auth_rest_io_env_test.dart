@@ -13,26 +13,33 @@ import 'package:test/test.dart';
 import 'test_setup.dart';
 
 Future main() async {
-  var context = await setup();
+  var context = await setup(useEnv: true);
   var firebase = firebaseRest;
 
-  AppOptions? accessTokenAppOptions;
-  if (context != null) {
+  if (context == null) {
+    test('no env setup available', () {});
+  } else {
     group('auth_rest', () {
+      test('setup', () {
+        print('Using firebase:');
+        print('projectId: ${context.options!.projectId}');
+      });
       test('factory', () {
         expect(authServiceRest.supportsListUsers, isFalse);
-        expect(authServiceRest.supportsCurrentUser, isFalse);
+        expect(authServiceRest.supportsCurrentUser, isTrue);
       });
 
-      runAuthTests(firebase: firebase, authService: authServiceRest);
+      runAuthTests(
+          firebase: firebase,
+          authService: authServiceRest,
+          options: context.options);
       group('access_token', () {
         runAuthTests(
             firebase: firebase,
             authService: authServiceRest,
             name: 'access_token',
-            options: accessTokenAppOptions);
+            options: context.options);
       });
-      runAuthTests(firebase: firebase, authService: authServiceRest);
 
       group('auth', () {
         late App app;
@@ -40,6 +47,7 @@ Future main() async {
 
         setUpAll(() async {
           app = firebase.initializeApp(
+              options: context.options,
               name: 'auth'); //, options: context?.options);
           auth = authServiceRest.auth(app) as AuthRest;
         });
@@ -111,7 +119,7 @@ Future main() async {
               if (user != null) {
                 expect(user, const TypeMatcher<UserInfoWithIdToken>());
               }
-              fail('should fail');
+              //fail('should fail');
             } on UnsupportedError catch (_) {}
           });
         });

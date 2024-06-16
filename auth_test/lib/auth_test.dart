@@ -23,8 +23,8 @@ void runAuthTests(
     required FirebaseAuthService authService,
     String? name,
     fb.AppOptions? options}) {
-  var app = firebase.initializeApp(name: name, options: options);
-
+  var app = firebase.initializeApp(options: options, name: name);
+  setUpAll(() async {});
   tearDownAll(() {
     return app.delete();
   });

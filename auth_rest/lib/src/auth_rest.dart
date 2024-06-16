@@ -349,6 +349,7 @@ class AuthRestImpl with AuthMixin, AuthRestMixin implements AuthRest {
 
   AuthRestImpl(this._app, {this.rootUrl, this.servicePathBase})
       : _appRest = (_app is AppRest ? _app : null) {
+    client = _appRest?.client;
     // Copy auth client upon connection
 
     var firstCurrentUserCompleter = Completer<_ProviderUser?>();
@@ -523,7 +524,7 @@ class AuthServiceRest with AuthServiceMixin implements FirebaseAuthService {
   @override
   FirebaseAuth auth(App app) {
     return getInstance(app, () {
-      // assert(app is AppLocal, 'invalid app type - not AppLocal');
+      assert(app is AppRest, 'invalid app type - not AppLocal');
       // final appLocal = app as AppLocal;
       return AuthRestImpl(app);
     });
