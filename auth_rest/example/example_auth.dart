@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:http/http.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth_rest/auth_rest.dart';
@@ -9,6 +7,7 @@ import 'package:tekartik_firebase_browser/src/firebase_browser.dart' // ignore: 
     as fb_impl;
 import 'package:tekartik_firebase_browser/src/interop.dart'; // ignore: depend_on_referenced_packages
 import 'package:tekartik_firebase_rest/firebase_rest.dart';
+import 'package:web/web.dart' as web;
 
 import 'example_common.dart';
 import 'example_setup.dart';
@@ -60,13 +59,13 @@ void main() async {
   write('app ${app.name}');
   write('currentUser ${auth.currentUser}');
 
-  querySelector('#signOut')!.onClick.listen((_) async {
+  web.document.querySelector('#signOut')!.onClick.listen((_) async {
     write('signing out...');
     await auth.signOut();
     write('signed out');
   });
 
-  querySelector('#googleSignIn')!.onClick.listen((_) async {
+  web.document.querySelector('#googleSignIn')!.onClick.listen((_) async {
     write('signing in...');
     try {
       var result = await auth.signIn(GoogleAuthProvider());
@@ -76,7 +75,10 @@ void main() async {
     }
   });
 
-  querySelector('#googleSignInWithPopup')!.onClick.listen((_) async {
+  web.document
+      .querySelector('#googleSignInWithPopup')!
+      .onClick
+      .listen((_) async {
     write('popup signing in...');
     try {
       await auth.signIn(GoogleAuthProvider(),
@@ -87,7 +89,10 @@ void main() async {
     }
   });
 
-  querySelector('#googleSignInWithRedirect')!.onClick.listen((_) async {
+  web.document
+      .querySelector('#googleSignInWithRedirect')!
+      .onClick
+      .listen((_) async {
     write('signing in...');
     try {
       await auth.signIn(GoogleAuthProvider(),
@@ -98,7 +103,7 @@ void main() async {
     }
   });
 
-  querySelector('#getUser')!.onClick.listen((_) async {
+  web.document.querySelector('#getUser')!.onClick.listen((_) async {
     try {
       if (auth.currentUser?.uid == null) {
         write('Not authentified');
@@ -111,7 +116,7 @@ void main() async {
     }
   });
 
-  querySelector('#restGetUser')!.onClick.listen((_) async {
+  web.document.querySelector('#restGetUser')!.onClick.listen((_) async {
     try {
       if (auth.currentUser?.uid == null) {
         write('Not authentified');
@@ -133,16 +138,16 @@ void main() async {
       write('getUser error $e');
     }
   });
-  querySelector('#currentUser')!.onClick.listen((_) async {
+  web.document.querySelector('#currentUser')!.onClick.listen((_) async {
     write('currentUser ${auth.currentUser}');
     write('providerId: ${auth.currentUser?.providerId}');
   });
 
-  querySelector('#onCurrentUser')!.onClick.listen((_) async {
+  web.document.querySelector('#onCurrentUser')!.onClick.listen((_) async {
     write('wait for first onCurrentUser');
     write('onCurrentUser ${await auth.onCurrentUser.first}');
   });
-  querySelector('#reloadWithDelay')!.onClick.listen((_) async {
-    window.location.href = 'example_auth.html?delay=3000';
+  web.document.querySelector('#reloadWithDelay')!.onClick.listen((_) async {
+    web.window.location.href = 'example_auth.html?delay=3000';
   });
 }
