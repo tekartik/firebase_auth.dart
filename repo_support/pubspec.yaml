@@ -17,5 +17,5 @@ dev_dependencies:
     version: '>=0.7.8'
   fs_shim:
   test:
-  dev_test:
+  dev_build:
 

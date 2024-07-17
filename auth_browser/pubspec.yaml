@@ -33,7 +33,7 @@ dependencies:
 
 dev_dependencies:
   test: ">=1.5.0"
-  dev_test: '>=0.12.0-dev.1'
+  dev_build: '>=0.12.0-dev.1'
   http: any
   yaml: any
   build_runner: ">=1.6.0"

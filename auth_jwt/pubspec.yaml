@@ -41,7 +41,7 @@ dependencies:
 dev_dependencies:
   test: ^1.6.0
   yaml:
-  dev_test:
+  dev_build:
   process_run:
   build_runner:
   build_test: ">=0.10.8"
