@@ -1,25 +1,32 @@
-library tekartik_firebase_sembast.firebase_sembast_memory_test;
+// ignore_for_file: avoid_print
 
+library;
+
+import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
+import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
 import 'package:tekartik_firebase_auth_test/auth_test.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() {
   var firebase = FirebaseLocal();
-  runAuthTests(firebase: firebase, authService: authServiceLocal);
+  var databaseFactory = newDatabaseFactoryMemory();
+  var authService =
+      FirebaseAuthServiceSembast(databaseFactory: databaseFactory);
+  runAuthTests(firebase: firebase, authService: authService);
 
   group('auth', () {
     test('factory', () {
-      expect(authServiceLocal.supportsListUsers, isTrue);
+      expect(authService.supportsListUsers, isTrue);
     });
-    runAuthTests(firebase: firebase, authService: authServiceLocal);
+    runAuthTests(firebase: firebase, authService: authService);
 
     group('auth', () {
       var app = firebase.initializeApp(name: 'auth');
-      var auth = authServiceLocal.auth(app) as AuthLocal;
+      var auth = authService.auth(app) as AuthLocal;
 
       tearDownAll(() {
         return app.delete();

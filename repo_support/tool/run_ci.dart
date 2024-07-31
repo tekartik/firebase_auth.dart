@@ -9,6 +9,7 @@ Future<void> main() async {
     'auth_browser',
     'auth_jwt',
     'auth_local',
+    'auth_sembast',
     'auth_test',
   ]) {
     await packageRunCi(join(topDir, dir));

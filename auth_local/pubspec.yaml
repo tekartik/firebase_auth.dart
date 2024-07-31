@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   uuid: '>=1.0.0'
+  sembast:
   tekartik_firebase_auth:
     git:
       url: https://github.com/tekartik/firebase_auth.dart

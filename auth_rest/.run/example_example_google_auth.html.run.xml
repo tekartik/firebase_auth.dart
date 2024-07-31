@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="example/example_google_auth.html" type="DartWebdevConfigurationType" factoryName="Dart Web" nameIsGenerated="true">
-    <option name="htmlFilePath" value="$PROJECT_DIR$/example/example_google_auth.html" />
-    <option name="webdevPort" value="8060" />
-    <method v="2" />
-  </configuration>
-</component>
