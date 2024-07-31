@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_local/firebase_local.dart';
@@ -169,15 +170,19 @@ class UserLocal extends UserInfoLocal implements User {
   bool get isAnonymous => false;
 }
 
-abstract class AuthLocal implements FirebaseAuth {}
+typedef AuthLocal = FirebaseAuthLocal;
 
-class AuthLocalImpl with AuthMixin implements AuthLocal {
+abstract class FirebaseAuthLocal implements FirebaseAuth {}
+
+class AuthLocalImpl
+    with FirebaseAppProductMixin, FirebaseAuthMixin
+    implements AuthLocal {
   final AppLocal? _appLocal;
 
   // ignore: unused_field
-  final App _app;
+  final App app;
 
-  AuthLocalImpl(this._app) : _appLocal = (_app is AppLocal ? _app : null) {
+  AuthLocalImpl(this.app) : _appLocal = (app is AppLocal ? app : null) {
     currentUserAdd(adminUserInfo);
   }
 
@@ -274,7 +279,11 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   DecodedIdTokenLocal({required this.uid});
 }
 
-class AuthServiceLocal with AuthServiceMixin implements FirebaseAuthService {
+typedef AuthServiceLocal = FirebaseAuthServiceLocal;
+
+class FirebaseAuthServiceLocal
+    with FirebaseProductServiceMixin<FirebaseAuth>, FirebaseAuthServiceMixin
+    implements FirebaseAuthService {
   @override
   bool get supportsListUsers => true;
 

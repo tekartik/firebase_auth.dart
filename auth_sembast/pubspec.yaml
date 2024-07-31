@@ -9,6 +9,11 @@ environment:
 # Add regular dependencies here.
 dependencies:
   sembast: '>=3.7.1+3'
+  tekartik_app_cv_sembast:
+    git:
+      url: https://github.com/tekartik/app_common_utils.dart
+      ref: dart3a
+      path: app_cv_sembast
   tekartik_firebase:
     git:
       url: https://github.com/tekartik/firebase.dart
@@ -29,7 +34,11 @@ dependencies:
       url: https://github.com/tekartik/firebase.dart
       ref: dart3a
       path: firebase_local
-
+  path:
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart3a
 dev_dependencies:
   lints: '>=4.0.0'
   tekartik_firebase_auth_test:
@@ -44,3 +53,5 @@ dependency_overrides:
     path: ../auth_local
   tekartik_firebase_auth:
     path: ../auth
+  tekartik_firebase_auth_test:
+    path: ../auth_test

@@ -30,6 +30,11 @@ dependencies:
   service_worker:
   firebase: '>=7.0.0'
   web: '>=0.5.0'
+  tekartik_firebase:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      ref: dart3a
+      path: firebase
 
 dev_dependencies:
   test: ">=1.5.0"

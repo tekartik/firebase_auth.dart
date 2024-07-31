@@ -8,12 +8,15 @@ typedef AuthService = FirebaseAuthService;
 /// To deprecate: Use FirebaseAuthService
 typedef Auth = FirebaseAuth;
 
-abstract class FirebaseAuthService {
-  // true if it supports listing and finding users
+/// Represents a Firebase Auth service.
+abstract class FirebaseAuthService implements FirebaseProductService {
+  /// true if it supports listing and finding users
   bool get supportsListUsers;
 
+  /// true if it supports the current user
   bool get supportsCurrentUser;
 
+  /// Creates/get a [FirebaseAuth] instance.
   FirebaseAuth auth(App app);
 }
 
@@ -109,6 +112,7 @@ abstract class FirebaseAuth {
   Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked});
 }
 
+/// Represents a Firebase user record
 abstract class UserRecord {
   /// The user's custom claims object if available, typically used to define user
   /// roles and propagated to an authenticated user's ID token.
@@ -171,6 +175,7 @@ abstract class UserRecord {
   String get uid;
 }
 
+/// Additional metadata about the user.
 abstract class UserMetadata {
   /// The date the user was created, formatted as a UTC string.
   String get creationTime;
@@ -179,9 +184,12 @@ abstract class UserMetadata {
   String get lastSignInTime;
 }
 
+/// Compat
+typedef UserInfo = FirebaseUserInfo;
+
 /// Interface representing a user's info from a third-party identity provider
 /// such as Google or Facebook.
-abstract class UserInfo {
+abstract class FirebaseUserInfo {
   /// The display name for the linked provider.
   String? get displayName;
 
@@ -201,10 +209,13 @@ abstract class UserInfo {
   String get uid;
 }
 
+/// Compat
+typedef User = FirebaseUser;
+
 /// User account.
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.User>.
-abstract class User extends UserInfo {
+abstract class FirebaseUser extends UserInfo {
   /// If the user's email address has been already verified.
   bool get emailVerified;
 
@@ -212,12 +223,15 @@ abstract class User extends UserInfo {
   bool get isAnonymous;
 }
 
+/// Compat
+typedef AuthCredential = FirebaseAuthCredential;
+
 /// Represents the credentials returned by an auth provider.
 /// Implementations specify the details about each auth provider's credential
 /// requirements.
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthCredential>.
-abstract class AuthCredential {
+abstract class FirebaseAuthCredential {
   /// The authentication provider ID for the credential.
   String get providerId;
 }

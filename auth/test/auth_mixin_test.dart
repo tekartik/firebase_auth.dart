@@ -1,12 +1,21 @@
+// ignore_for_file: avoid_print
+
+import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:test/test.dart';
 
-class AuthMock with AuthMixin {
+class FirebaseAuthMock with FirebaseAppProductMixin, FirebaseAuthMixin {
   @override
   Future<User> reloadCurrentUser() {
     throw UnimplementedError();
+  }
+
+  @override
+  void dispose() {
+    currentUserClose();
+    super.dispose();
   }
 }
 
@@ -43,7 +52,7 @@ class UserMock extends UserInfoMock implements User {
 void main() {
   group('auth_mixin', () {
     test('onCurrentUserNonNull', () async {
-      var mock = AuthMock();
+      var mock = FirebaseAuthMock();
       var userInfo = UserMock();
       mock.currentUserAdd(userInfo);
       /*
@@ -52,17 +61,17 @@ void main() {
       await mock.close(null);
       */
       expect(mock.onCurrentUser, emitsInOrder([userInfo]));
-      await mock.close(null);
+      mock.dispose();
     });
 
     test('onCurrentUserNull', () async {
-      var mock = AuthMock();
+      var mock = FirebaseAuthMock();
       mock.currentUserAdd(null);
       expect(mock.onCurrentUser, emitsInOrder([null]));
-      await mock.close(null);
+      mock.dispose();
     });
     test('onCurrentUserNull2', () async {
-      var mock = AuthMock();
+      var mock = FirebaseAuthMock();
       mock.onCurrentUser.listen((userInfo) {
         print(userInfo);
       });
@@ -70,7 +79,7 @@ void main() {
       mock.currentUserAdd(null);
       //await Future.delayed(Duration(milliseconds: 5));
       await future;
-      await mock.close(null);
+      mock.dispose();
     });
   });
 }

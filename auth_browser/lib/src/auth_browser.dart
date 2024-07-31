@@ -1,4 +1,5 @@
 import 'package:tekartik_browser_utils/browser_utils_import.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 
 import 'auth_browser_api.dart';
 import 'import_browser.dart';
@@ -29,7 +30,7 @@ class GoogleAuthProviderImpl extends AuthProviderImpl
 }
 
 class AuthServiceBrowserImpl
-    with AuthServiceMixin
+    with FirebaseProductServiceMixin<FirebaseAuth>, FirebaseAuthServiceMixin
     implements AuthServiceBrowser {
   @override
   FirebaseAuth auth(common.App app) {
@@ -120,7 +121,9 @@ AuthProvider wrapAuthProvider(native.AuthProvider nativeInstance) =>
 native.AuthProvider unwrapAuthProvider(AuthProvider authProvider) =>
     (authProvider as AuthProviderImpl).nativeAuthProvider;
 
-class AuthBrowserImpl with AuthMixin implements AuthBrowser {
+class AuthBrowserImpl
+    with FirebaseAppProductMixin, FirebaseAuthMixin
+    implements AuthBrowser {
   final native.Auth nativeAuth;
 
   StreamSubscription? onAuthStateChangedSubscription;
@@ -188,9 +191,9 @@ class AuthBrowserImpl with AuthMixin implements AuthBrowser {
       signIn(authProvider, options: AuthBrowserSignInOptions(isRedirect: true));
 
   @override
-  Future close(common.App? app) async {
-    await super.close(app);
-    await onAuthStateChangedSubscription?.cancel();
+  void dispose() {
+    onAuthStateChangedSubscription?.cancel();
+    super.dispose();
   }
 
   @override

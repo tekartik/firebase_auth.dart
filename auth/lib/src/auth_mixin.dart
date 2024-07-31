@@ -4,26 +4,22 @@ import 'package:tekartik_common_utils/stream/subject.dart';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 
-mixin AuthServiceMixin implements FirebaseAuthService {
-  /// Most implementation need a single instance, keep it in memory!
-  static final _instances = <App, FirebaseAuth?>{};
+import 'auth.dart';
 
-  T getInstance<T extends FirebaseAuth?>(
-      App app, T Function() createIfNotFound) {
-    var instance = _instances[app] as T?;
-    if (instance == null) {
-      instance = createIfNotFound();
-      _instances[app] = instance;
-    }
-    return instance!;
-  }
-}
+/// Compat.
+typedef AuthServiceMixin = FirebaseAuthServiceMixin;
 
+/// Firebase auth service mixin
+mixin FirebaseAuthServiceMixin implements FirebaseAuthService {}
+
+/// Compat.
 typedef AuthMixin = FirebaseAuthMixin;
 
-mixin FirebaseAuthMixin implements FirebaseAuth, FirebaseAppService {
+/// Firebase auth mixin
+mixin FirebaseAuthMixin implements FirebaseAuth, FirebaseAppProduct {
   final _currentUserSubject = Subject<User?>();
 
+  /// Add current user
   void currentUserAdd(User? user) {
     _currentUserSubject.add(user);
   }
@@ -36,16 +32,9 @@ mixin FirebaseAuthMixin implements FirebaseAuth, FirebaseAppService {
   @override
   Stream<User?> get onCurrentUser => _currentUserSubject.stream;
 
+  /// Close current user
   Future<void> currentUserClose() async {
     await _currentUserSubject.close();
-  }
-
-  @override
-  Future init(App app) async => null;
-
-  @override
-  Future close(App? app) async {
-    await currentUserClose();
   }
 
   @override
@@ -90,4 +79,40 @@ mixin FirebaseAuthMixin implements FirebaseAuth, FirebaseAppService {
     throw UnsupportedError(
         '$runtimeType.signInWithEmailAndPassword not supported');
   }
+}
+
+/// Firebase user mixin
+mixin FirebaseUserMixin implements User {
+  @override
+  String? get displayName => null;
+
+  @override
+  String? get email => null;
+
+  @override
+  bool get emailVerified => false;
+
+  @override
+  bool get isAnonymous => false;
+
+  @override
+  String? get phoneNumber => null;
+
+  @override
+  String? get photoURL => null;
+
+  @override
+  String? get providerId => null;
+}
+
+/// Firebase user credential mixin
+mixin FirebaseUserCredentialMixin implements UserCredential {
+  @override
+  FirebaseUser get user =>
+      throw UnimplementedError('FirebaseUserCredential.user');
+}
+
+/// Firebase auth credential mixin
+mixin FirebaseAuthCredentialMixin implements FirebaseAuthCredential {
+  // @override String get providerId => throw UnimplementedError('FirebaseAuthCredential.providerId');
 }
