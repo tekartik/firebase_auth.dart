@@ -109,7 +109,7 @@ void main() {
         expect(auth1, auth2);
 
         auth2 = newAuthServiceLocal().auth(app);
-        expect(auth1, auth2);
+        expect(auth1, isNot(auth2));
 
         auth2 = service.auth(newFirebaseAppLocal());
         expect(auth1, isNot(auth2));
