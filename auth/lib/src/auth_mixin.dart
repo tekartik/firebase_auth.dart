@@ -16,7 +16,8 @@ mixin FirebaseAuthServiceMixin implements FirebaseAuthService {}
 typedef AuthMixin = FirebaseAuthMixin;
 
 /// Firebase auth mixin
-mixin FirebaseAuthMixin implements FirebaseAuth, FirebaseAppProduct {
+mixin FirebaseAuthMixin
+    implements FirebaseAuth, FirebaseAppProduct<FirebaseAuth> {
   final _currentUserSubject = Subject<User?>();
 
   /// Add current user

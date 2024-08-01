@@ -175,7 +175,7 @@ typedef AuthLocal = FirebaseAuthLocal;
 abstract class FirebaseAuthLocal implements FirebaseAuth {}
 
 class AuthLocalImpl
-    with FirebaseAppProductMixin, FirebaseAuthMixin
+    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
     implements AuthLocal {
   final AppLocal? _appLocal;
 

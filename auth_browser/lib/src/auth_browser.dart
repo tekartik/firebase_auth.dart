@@ -122,7 +122,7 @@ native.AuthProvider unwrapAuthProvider(AuthProvider authProvider) =>
     (authProvider as AuthProviderImpl).nativeAuthProvider;
 
 class AuthBrowserImpl
-    with FirebaseAppProductMixin, FirebaseAuthMixin
+    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
     implements AuthBrowser {
   final native.Auth nativeAuth;
 

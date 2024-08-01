@@ -6,7 +6,8 @@ import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:test/test.dart';
 
-class FirebaseAuthMock with FirebaseAppProductMixin, FirebaseAuthMixin {
+class FirebaseAuthMock
+    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin {
   @override
   Future<User> reloadCurrentUser() {
     throw UnimplementedError();

@@ -24,9 +24,7 @@ var _cvInitialized = () {
 
 /// Firebase auth Sembast implementation
 class FirebaseAuthServiceSembastImpl
-    with
-        FirebaseProductServiceMixin<FirebaseAuthSembast>,
-        FirebaseAuthServiceMixin
+    with FirebaseProductServiceMixin<FirebaseAuth>, FirebaseAuthServiceMixin
     implements FirebaseAuthServiceSembast {
   @override
   bool get supportsListUsers => false; // For now
@@ -48,7 +46,7 @@ class FirebaseAuthServiceSembastImpl
       assert(app is FirebaseAppLocal, 'invalid app type - not AppLocal');
       // final appLocal = app as AppLocal;
       return FirebaseAuthSembastImpl(this, app as FirebaseAppLocal);
-    });
+    }) as FirebaseAuthSembast;
   }
 }
 
@@ -82,7 +80,7 @@ var _userStore = cvStringRecordFactory.store<DbUser>('user');
 
 /// Firebase auth Sembast implementation
 class FirebaseAuthSembastImpl
-    with FirebaseAppProductMixin, FirebaseAuthMixin
+    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
     implements FirebaseAuthSembast {
   StreamSubscription? _currentUserRecordSubscription;
   StreamSubscription? _currentUserSubscription;

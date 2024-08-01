@@ -1,22 +1,11 @@
 // ignore: depend_on_referenced_packages
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart' as fb;
+import 'package:tekartik_firebase/firebase_mixin.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:test/test.dart';
 
 bool skipConcurrentTransactionTests = false;
-
-@Deprecated('Use runAuthTests instead')
-void run(
-        {required fb.Firebase firebase,
-        required FirebaseAuthService authService,
-        String? name,
-        fb.AppOptions? options}) =>
-    runAuthTests(
-        firebase: firebase,
-        authService: authService,
-        name: name,
-        options: options);
 
 void runAuthTests(
     {required fb.Firebase firebase,
@@ -48,6 +37,9 @@ void runAuthAppTests(
   group('auth', () {
     test('unique', () {
       expect(authService.auth(app), firebaseAuth);
+      if (app is fb.FirebaseAppMixin) {
+        expect(app.getProduct<FirebaseAuth>(), authService.auth(app));
+      }
     });
 
     group('listUsers', () {
