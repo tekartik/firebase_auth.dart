@@ -171,6 +171,9 @@ class _FirebaseUserSembast with FirebaseUserMixin {
   @override
   String get uid => _dbUser.id;
 
+  @override
+  String? get email => _dbUser.email.v;
+
   final DbUser _dbUser;
 
   _FirebaseUserSembast(this._dbUser);

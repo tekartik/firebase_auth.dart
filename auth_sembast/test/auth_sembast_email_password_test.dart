@@ -37,6 +37,7 @@ void main() {
           email: email, password: password);
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
+      expect(currentUser.email, email);
       await auth.signOut();
       currentUser = await auth.onCurrentUser.first;
       expect(currentUser, isNull);
@@ -57,6 +58,7 @@ void main() {
       expect(authService.getExistingInstance(app), auth);
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
+      expect(currentUser.email, email);
     });
   });
 }
