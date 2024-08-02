@@ -9,6 +9,7 @@ class FirebaseAuthValidationException implements FirebaseAuthException {
   final String message;
 
   FirebaseAuthValidationException(this.message);
+
   @override
   String toString() => 'FirebaseAuthValidationException($message)';
 }
@@ -22,6 +23,7 @@ class FirebaseAuthInfoHeader {
   final String? kid;
 
   FirebaseAuthInfoHeader({this.alg, this.kid});
+
   @override
   String toString() => toDebugMap().toString();
 
@@ -95,6 +97,7 @@ auth_time	Authentication time	Must be in the past. The time when
       : DateTime.fromMillisecondsSinceEpoch(time * 1000)
           .toUtc()
           .toIso8601String();
+
   Map toDebugMap() {
     return {
       'exp': _timeToString(exp),
@@ -150,6 +153,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
   String? get userId => payload!.userId;
 
   late JWT _jwt;
+
   FirebaseAuthInfoImpl.fromIdToken(String idToken) {
     var jwt = _jwt = JWT.parse(idToken);
     var headers = jwt.headers;
@@ -258,8 +262,10 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
   }
 
   FirebaseAuthInfoHeader? _header;
+
   FirebaseAuthInfoHeader? get header => _header;
   FirebaseAuthInfoPayload? _payload;
+
   FirebaseAuthInfoPayload? get payload => _payload;
 
   @override

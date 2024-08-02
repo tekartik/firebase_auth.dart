@@ -13,6 +13,7 @@ export 'package:tekartik_firebase_auth_local/src/auth_local.dart'
         UserRecordLocal;
 
 FirebaseAuthService get authServiceLocal => auth_local.authService;
+
 @Deprecated('Use authServiceLocal')
 FirebaseAuthService get authService => authServiceLocal;
 

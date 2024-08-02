@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:tekartik_firebase/firebase.dart';
+import 'package:tekartik_firebase/firebase_mixin.dart';
 
 /// To deprecate: Use FirebaseAuthService
 typedef AuthService = FirebaseAuthService;
@@ -110,6 +111,10 @@ abstract class FirebaseAuth {
   /// An optional flag can be passed to additionally check whether the ID token
   /// was revoked.
   Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked});
+
+  /// Default Firebase Auth instance.
+  static FirebaseAuth get instance =>
+      (FirebaseApp.instance as FirebaseAppMixin).getProduct<FirebaseAuth>()!;
 }
 
 /// Represents a Firebase user record

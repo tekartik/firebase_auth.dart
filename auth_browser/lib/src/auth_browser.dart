@@ -2,9 +2,9 @@ import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 
 import 'auth_browser_api.dart';
-import 'import_browser.dart';
-import 'import_browser.dart' as firebase_browser;
 import 'import_browser.dart' as common;
+import 'import_browser.dart' as firebase_browser;
+import 'import_browser.dart';
 import 'import_native.dart' as native;
 
 abstract class GoogleAuthProvider extends AuthProvider {

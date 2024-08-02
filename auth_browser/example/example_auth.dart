@@ -9,6 +9,7 @@ import 'package:tekartik_firebase_browser/src/firebase_browser.dart' // ignore: 
     as fb_impl;
 import 'package:tekartik_firebase_browser/src/interop.dart'; // ignore: depend_on_referenced_packages
 import 'package:web/web.dart' as web;
+
 import 'example_common.dart';
 import 'example_setup.dart';
 

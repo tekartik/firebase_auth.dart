@@ -40,6 +40,7 @@ class FirebaseAuthServiceSembastImpl
     // ignore: unnecessary_statements
     _cvInitialized;
   }
+
   @override
   FirebaseAuthSembast auth(FirebaseApp app) {
     return getInstance(app, () {
@@ -185,6 +186,7 @@ class _FirebaseUserCredentialSembast with FirebaseUserCredentialMixin {
 
   /// Constructor
   _FirebaseUserCredentialSembast(this._dbUser);
+
   @override
   late final user = _FirebaseUserSembast(_dbUser);
 

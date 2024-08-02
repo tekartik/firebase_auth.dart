@@ -28,6 +28,7 @@ void runApp(
         required FirebaseAuth auth,
         required fb.App app}) =>
     runAuthAppTests(authService: authService, auth: auth, app: app);
+
 void runAuthAppTests(
     {required FirebaseAuthService authService,
     FirebaseAuth? auth,
