@@ -117,3 +117,49 @@ mixin FirebaseUserCredentialMixin implements UserCredential {
 mixin FirebaseAuthCredentialMixin implements FirebaseAuthCredential {
   // @override String get providerId => throw UnimplementedError('FirebaseAuthCredential.providerId');
 }
+
+/// Firebase user mixin
+mixin FirebaseUserRecordDefaultMixin implements UserRecord {
+  @override
+  String? get displayName =>
+      throw UnimplementedError('FirebaseUserRecord.displayName');
+
+  @override
+  bool get emailVerified =>
+      throw UnimplementedError('FirebaseUserRecord.emailVerified');
+
+  @override
+  String? get phoneNumber =>
+      throw UnimplementedError('FirebaseUserRecord.phoneNumber');
+
+  @override
+  String? get photoURL =>
+      throw UnimplementedError('FirebaseUserRecord.photoURL');
+
+  @override
+  Object? get customClaims =>
+      throw UnimplementedError('FirebaseUserRecord.customClaims');
+
+  @override
+  bool get disabled => throw UnimplementedError('FirebaseUserRecord.disabled');
+
+  @override
+  UserMetadata? get metadata =>
+      throw UnimplementedError('FirebaseUserRecord.metadata');
+
+  @override
+  String? get passwordHash =>
+      throw UnimplementedError('FirebaseUserRecord.passwordHash');
+
+  @override
+  String? get passwordSalt =>
+      throw UnimplementedError('FirebaseUserRecord.passwordSalt');
+
+  @override
+  List<UserInfo>? get providerData =>
+      throw UnimplementedError('FirebaseUserRecord.providerData');
+
+  @override
+  String? get tokensValidAfterTime =>
+      throw UnimplementedError('FirebaseUserRecord.tokensValidAfterTime');
+}

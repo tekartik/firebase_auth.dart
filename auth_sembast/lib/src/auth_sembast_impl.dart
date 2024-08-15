@@ -86,6 +86,13 @@ class FirebaseAuthSembastImpl
   StreamSubscription? _currentUserRecordSubscription;
   StreamSubscription? _currentUserSubscription;
 
+  @override
+  Future<UserRecord?> getUser(String uid) async {
+    await _ready;
+    var dbUser = await _userStore.record(uid).get(_database);
+    return dbUser == null ? null : _UserRecordSembast(dbUser);
+  }
+
   /// Sembast database
   late Database _database;
 
@@ -175,6 +182,9 @@ class _FirebaseUserSembast with FirebaseUserMixin {
   @override
   String? get email => _dbUser.email.v;
 
+  @override
+  String? get displayName => null;
+
   final DbUser _dbUser;
 
   _FirebaseUserSembast(this._dbUser);
@@ -199,4 +209,19 @@ class _FirebaseAuthCredentialSembast
     implements FirebaseAuthCredential {
   @override
   String get providerId => _authSembastProviderId;
+}
+
+class _UserRecordSembast with FirebaseUserRecordDefaultMixin {
+  final DbUser dbUser;
+
+  _UserRecordSembast(this.dbUser);
+
+  @override
+  String? get displayName => null;
+
+  @override
+  String get uid => dbUser.id;
+
+  @override
+  String? get email => dbUser.email.v;
 }

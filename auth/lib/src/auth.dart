@@ -123,7 +123,7 @@ abstract class UserRecord {
   /// roles and propagated to an authenticated user's ID token.
   ///
   /// This is set via [FirebaseAuth.setCustomUserClaims].
-  dynamic get customClaims;
+  Object? get customClaims;
 
   /// Whether or not the user is disabled: true for disabled; false for enabled.
   bool get disabled;
