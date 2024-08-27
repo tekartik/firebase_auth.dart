@@ -59,8 +59,11 @@ class DbUser extends DbStringRecordBase {
   /// Email
   final email = CvField<String>('email');
 
+  /// Email verified
+  final emailVerified = CvField<bool>('emailVerified');
+
   @override
-  CvFields get fields => [email];
+  CvFields get fields => [email, emailVerified];
 }
 
 /// User mode
@@ -221,6 +224,9 @@ class _UserRecordSembast with FirebaseUserRecordDefaultMixin {
 
   @override
   String get uid => dbUser.id;
+
+  @override
+  bool get emailVerified => dbUser.emailVerified.v ?? false;
 
   @override
   String? get email => dbUser.email.v;

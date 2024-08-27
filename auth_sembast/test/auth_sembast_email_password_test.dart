@@ -38,6 +38,7 @@ void main() {
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
       expect(currentUser.email, email);
+      expect(currentUser.emailVerified, isFalse);
       await auth.signOut();
       currentUser = await auth.onCurrentUser.first;
       expect(currentUser, isNull);
@@ -59,6 +60,7 @@ void main() {
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
       expect(currentUser.email, email);
+      expect(currentUser.emailVerified, isFalse);
     });
   });
 }
