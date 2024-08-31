@@ -104,6 +104,9 @@ mixin FirebaseUserMixin implements User {
 
   @override
   String? get providerId => null;
+
+  @override
+  String toString() => 'User($uid${email != null ? ', $email' : ''})';
 }
 
 /// Firebase user credential mixin
