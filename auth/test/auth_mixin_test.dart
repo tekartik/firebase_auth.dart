@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth.dart';
@@ -18,6 +19,12 @@ class FirebaseAuthMock
     currentUserClose();
     super.dispose();
   }
+
+  @override
+  FirebaseApp get app => throw UnimplementedError();
+
+  @override
+  FirebaseAuthService get service => throw UnimplementedError();
 }
 
 class UserInfoMock implements UserInfo {

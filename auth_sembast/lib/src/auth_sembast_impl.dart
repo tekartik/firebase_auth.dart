@@ -175,6 +175,12 @@ class FirebaseAuthSembastImpl
     _currentUserSubscription?.cancel();
     super.dispose();
   }
+
+  @override
+  FirebaseApp get app => appLocal;
+
+  @override
+  FirebaseAuthService get service => authServiceSembast;
 }
 
 /// User Sembast

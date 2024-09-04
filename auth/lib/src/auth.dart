@@ -43,7 +43,7 @@ abstract class AuthSignInResult {
 
 /// Represents a Auth Database and is the entry point for all
 /// Auth operations.
-abstract class FirebaseAuth {
+abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
   /// Retrieves a list of users (single batch only) with a size of [maxResults]
   /// and starting from the offset as specified by [pageToken].
   ///
@@ -115,6 +115,9 @@ abstract class FirebaseAuth {
   /// Default Firebase Auth instance.
   static FirebaseAuth get instance =>
       (FirebaseApp.instance as FirebaseAppMixin).getProduct<FirebaseAuth>()!;
+
+  /// Service access
+  FirebaseAuthService get service;
 }
 
 /// Represents a Firebase user record

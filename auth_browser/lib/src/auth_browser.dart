@@ -212,6 +212,12 @@ class AuthBrowserImpl
 
   @override
   String toString() => 'AuthBrowser(${nativeAuth.app.options.projectId})';
+
+  @override
+  common.FirebaseApp get app => throw UnimplementedError();
+
+  @override
+  common.FirebaseAuthService get service => throw UnimplementedError();
 }
 
 UserInfoBrowser wrapUserInfo(native.User nativeUser) =>

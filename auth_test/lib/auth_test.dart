@@ -36,6 +36,10 @@ void runAuthAppTests(
   var firebaseAuth = auth ?? authService.auth(app);
   setUpAll(() async {});
   group('auth', () {
+    test('app', () {
+      expect(firebaseAuth.app, app);
+      expect(firebaseAuth.service, authService);
+    });
     test('unique', () {
       expect(authService.auth(app), firebaseAuth);
       if (app is fb.FirebaseAppMixin) {

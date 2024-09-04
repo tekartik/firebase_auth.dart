@@ -177,12 +177,10 @@ abstract class FirebaseAuthLocal implements FirebaseAuth {}
 class AuthLocalImpl
     with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
     implements AuthLocal {
-  final AppLocal? _appLocal;
+  final AuthServiceLocal _authServiceLocal;
+  final AppLocal _appLocal;
 
-  // ignore: unused_field
-  final App app;
-
-  AuthLocalImpl(this.app) : _appLocal = (app is AppLocal ? app : null) {
+  AuthLocalImpl(this._authServiceLocal, this._appLocal) {
     currentUserAdd(adminUserInfo);
   }
 
@@ -256,7 +254,7 @@ class AuthLocalImpl
   }
 
   @override
-  String toString() => _appLocal?.name ?? 'local';
+  String toString() => _appLocal.name;
 
   @override
   Future<DecodedIdToken> verifyIdToken(String idToken,
@@ -270,6 +268,12 @@ class AuthLocalImpl
     // No-op on local
     return currentUser;
   }
+
+  @override
+  FirebaseAuthService get service => _authServiceLocal;
+
+  @override
+  FirebaseApp get app => _appLocal;
 }
 
 class DecodedIdTokenLocal implements DecodedIdToken {
@@ -291,8 +295,8 @@ class FirebaseAuthServiceLocal
   FirebaseAuth auth(App app) {
     return getInstance(app, () {
       // assert(app is AppLocal, 'invalid app type - not AppLocal');
-      // final appLocal = app as AppLocal;
-      return AuthLocalImpl(app);
+      final appLocal = app as AppLocal;
+      return AuthLocalImpl(this, appLocal);
     });
   }
 
