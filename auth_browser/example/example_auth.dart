@@ -1,5 +1,5 @@
-import 'package:tekartik_browser_utils/browser_utils_import.dart';
 import 'package:tekartik_browser_utils/location_info_utils.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 // ignore: deprecated_member_use_from_same_package
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart';

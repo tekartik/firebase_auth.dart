@@ -38,6 +38,10 @@ dependencies:
       ref: dart3a
       path: app_crypto
     version: '>=0.1.0'
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart3a
 dev_dependencies:
   test: ^1.6.0
   yaml:
