@@ -30,6 +30,13 @@ void main() {
       expect(user, isNull);
     });
 
+    test('set user', () async {
+      var email = 'userset1';
+      await auth.setUser('u1', email: email);
+      expect((await auth.getUserByEmail(email))!.uid, 'u1');
+      await auth.setUser('u2', email: email);
+      expect((await auth.getUserByEmail(email))!.uid, 'u2');
+    });
     test('signIn/signOut', () async {
       var email = 'user1';
       var password = 'password1';

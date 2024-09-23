@@ -55,7 +55,7 @@ class FirebaseAuthServiceSembastImpl
 abstract class FirebaseAuthSembast implements FirebaseAuth {
   /// Set/Create user
   Future<void> setUser(String uid,
-      {required String? email, bool? emailVerified});
+      {required String email, bool? emailVerified});
 }
 
 /// User record
@@ -94,9 +94,11 @@ class FirebaseAuthSembastImpl
   StreamSubscription? _currentUserSubscription;
 
   @override
-  Future<void> setUser(String uid, {String? email, bool? emailVerified}) async {
+  Future<void> setUser(String uid,
+      {required String email, bool? emailVerified}) async {
     await _ready;
     await _database.transaction((txn) async {
+      await _userStore.delete(txn, finder: Finder(filter: _emailFilter(email)));
       await _userStore.record(uid).put(
           txn,
           DbUser()
@@ -105,11 +107,35 @@ class FirebaseAuthSembastImpl
     });
   }
 
+  UserRecord? _dbUserToRecordOrNull(DbUser? dbUser) {
+    return dbUser == null ? null : _UserRecordSembast(dbUser);
+  }
+
+  @override
+  Future<UserRecord?> getUserByEmail(String email) async {
+    await _ready;
+    var dbUser = await _database.transaction((txn) async {
+      return _txnGetUserByEmail(txn, email);
+    });
+    return _dbUserToRecordOrNull(dbUser);
+  }
+
+  Filter _emailFilter(String email) {
+    return Filter.equals(dbUserModel.email.name, email);
+  }
+
+  Future<DbUser?> _txnGetUserByEmail(Transaction txn, String email) async {
+    await _ready;
+    var dbUser = await _userStore.findFirst(txn,
+        finder: Finder(filter: _emailFilter(email)));
+    return dbUser;
+  }
+
   @override
   Future<UserRecord?> getUser(String uid) async {
     await _ready;
     var dbUser = await _userStore.record(uid).get(_database);
-    return dbUser == null ? null : _UserRecordSembast(dbUser);
+    return _dbUserToRecordOrNull(dbUser);
   }
 
   /// Sembast database
