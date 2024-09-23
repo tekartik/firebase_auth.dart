@@ -52,7 +52,11 @@ class FirebaseAuthServiceSembastImpl
 }
 
 /// Firebase auth Sembast
-abstract class FirebaseAuthSembast implements FirebaseAuth {}
+abstract class FirebaseAuthSembast implements FirebaseAuth {
+  /// Set/Create user
+  Future<void> setUser(String uid,
+      {required String? email, bool? emailVerified});
+}
 
 /// User record
 class DbUser extends DbStringRecordBase {
@@ -88,6 +92,18 @@ class FirebaseAuthSembastImpl
     implements FirebaseAuthSembast {
   StreamSubscription? _currentUserRecordSubscription;
   StreamSubscription? _currentUserSubscription;
+
+  @override
+  Future<void> setUser(String uid, {String? email, bool? emailVerified}) async {
+    await _ready;
+    await _database.transaction((txn) async {
+      await _userStore.record(uid).put(
+          txn,
+          DbUser()
+            ..email.v = email
+            ..emailVerified.v = emailVerified);
+    });
+  }
 
   @override
   Future<UserRecord?> getUser(String uid) async {
