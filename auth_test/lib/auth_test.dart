@@ -4,6 +4,7 @@ import 'package:tekartik_firebase/firebase.dart' as fb;
 import 'package:tekartik_firebase/firebase_mixin.dart' as fb;
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:test/test.dart';
+export 'package:tekartik_firebase_auth/auth.dart';
 
 bool skipConcurrentTransactionTests = false;
 

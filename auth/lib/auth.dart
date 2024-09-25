@@ -1,3 +1,4 @@
+export 'package:tekartik_firebase/firebase.dart';
 export 'package:tekartik_firebase_auth/src/auth.dart'
     show
         Auth,

@@ -1,10 +1,7 @@
 import 'dart:async';
 
 import 'package:tekartik_common_utils/stream/subject.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
-
-import 'auth.dart';
 
 /// Compat.
 typedef AuthServiceMixin = FirebaseAuthServiceMixin;

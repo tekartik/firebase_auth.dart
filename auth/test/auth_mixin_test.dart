@@ -1,9 +1,7 @@
 // ignore_for_file: avoid_print
 
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
-import 'package:tekartik_firebase_auth/src/auth.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:test/test.dart';
 

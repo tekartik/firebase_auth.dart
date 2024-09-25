@@ -1,7 +1,6 @@
 @TestOn('browser')
 library tekartik_firebase_auth_browser.auth_browser_test;
 
-import 'package:tekartik_firebase_auth/auth.dart';
 // ignore: deprecated_member_use_from_same_package
 import 'package:tekartik_firebase_auth_browser/auth_browser.dart'
     as auth_browser;
