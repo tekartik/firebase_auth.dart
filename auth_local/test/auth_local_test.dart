@@ -1,4 +1,4 @@
-library tekartik_firebase_sembast.firebase_sembast_memory_test;
+library;
 
 import 'package:tekartik_firebase_auth/utils/json_utils.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
