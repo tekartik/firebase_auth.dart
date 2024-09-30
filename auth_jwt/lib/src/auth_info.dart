@@ -49,7 +49,7 @@ auth_time	Authentication time	Must be in the past. The time when
   /// aud	Audience	Must be your Firebase project ID, the unique identifier for your Firebase project, which can be found in the URL of that project's console.
   final String? aud;
 
-  /// iss	Issuer	Must be "https://securetoken.google.com/<projectId>", where <projectId> is the same project ID used for aud above.
+  /// iss	Issuer	Must be `https://securetoken.google.com/<projectId>`, where `<projectId>` is the same project ID used for aud above.
   final String? iss;
 
   final int? authTime;
