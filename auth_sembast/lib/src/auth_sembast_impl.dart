@@ -79,9 +79,9 @@ class DbCurrentUser extends DbStringRecordBase {
   CvFields get fields => [uid];
 }
 
-var _currentUserStore = cvStringRecordFactory.store<DbCurrentUser>('info');
+var _currentUserStore = cvStringStoreFactory.store<DbCurrentUser>('info');
 var _currentUserRecord = _currentUserStore.record('currentUser');
-var _userStore = cvStringRecordFactory.store<DbUser>('user');
+var _userStore = cvStringStoreFactory.store<DbUser>('user');
 
 /// Firebase auth Sembast implementation
 class FirebaseAuthSembastImpl
