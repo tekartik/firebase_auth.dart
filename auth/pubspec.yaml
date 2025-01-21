@@ -8,7 +8,7 @@ environment:
   sdk: ^3.5.0
 
 dependencies:
-  meta:
+  meta: ">=1.15.0"
   tekartik_firebase:
     git:
       url: https://github.com/tekartik/firebase.dart
@@ -21,6 +21,7 @@ dependencies:
     version: '>=0.10.2+1'
 
 dev_dependencies:
-  process_run: '>0.10.0'
-  test: "^1.0.0"
-  dev_build:
+  process_run: ">=1.2.1+1"
+  test: ">=1.24.0"
+  dev_build: ">=1.1.0+2"
+resolution: workspace

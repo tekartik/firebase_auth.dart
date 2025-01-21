@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   web: '>=0.5.0'
-  path: '>=1.6.0'
+  path: ">=1.9.0"
   corsac_jwt: '>=1.0.0-0'
   http:
   tekartik_firebase:
@@ -43,13 +43,13 @@ dependencies:
       url: https://github.com/tekartik/common_utils.dart
       ref: dart3a
 dev_dependencies:
-  test: ^1.6.0
-  yaml:
-  dev_build:
-  process_run:
-  build_runner:
+  test: ">=1.24.0"
+  yaml: ">=3.1.2"
+  dev_build: ">=1.1.0+2"
+  process_run: ">=1.2.1+1"
+  build_runner: ">=2.4.13"
   build_test: ">=0.10.8"
-  build_web_compilers:
+  build_web_compilers: ">=4.0.11"
   tekartik_firebase_browser:
     git:
       url: https://github.com/tekartik/firebase.dart
@@ -68,6 +68,7 @@ dev_dependencies:
       ref: dart3a
     version: '>=0.1.0'
 dependency_overrides:
+resolution: workspace
 #  tekartik_firebase_auth_browser:
 #    path: ../auth_browser
 #  tekartik_firebase_auth:
