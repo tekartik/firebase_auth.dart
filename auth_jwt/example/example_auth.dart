@@ -7,14 +7,13 @@ import 'package:tekartik_firebase_auth_jwt/src/auth_info.dart';
 import 'package:tekartik_firebase_auth_jwt/src/scopes.dart';
 import 'package:tekartik_firebase_browser/firebase_browser.dart' as fb;
 import 'package:tekartik_firebase_browser/src/firebase_browser.dart' as fb_impl;
-import 'package:tekartik_firebase_browser/src/interop.dart';
+//import 'package:tekartik_firebase_browser/src/interop.dart';
 import 'package:web/web.dart';
 
 import 'example_common.dart';
 import 'example_setup.dart';
 
 void main() async {
-  write('require :$hasRequire');
   var options = await setup();
   write('loaded');
   // ignore: deprecated_member_use
