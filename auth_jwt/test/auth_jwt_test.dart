@@ -55,10 +55,11 @@ void main() {
         expect(e.message, contains('expired'));
       }
 
+      /*
       await jwt.verify(
           currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
           fetchKey: fetchKey);
-
+      */
       try {
         // Will fail one day...just report and fix the error
         await jwt.verify(

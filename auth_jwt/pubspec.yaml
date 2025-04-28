@@ -9,7 +9,7 @@ environment:
 dependencies:
   web: '>=0.5.0'
   path: ">=1.9.0"
-  corsac_jwt: '>=1.0.0-0'
+  corsac_jwt: '>=2.0.1'
   http:
   tekartik_firebase:
     git:

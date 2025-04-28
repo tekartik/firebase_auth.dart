@@ -240,7 +240,11 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
     // -----BEGIN CERTIFICATE-----
     // static const String pkcs1PublicHeader = '-----BEGIN RSA PUBLIC KEY-----';
     // static const String pkcs1PublicFooter = '-----END RSA PUBLIC KEY-----';
-    var signer = JWTRsaSha256Signer(publicKey: key);
+    if (key == null) {
+      print('no key for kid ${header!.kid}');
+      return false;
+    }
+    var signer = JWTRsaSha256Signer(pem: key);
 
     try {
       var validator = JWTValidator(currentTime: currentTime);
