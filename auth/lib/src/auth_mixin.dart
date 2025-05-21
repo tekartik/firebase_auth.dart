@@ -56,8 +56,10 @@ mixin FirebaseAuthMixin
   }
 
   @override
-  Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions? options}) {
+  Future<AuthSignInResult> signIn(
+    AuthProvider authProvider, {
+    AuthSignInOptions? options,
+  }) {
     throw UnsupportedError('$runtimeType.signIn not supported');
   }
 
@@ -72,10 +74,13 @@ mixin FirebaseAuthMixin
   }
 
   @override
-  Future<UserCredential> signInWithEmailAndPassword(
-      {required String email, required String password}) {
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) {
     throw UnsupportedError(
-        '$runtimeType.signInWithEmailAndPassword not supported');
+      '$runtimeType.signInWithEmailAndPassword not supported',
+    );
   }
 }
 

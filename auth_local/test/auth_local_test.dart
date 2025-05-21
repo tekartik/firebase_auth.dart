@@ -27,23 +27,31 @@ void main() {
       test('logout/login', () async {
         var provider = AuthLocalProvider();
         expect(provider.providerId, isNotNull);
-        await auth.signIn(provider,
-            options: AuthLocalSignInOptions(localAdminUser));
+        await auth.signIn(
+          provider,
+          options: AuthLocalSignInOptions(localAdminUser),
+        );
         expect(auth.currentUser!.uid, localAdminUser.uid);
         expect((await auth.onCurrentUser.first)!.uid, localAdminUser.uid);
         var userInfo = auth.currentUser!;
-        expect(await (userInfo as UserInfoWithIdToken).getIdToken(),
-            localAdminUser.uid);
+        expect(
+          await (userInfo as UserInfoWithIdToken).getIdToken(),
+          localAdminUser.uid,
+        );
         expect(userInfo.providerId, provider.providerId);
 
         await auth.signOut();
         expect(auth.currentUser, isNull);
-        await auth.signIn(provider,
-            options: AuthLocalSignInOptions(localRegularUser));
+        await auth.signIn(
+          provider,
+          options: AuthLocalSignInOptions(localRegularUser),
+        );
         expect(auth.currentUser!.uid, localRegularUser.uid);
         try {
-          await auth.signIn(provider,
-              options: AuthLocalSignInOptions(UserRecordLocal(uid: '-1')));
+          await auth.signIn(
+            provider,
+            options: AuthLocalSignInOptions(UserRecordLocal(uid: '-1')),
+          );
           fail('should fail');
         } catch (e) {
           expect(e, isNot(const TypeMatcher<TestFailure>()));
@@ -63,15 +71,20 @@ void main() {
       test('getUsers', () async {
         expect(await auth.getUsers(<String>[]), isEmpty);
         expect(
-            (await auth.getUsers(['1', '2'])).map((user) => user.emailVerified),
-            [true, true]);
+          (await auth.getUsers(['1', '2'])).map((user) => user.emailVerified),
+          [true, true],
+        );
         expect((await auth.getUser('2'))!.displayName, 'user');
       });
       test('getUserByEmail', () async {
-        expect((await auth.getUserByEmail('admin@example.com'))!.displayName,
-            'admin');
-        expect((await auth.getUserByEmail('user@example.com'))!.displayName,
-            'user');
+        expect(
+          (await auth.getUserByEmail('admin@example.com'))!.displayName,
+          'admin',
+        );
+        expect(
+          (await auth.getUserByEmail('user@example.com'))!.displayName,
+          'user',
+        );
       });
 
       group('currentUser', () {
@@ -88,8 +101,10 @@ void main() {
 
       test('idToken', () async {
         var provider = AuthLocalProvider();
-        var result = await auth.signIn(provider,
-            options: AuthLocalSignInOptions(localAdminUser));
+        var result = await auth.signIn(
+          provider,
+          options: AuthLocalSignInOptions(localAdminUser),
+        );
         var user = result.credential!.user;
         var idToken = await (user as UserInfoWithIdToken).getIdToken();
         var decoded = await auth.verifyIdToken(idToken);

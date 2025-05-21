@@ -10,9 +10,9 @@ const _authSembastProviderId = 'sembast';
 /// Firebase auth Sembast service
 abstract class FirebaseAuthServiceSembast implements FirebaseAuthService {
   /// Constructor
-  factory FirebaseAuthServiceSembast(
-          {required DatabaseFactory databaseFactory}) =>
-      FirebaseAuthServiceSembastImpl(databaseFactory: databaseFactory);
+  factory FirebaseAuthServiceSembast({
+    required DatabaseFactory databaseFactory,
+  }) => FirebaseAuthServiceSembastImpl(databaseFactory: databaseFactory);
 }
 
 var _cvInitialized = () {
@@ -41,18 +41,22 @@ class FirebaseAuthServiceSembastImpl
   @override
   FirebaseAuthSembast auth(FirebaseApp app) {
     return getInstance(app, () {
-      assert(app is FirebaseAppLocal, 'invalid app type - not AppLocal');
-      // final appLocal = app as AppLocal;
-      return FirebaseAuthSembastImpl(this, app as FirebaseAppLocal);
-    }) as FirebaseAuthSembast;
+          assert(app is FirebaseAppLocal, 'invalid app type - not AppLocal');
+          // final appLocal = app as AppLocal;
+          return FirebaseAuthSembastImpl(this, app as FirebaseAppLocal);
+        })
+        as FirebaseAuthSembast;
   }
 }
 
 /// Firebase auth Sembast
 abstract class FirebaseAuthSembast implements FirebaseAuth {
   /// Set/Create user
-  Future<void> setUser(String uid,
-      {required String email, bool? emailVerified});
+  Future<void> setUser(
+    String uid, {
+    required String email,
+    bool? emailVerified,
+  });
 }
 
 /// User record
@@ -91,16 +95,22 @@ class FirebaseAuthSembastImpl
   StreamSubscription? _currentUserSubscription;
 
   @override
-  Future<void> setUser(String uid,
-      {required String email, bool? emailVerified}) async {
+  Future<void> setUser(
+    String uid, {
+    required String email,
+    bool? emailVerified,
+  }) async {
     await _ready;
     await _database.transaction((txn) async {
       await _userStore.delete(txn, finder: Finder(filter: _emailFilter(email)));
-      await _userStore.record(uid).put(
-          txn,
-          DbUser()
-            ..email.v = email
-            ..emailVerified.v = emailVerified);
+      await _userStore
+          .record(uid)
+          .put(
+            txn,
+            DbUser()
+              ..email.v = email
+              ..emailVerified.v = emailVerified,
+          );
     });
   }
 
@@ -123,8 +133,10 @@ class FirebaseAuthSembastImpl
 
   Future<DbUser?> _txnGetUserByEmail(Transaction txn, String email) async {
     await _ready;
-    var dbUser = await _userStore.findFirst(txn,
-        finder: Finder(filter: _emailFilter(email)));
+    var dbUser = await _userStore.findFirst(
+      txn,
+      finder: Finder(filter: _emailFilter(email)),
+    );
     return dbUser;
   }
 
@@ -141,27 +153,31 @@ class FirebaseAuthSembastImpl
   /// App local
   final FirebaseAppLocal appLocal;
   late final _ready = () async {
-    _database = await authServiceSembast.databaseFactory
-        .openDatabase(p.join(appLocal.localPath, 'auth.db'));
-    _currentUserRecordSubscription =
-        _currentUserRecord.onRecord(_database).listen((record) {
-      _currentUserSubscription?.cancel();
-      var uid = record?.uid.v;
+    _database = await authServiceSembast.databaseFactory.openDatabase(
+      p.join(appLocal.localPath, 'auth.db'),
+    );
+    _currentUserRecordSubscription = _currentUserRecord
+        .onRecord(_database)
+        .listen((record) {
+          _currentUserSubscription?.cancel();
+          var uid = record?.uid.v;
 
-      if (uid != null) {
-        _currentUserSubscription =
-            _userStore.record(uid).onRecord(_database).listen((record) {
-          var dbUser = record;
-          if (dbUser != null) {
-            currentUserAdd(_FirebaseUserSembast(dbUser));
+          if (uid != null) {
+            _currentUserSubscription = _userStore
+                .record(uid)
+                .onRecord(_database)
+                .listen((record) {
+                  var dbUser = record;
+                  if (dbUser != null) {
+                    currentUserAdd(_FirebaseUserSembast(dbUser));
+                  } else {
+                    _currentUserRecord.delete(_database);
+                  }
+                });
           } else {
-            _currentUserRecord.delete(_database);
+            currentUserAdd(null);
           }
         });
-      } else {
-        currentUserAdd(null);
-      }
-    });
   }();
 
   /// The service
@@ -171,12 +187,16 @@ class FirebaseAuthSembastImpl
   FirebaseAuthSembastImpl(this.authServiceSembast, this.appLocal);
 
   @override
-  Future<UserCredential> signInWithEmailAndPassword(
-      {required String email, required String password}) async {
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
     await _ready;
     var dbUser = await _database.transaction((txn) async {
-      var dbUser = await _userStore.findFirst(txn,
-          finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)));
+      var dbUser = await _userStore.findFirst(
+        txn,
+        finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)),
+      );
       dbUser ??= await _userStore.add(txn, DbUser()..email.v = email);
       await _currentUserRecord.put(txn, DbCurrentUser()..uid.v = dbUser.id);
       // Also set the current user directly

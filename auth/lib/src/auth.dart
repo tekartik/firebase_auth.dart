@@ -74,8 +74,10 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
   /// only if [FirebaseAuthService.supportsCurrentUser] is true.
   ///
   /// Credential can be null and the login happen later
-  Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions? options});
+  Future<AuthSignInResult> signIn(
+    AuthProvider authProvider, {
+    AuthSignInOptions? options,
+  });
 
   /// Signs out the current user.
   Future signOut();

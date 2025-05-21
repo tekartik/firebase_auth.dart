@@ -23,10 +23,12 @@ void main() {
           'prefs_test_app_lib',
           'sembast_test_app_lib',
           'sqflite_test_app_lib',
-          'widget_test_app_lib'
+          'widget_test_app_lib',
         ]) {
-          await copyDirectory(Directory(join(topDir, 'example', dir)),
-              Directory(join(topDir, '.dart_tool', dir)));
+          await copyDirectory(
+            Directory(join(topDir, 'example', dir)),
+            Directory(join(topDir, '.dart_tool', dir)),
+          );
         }
         var dirName = join(topDir, '.dart_tool', 'test_app');
         var src = join(topDir, 'example', 'test_app');

@@ -11,8 +11,9 @@ import 'package:test/test.dart';
 void main() {
   var firebase = FirebaseLocal();
   var databaseFactory = newDatabaseFactoryMemory();
-  var authService =
-      FirebaseAuthServiceSembast(databaseFactory: databaseFactory);
+  var authService = FirebaseAuthServiceSembast(
+    databaseFactory: databaseFactory,
+  );
   runAuthTests(firebase: firebase, authService: authService);
 
   group('auth', () {

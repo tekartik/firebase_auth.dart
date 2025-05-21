@@ -62,8 +62,11 @@ class AuthCredentialImpl implements AuthCredential {
 }
 
 class UserRecordLocal implements UserRecord {
-  UserRecordLocal(
-      {required this.uid, this.disabled = false, this.emailVerified = true});
+  UserRecordLocal({
+    required this.uid,
+    this.disabled = false,
+    this.emailVerified = true,
+  });
 
   @override
   dynamic get customClaims => null;
@@ -117,20 +120,19 @@ class UserRecordLocal implements UserRecord {
   }
 }
 
-UserRecordLocal localAdminUser = UserRecordLocal(uid: '1')
-  ..displayName = 'admin'
-  ..email = 'admin@example.com';
+UserRecordLocal localAdminUser =
+    UserRecordLocal(uid: '1')
+      ..displayName = 'admin'
+      ..email = 'admin@example.com';
 
 User adminUserInfo = localAdminUser.toUser();
 
-UserRecordLocal localRegularUser = UserRecordLocal(uid: '2')
-  ..displayName = 'user'
-  ..email = 'user@example.com';
+UserRecordLocal localRegularUser =
+    UserRecordLocal(uid: '2')
+      ..displayName = 'user'
+      ..email = 'user@example.com';
 
-List<UserRecordLocal> allUsers = [
-  localAdminUser,
-  localRegularUser,
-];
+List<UserRecordLocal> allUsers = [localAdminUser, localRegularUser];
 
 class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   @override
@@ -187,13 +189,16 @@ class AuthLocalImpl
   //String get localPath => _appLocal?.localPath;
 
   @override
-  Future<ListUsersResult> listUsers(
-      {int? maxResults, String? pageToken}) async {
+  Future<ListUsersResult> listUsers({
+    int? maxResults,
+    String? pageToken,
+  }) async {
     var startIndex = parseInt(pageToken, 0)!;
     var lastIndex = startIndex + (maxResults ?? 10);
     var result = ListUsersResultLocal(
-        pageToken: lastIndex.toString(),
-        users: listSubList(allUsers, startIndex, lastIndex));
+      pageToken: lastIndex.toString(),
+      users: listSubList(allUsers, startIndex, lastIndex),
+    );
 
     return result;
   }
@@ -231,8 +236,10 @@ class AuthLocalImpl
   }
 
   @override
-  Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions? options}) async {
+  Future<AuthSignInResult> signIn(
+    AuthProvider authProvider, {
+    AuthSignInOptions? options,
+  }) async {
     var localOptions = options as AuthLocalSignInOptions?;
     var uid = localOptions?._userRecordLocal.uid;
     var userRecord = await getUser(uid) as UserRecordLocal?;
@@ -244,7 +251,8 @@ class AuthLocalImpl
       var user = userRecord.toUser();
       currentUserAdd(user);
       return AuthSignInResultImpl(
-          UserCredentialImpl(AuthCredentialImpl(), user));
+        UserCredentialImpl(AuthCredentialImpl(), user),
+      );
     }
   }
 
@@ -257,8 +265,10 @@ class AuthLocalImpl
   String toString() => _appLocal.name;
 
   @override
-  Future<DecodedIdToken> verifyIdToken(String idToken,
-      {bool? checkRevoked}) async {
+  Future<DecodedIdToken> verifyIdToken(
+    String idToken, {
+    bool? checkRevoked,
+  }) async {
     // The id token is the uid itself
     return DecodedIdTokenLocal(uid: idToken);
   }

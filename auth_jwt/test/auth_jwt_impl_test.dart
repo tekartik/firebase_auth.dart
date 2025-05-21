@@ -54,9 +54,10 @@ void main() {
       var userId = jwt.payload!.userId;
       try {
         await databaseGetRecord(
-            idToken: idToken,
-            database: database,
-            path: '_check_user_access/$userId');
+          idToken: idToken,
+          database: database,
+          path: '_check_user_access/$userId',
+        );
         fail('should fail');
       } on UnauthorizedDatabaseAuthException catch (_) {
         // UnauthorizedDatabaseAuthException(401: {

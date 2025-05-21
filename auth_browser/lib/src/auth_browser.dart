@@ -105,7 +105,7 @@ class AuthSignInResultImpl implements AuthSignInResult {
   final bool hasInfo;
 
   AuthSignInResultImpl({this.credential, bool? hasNoInfo})
-      : hasInfo = hasNoInfo ?? credential == null;
+    : hasInfo = hasNoInfo ?? credential == null;
 }
 
 //User wrapUser(native.User nativeInstance) => nativeInstance != null ? UserImpl(nativeInstance) : null;
@@ -173,18 +173,22 @@ class AuthBrowserImpl
   @override
   Stream<User?> get onAuthStateChanged =>
       nativeAuth.onAuthStateChanged.transform(
-          StreamTransformer.fromHandlers(handleData: (nativeUser, sink) {
-        sink.add(wrapUser(nativeUser));
-      }));
+        StreamTransformer.fromHandlers(
+          handleData: (nativeUser, sink) {
+            sink.add(wrapUser(nativeUser));
+          },
+        ),
+      );
 
   @override
   Future signOut() => nativeAuth.signOut();
 
   @override
   Future<UserCredential?> signInPopup(AuthProvider authProvider) async =>
-      (await signIn(authProvider,
-              options: AuthBrowserSignInOptions(isPopup: true)))
-          .credential;
+      (await signIn(
+        authProvider,
+        options: AuthBrowserSignInOptions(isPopup: true),
+      )).credential;
 
   @override
   Future signInWithRedirect(AuthProvider authProvider) =>
@@ -197,12 +201,15 @@ class AuthBrowserImpl
   }
 
   @override
-  Future<AuthSignInResult> signIn(AuthProvider authProvider,
-      {AuthSignInOptions? options}) async {
+  Future<AuthSignInResult> signIn(
+    AuthProvider authProvider, {
+    AuthSignInOptions? options,
+  }) async {
     var isPopup = (options as AuthBrowserSignInOptions?)?.isPopup == true;
     if (isPopup) {
       var credential = wrapUserCredential(
-          await nativeAuth.signInWithPopup(unwrapAuthProvider(authProvider)));
+        await nativeAuth.signInWithPopup(unwrapAuthProvider(authProvider)),
+      );
       return AuthSignInResultImpl(credential: credential, hasNoInfo: false);
     } else {
       await nativeAuth.signInWithRedirect(unwrapAuthProvider(authProvider));

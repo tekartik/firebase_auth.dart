@@ -8,11 +8,12 @@ export 'package:tekartik_firebase_auth/auth.dart';
 
 bool skipConcurrentTransactionTests = false;
 
-void runAuthTests(
-    {required fb.Firebase firebase,
-    required FirebaseAuthService authService,
-    String? name,
-    fb.AppOptions? options}) {
+void runAuthTests({
+  required fb.Firebase firebase,
+  required FirebaseAuthService authService,
+  String? name,
+  fb.AppOptions? options,
+}) {
   var app = firebase.initializeApp(options: options, name: name);
   setUpAll(() async {});
   tearDownAll(() {
@@ -24,16 +25,17 @@ void runAuthTests(
 }
 
 @Deprecated('Use runAuthAppTests instead')
-void runApp(
-        {required FirebaseAuthService authService,
-        required FirebaseAuth auth,
-        required fb.App app}) =>
-    runAuthAppTests(authService: authService, auth: auth, app: app);
+void runApp({
+  required FirebaseAuthService authService,
+  required FirebaseAuth auth,
+  required fb.App app,
+}) => runAuthAppTests(authService: authService, auth: auth, app: app);
 
-void runAuthAppTests(
-    {required FirebaseAuthService authService,
-    FirebaseAuth? auth,
-    required fb.App app}) {
+void runAuthAppTests({
+  required FirebaseAuthService authService,
+  FirebaseAuth? auth,
+  required fb.App app,
+}) {
   var firebaseAuth = auth ?? authService.auth(app);
   setUpAll(() async {});
   group('auth', () {
@@ -74,7 +76,8 @@ void runAuthAppTests(
           if (user != null) {
             if (user is UserInfoWithIdToken) {
               print(
-                  'idToken: ${await (user as UserInfoWithIdToken).getIdToken()}');
+                'idToken: ${await (user as UserInfoWithIdToken).getIdToken()}',
+              );
             }
             expect(user.providerId, isNotNull);
           }

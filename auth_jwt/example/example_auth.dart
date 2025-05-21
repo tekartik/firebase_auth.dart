@@ -25,7 +25,8 @@ void main() async {
 
   var delay = parseInt(locationInfo!.arguments['delay']);
   write(
-      'native.currentUser1: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}');
+    'native.currentUser1: ${(app as fb_impl.AppBrowser).nativeApp.auth().currentUser}',
+  );
   app.nativeApp.auth().onAuthStateChanged.listen((user) {
     write('native.onAuthStateChanged1: $user');
   });
@@ -68,9 +69,10 @@ void main() async {
   GoogleAuthProvider getAuthPovider() =>
       _authPovider ??
       () {
-        var provider = GoogleAuthProvider()
-          ..addScope(firebaseGoogleApisFirebaseDatabaseScope)
-          ..addScope(firebaseGoogleApisUserEmailScope);
+        var provider =
+            GoogleAuthProvider()
+              ..addScope(firebaseGoogleApisFirebaseDatabaseScope)
+              ..addScope(firebaseGoogleApisUserEmailScope);
         return provider;
       }();
   document.querySelector('#googleSignIn')!.onClick.listen((_) async {
@@ -86,22 +88,25 @@ void main() async {
   document.querySelector('#googleSignInWithPopup')!.onClick.listen((_) async {
     write('popup signing in...');
     try {
-      await auth.signIn(getAuthPovider(),
-          options: AuthBrowserSignInOptions(isPopup: true));
+      await auth.signIn(
+        getAuthPovider(),
+        options: AuthBrowserSignInOptions(isPopup: true),
+      );
       write('signed in');
     } catch (e) {
       write('signed in error $e');
     }
   });
 
-  document
-      .querySelector('#googleSignInWithRedirect')!
-      .onClick
-      .listen((_) async {
+  document.querySelector('#googleSignInWithRedirect')!.onClick.listen((
+    _,
+  ) async {
     write('signing in...');
     try {
-      await auth.signIn(getAuthPovider(),
-          options: AuthBrowserSignInOptions(isRedirect: true));
+      await auth.signIn(
+        getAuthPovider(),
+        options: AuthBrowserSignInOptions(isRedirect: true),
+      );
       write('signed in maybe...');
     } catch (e) {
       write('signed in error $e');
@@ -114,8 +119,9 @@ void main() async {
   });
 
   document.querySelector('#getIdToken')!.onClick.listen((_) async {
-    var idToken = await (auth.currentUser as UserInfoWithIdToken)
-        .getIdToken(forceRefresh: false);
+    var idToken = await (auth.currentUser as UserInfoWithIdToken).getIdToken(
+      forceRefresh: false,
+    );
     write('IdToken $idToken');
     var jwt = FirebaseAuthInfo.fromIdToken(idToken);
     write(jsonPretty(jwt));

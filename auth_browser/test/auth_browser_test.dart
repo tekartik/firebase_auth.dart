@@ -25,7 +25,10 @@ void main() async {
       expect(authServiceBrowser.supportsListUsers, isFalse);
     });
     runAuthTests(
-        firebase: firebase, authService: authServiceBrowser, options: options);
+      firebase: firebase,
+      authService: authServiceBrowser,
+      options: options,
+    );
 
     group('auth', () {
       var app = firebase.initializeApp(options: options, name: 'auth');

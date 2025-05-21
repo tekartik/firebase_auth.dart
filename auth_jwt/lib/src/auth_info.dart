@@ -92,11 +92,12 @@ auth_time	Authentication time	Must be in the past. The time when
   @override
   String toString() => toDebugMap().toString();
 
-  String? _timeToString(int? time) => time == null
-      ? null
-      : DateTime.fromMillisecondsSinceEpoch(time * 1000)
-          .toUtc()
-          .toIso8601String();
+  String? _timeToString(int? time) =>
+      time == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(
+            time * 1000,
+          ).toUtc().toIso8601String();
 
   Map toDebugMap() {
     return {
@@ -140,9 +141,10 @@ abstract class FirebaseAuthInfo {
   Map toDebugMap();
 
   /// Validate using public key fetched
-  Future<bool> verify(
-      {DateTime? currentTime,
-      Future<String?> Function(String keyId)? fetchKey});
+  Future<bool> verify({
+    DateTime? currentTime,
+    Future<String?> Function(String keyId)? fetchKey,
+  });
 
   factory FirebaseAuthInfo.fromIdToken(String idToken) =>
       FirebaseAuthInfoImpl.fromIdToken(idToken);
@@ -185,32 +187,37 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
       var emailVerified = claims['email_verified'] as bool?;
       var picture = claims['picture'] as String?;
       _payload = FirebaseAuthInfoPayload(
-          iss: iss,
-          iat: iat,
-          userId: userId,
-          exp: exp,
-          authTime: authTime,
-          sub: sub,
-          aud: aud,
-          name: name,
-          email: email,
-          emailVerified: emailVerified,
-          picture: picture);
+        iss: iss,
+        iat: iat,
+        userId: userId,
+        exp: exp,
+        authTime: authTime,
+        sub: sub,
+        aud: aud,
+        name: name,
+        email: email,
+        emailVerified: emailVerified,
+        picture: picture,
+      );
     }
   }
 
   Future<String?> httpFetchKey(String key) async {
-    var jsonContent = await read(Uri.parse(
-        'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'));
+    var jsonContent = await read(
+      Uri.parse(
+        'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com',
+      ),
+    );
     var map = jsonDecode(jsonContent) as Map;
     return map[key] as String?;
   }
 
   /// Validate using public key fetched
   @override
-  Future<bool> verify(
-      {DateTime? currentTime,
-      Future<String?> Function(String keyId)? fetchKey}) async {
+  Future<bool> verify({
+    DateTime? currentTime,
+    Future<String?> Function(String keyId)? fetchKey,
+  }) async {
     fetchKey ??= httpFetchKey;
     if (header?.alg != 'RS256') {
       print('invalid jwt alg $header');
@@ -295,6 +302,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
   @override
   String? get name => payload!.name;
 }
+
 /*
 /*
 token:

@@ -16,8 +16,9 @@ void main() {
     setUp(() async {
       var databaseFactory = newDatabaseFactoryMemory();
       app = newFirebaseAppLocal();
-      authService =
-          FirebaseAuthServiceSembast(databaseFactory: databaseFactory);
+      authService = FirebaseAuthServiceSembast(
+        databaseFactory: databaseFactory,
+      );
       auth = authService.auth(app) as FirebaseAuthSembast;
     });
 
@@ -41,7 +42,9 @@ void main() {
       var email = 'user1';
       var password = 'password1';
       var user = await auth.signInWithEmailAndPassword(
-          email: email, password: password);
+        email: email,
+        password: password,
+      );
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
       expect(currentUser.email, email);
@@ -55,7 +58,9 @@ void main() {
       var email = 'user1';
       var password = 'password1';
       var user = await auth.signInWithEmailAndPassword(
-          email: email, password: password);
+        email: email,
+        password: password,
+      );
 
       expect(authService.getExistingInstance(app), auth);
       await app.delete();
