@@ -53,8 +53,9 @@ void runAuthAppTests({
     group('listUsers', () {
       test('one', () async {
         try {
-          var user =
-              (await firebaseAuth.listUsers(maxResults: 1)).users.firstOrNull;
+          var user = (await firebaseAuth.listUsers(
+            maxResults: 1,
+          )).users.firstOrNull;
           print('user: $user');
         } catch (e) {
           // Error: Credential implementation provided to initializeApp() via the 'credential' property has insufficient permission to access the requested resource. See https://firebase.google.com/docs/admin/setup for details on how to authenticate this SDK with appropriate permissions.

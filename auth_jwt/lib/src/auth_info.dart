@@ -92,12 +92,11 @@ auth_time	Authentication time	Must be in the past. The time when
   @override
   String toString() => toDebugMap().toString();
 
-  String? _timeToString(int? time) =>
-      time == null
-          ? null
-          : DateTime.fromMillisecondsSinceEpoch(
-            time * 1000,
-          ).toUtc().toIso8601String();
+  String? _timeToString(int? time) => time == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch(
+          time * 1000,
+        ).toUtc().toIso8601String();
 
   Map toDebugMap() {
     return {

@@ -120,17 +120,15 @@ class UserRecordLocal implements UserRecord {
   }
 }
 
-UserRecordLocal localAdminUser =
-    UserRecordLocal(uid: '1')
-      ..displayName = 'admin'
-      ..email = 'admin@example.com';
+UserRecordLocal localAdminUser = UserRecordLocal(uid: '1')
+  ..displayName = 'admin'
+  ..email = 'admin@example.com';
 
 User adminUserInfo = localAdminUser.toUser();
 
-UserRecordLocal localRegularUser =
-    UserRecordLocal(uid: '2')
-      ..displayName = 'user'
-      ..email = 'user@example.com';
+UserRecordLocal localRegularUser = UserRecordLocal(uid: '2')
+  ..displayName = 'user'
+  ..email = 'user@example.com';
 
 List<UserRecordLocal> allUsers = [localAdminUser, localRegularUser];
 

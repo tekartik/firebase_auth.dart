@@ -69,10 +69,9 @@ void main() async {
   GoogleAuthProvider getAuthPovider() =>
       _authPovider ??
       () {
-        var provider =
-            GoogleAuthProvider()
-              ..addScope(firebaseGoogleApisFirebaseDatabaseScope)
-              ..addScope(firebaseGoogleApisUserEmailScope);
+        var provider = GoogleAuthProvider()
+          ..addScope(firebaseGoogleApisFirebaseDatabaseScope)
+          ..addScope(firebaseGoogleApisUserEmailScope);
         return provider;
       }();
   document.querySelector('#googleSignIn')!.onClick.listen((_) async {

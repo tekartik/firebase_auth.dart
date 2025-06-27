@@ -49,11 +49,10 @@ void main() {
   group('utils', () {
     test('userRecordToJson', () {
       expect(userRecordToJson(UserRecordMock(uid: '1')), {'uid': '1'});
-      var record =
-          UserRecordMock(uid: '1234')
-            ..displayName = 'alex'
-            ..email = 'alex@alex.com'
-            ..emailVerified = true;
+      var record = UserRecordMock(uid: '1234')
+        ..displayName = 'alex'
+        ..email = 'alex@alex.com'
+        ..emailVerified = true;
 
       expect(userRecordToJson(record), {
         'uid': '1234',
