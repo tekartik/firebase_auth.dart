@@ -82,6 +82,11 @@ mixin FirebaseAuthMixin
       '$runtimeType.signInWithEmailAndPassword not supported',
     );
   }
+
+  @override
+  Future<UserCredential> signInAnonymously() {
+    throw UnsupportedError('$runtimeType.signInAnonymously not supported');
+  }
 }
 
 /// Firebase user mixin
@@ -108,7 +113,8 @@ mixin FirebaseUserMixin implements User {
   String? get providerId => null;
 
   @override
-  String toString() => 'User($uid${email != null ? ', $email' : ''})';
+  String toString() =>
+      'User($uid${email != null ? ', $email' : ((displayName != null) ? ', $displayName' : '')})';
 }
 
 /// Firebase user credential mixin

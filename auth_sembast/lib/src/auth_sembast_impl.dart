@@ -61,14 +61,20 @@ abstract class FirebaseAuthSembast implements FirebaseAuth {
 
 /// User record
 class DbUser extends DbStringRecordBase {
+  /// Name
+  final name = CvField<String>('name');
+
   /// Email
   final email = CvField<String>('email');
 
   /// Email verified
   final emailVerified = CvField<bool>('emailVerified');
 
+  /// Anonymous
+  final isAnonymous = CvField<bool>('isAnonymous');
+
   @override
-  CvFields get fields => [email, emailVerified];
+  CvFields get fields => [name, email, emailVerified, isAnonymous];
 }
 
 /// User mode
@@ -208,6 +214,32 @@ class FirebaseAuthSembastImpl
   }
 
   @override
+  Future<UserCredential> signInAnonymously() async {
+    await _ready;
+    var dbUser = await _database.transaction((txn) async {
+      /// Delete existing
+      await _userStore.delete(
+        txn,
+        finder: Finder(
+          filter: Filter.equals(dbUserModel.isAnonymous.name, true),
+        ),
+      );
+      var dbUser = await _userStore.add(
+        txn,
+        DbUser()
+          ..name.v = 'Anonymous'
+          ..isAnonymous.v = true,
+      );
+      await _currentUserRecord.put(txn, DbCurrentUser()..uid.v = dbUser.id);
+      // Also set the current user directly
+      currentUserAdd(_FirebaseUserSembast(dbUser));
+      return dbUser;
+    });
+
+    return _FirebaseUserCredentialSembast(dbUser);
+  }
+
+  @override
   Future<void> signOut() async {
     // ignore: unnecessary_statements
     await _ready;
@@ -251,7 +283,10 @@ class _FirebaseUserSembast with FirebaseUserMixin {
   String? get email => _dbUser.email.v;
 
   @override
-  String? get displayName => null;
+  bool get isAnonymous => _dbUser.isAnonymous.v ?? false;
+
+  @override
+  String? get displayName => _dbUser.name.v;
 
   final DbUser _dbUser;
 

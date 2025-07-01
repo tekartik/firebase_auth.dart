@@ -63,13 +63,13 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
   User? get currentUser;
 
   /// Reload user (needed after email verification)
-  Future<User?> reloadCurrentUser();
+  Future<FirebaseUser?> reloadCurrentUser();
 
   /// Current user stream.
   ///
   /// It also trigger upon start when the current user is ready (can be null if
   /// none)
-  Stream<User?> get onCurrentUser;
+  Stream<FirebaseUser?> get onCurrentUser;
 
   /// only if [FirebaseAuthService.supportsCurrentUser] is true.
   ///
@@ -105,6 +105,21 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
     required String email,
     required String password,
   });
+
+  /// Asynchronously creates and becomes an anonymous user.
+  ///
+  /// If there is already an anonymous user signed in, that user will be
+  /// returned instead. If there is any other existing user signed in, that
+  /// user will be signed out.
+  ///
+  /// **Important**: You must enable Anonymous accounts in the Auth section
+  /// of the Firebase console before being able to use them.
+  ///
+  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// - **operation-not-allowed**:
+  ///  - Thrown if anonymous accounts are not enabled. Enable anonymous accounts
+  /// in the Firebase Console, under the Auth tab.
+  Future<UserCredential> signInAnonymously();
 
   /// Verifies a Firebase ID token (JWT).
   ///

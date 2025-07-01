@@ -38,7 +38,7 @@ void main() {
       await auth.setUser('u2', email: email);
       expect((await auth.getUserByEmail(email))!.uid, 'u2');
     });
-    test('signIn/signOut', () async {
+    test('signIn/signOut email password', () async {
       var email = 'user1';
       var password = 'password1';
       var user = await auth.signInWithEmailAndPassword(
@@ -46,9 +46,23 @@ void main() {
         password: password,
       );
       var currentUser = await auth.onCurrentUser.first;
+      print('currentUser: $currentUser');
       expect(currentUser!.uid, user.user.uid);
       expect(currentUser.email, email);
       expect(currentUser.emailVerified, isFalse);
+      expect(currentUser.isAnonymous, isFalse);
+      await auth.signOut();
+      currentUser = await auth.onCurrentUser.first;
+      expect(currentUser, isNull);
+    });
+
+    test('signIn/signOut anonymously', () async {
+      var user = await auth.signInAnonymously();
+      var currentUser = await auth.onCurrentUser.first;
+      expect(currentUser!.uid, user.user.uid);
+      expect(currentUser.email, isNull);
+      expect(currentUser.isAnonymous, isTrue);
+      print('currentUser: $currentUser');
       await auth.signOut();
       currentUser = await auth.onCurrentUser.first;
       expect(currentUser, isNull);
