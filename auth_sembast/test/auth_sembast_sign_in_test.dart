@@ -3,13 +3,13 @@
 library;
 
 import 'package:sembast/sembast_memory.dart';
-import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
+import 'package:tekartik_firebase_auth_test/auth_local_admin_test.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('email_password', () {
+  group('sign in', () {
     late FirebaseAppLocal app;
     late FirebaseAuthSembast auth;
     late FirebaseAuthServiceSembast authService;
@@ -26,67 +26,6 @@ void main() {
       return app.delete();
     });
 
-    test('no user', () async {
-      var user = await auth.onCurrentUser.first;
-      expect(user, isNull);
-    });
-
-    test('set user', () async {
-      var email = 'userset1';
-      await auth.setUser('u1', email: email);
-      expect((await auth.getUserByEmail(email))!.uid, 'u1');
-      await auth.setUser('u2', email: email);
-      expect((await auth.getUserByEmail(email))!.uid, 'u2');
-    });
-    test('signIn/signOut email password', () async {
-      var email = 'user1';
-      var password = 'password1';
-      var user = await auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      var currentUser = await auth.onCurrentUser.first;
-      print('currentUser: $currentUser');
-      expect(currentUser!.uid, user.user.uid);
-      expect(currentUser.email, email);
-      expect(currentUser.emailVerified, isFalse);
-      expect(currentUser.isAnonymous, isFalse);
-      await auth.signOut();
-      currentUser = await auth.onCurrentUser.first;
-      expect(currentUser, isNull);
-    });
-
-    test('signIn/signOut anonymously', () async {
-      var user = await auth.signInAnonymously();
-      var currentUser = await auth.onCurrentUser.first;
-      expect(currentUser!.uid, user.user.uid);
-      expect(currentUser.email, isNull);
-      expect(currentUser.isAnonymous, isTrue);
-      print('currentUser: $currentUser');
-      await auth.signOut();
-      currentUser = await auth.onCurrentUser.first;
-      expect(currentUser, isNull);
-    });
-
-    test('signIn delete restart', () async {
-      var email = 'user1';
-      var password = 'password1';
-      var user = await auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      expect(authService.getExistingInstance(app), auth);
-      await app.delete();
-      expect(authService.getExistingInstance(app), isNull);
-
-      app = newFirebaseAppLocal();
-      auth = authService.auth(app) as FirebaseAuthSembast;
-      expect(authService.getExistingInstance(app), auth);
-      var currentUser = await auth.onCurrentUser.first;
-      expect(currentUser!.uid, user.user.uid);
-      expect(currentUser.email, email);
-      expect(currentUser.emailVerified, isFalse);
-    });
+    localAdminTests(getAuth: () => auth, newApp: () => newFirebaseAppLocal());
   });
 }

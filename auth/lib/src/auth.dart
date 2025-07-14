@@ -160,6 +160,9 @@ abstract class UserRecord {
   /// Additional metadata about the user.
   UserMetadata? get metadata;
 
+  /// True for anonymous
+  bool get isAnonymous;
+
   /// The user’s hashed password (base64-encoded), only if Firebase Auth hashing
   /// algorithm (SCRYPT) is used.
   ///

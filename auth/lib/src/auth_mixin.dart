@@ -52,7 +52,7 @@ mixin FirebaseAuthMixin
 
   @override
   Future<UserRecord?> getUserByEmail(String email) {
-    throw UnsupportedError('$runtimeType.getUser not supported');
+    throw UnsupportedError('$runtimeType.getUserByEmail not supported');
   }
 
   @override
@@ -65,7 +65,7 @@ mixin FirebaseAuthMixin
 
   @override
   Future signOut() {
-    throw UnsupportedError('$runtimeType.signIn not supported');
+    throw UnsupportedError('$runtimeType.signOut not supported');
   }
 
   @override
@@ -138,6 +138,10 @@ mixin FirebaseUserRecordDefaultMixin implements UserRecord {
   @override
   bool get emailVerified =>
       throw UnimplementedError('FirebaseUserRecord.emailVerified');
+
+  @override
+  bool get isAnonymous =>
+      throw UnimplementedError('FirebaseUserRecord.isAnonymous');
 
   @override
   String? get phoneNumber =>

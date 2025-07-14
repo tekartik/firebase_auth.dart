@@ -61,15 +61,21 @@ class AuthCredentialImpl implements AuthCredential {
   String get providerId => localProviderId;
 }
 
-class UserRecordLocal implements UserRecord {
+class UserRecordLocal
+    with FirebaseUserRecordDefaultMixin
+    implements UserRecord {
   UserRecordLocal({
     required this.uid,
     this.disabled = false,
     this.emailVerified = true,
+    this.isAnonymous = false,
   });
 
   @override
   dynamic get customClaims => null;
+
+  @override
+  final bool isAnonymous;
 
   @override
   final bool disabled;

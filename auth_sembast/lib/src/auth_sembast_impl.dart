@@ -2,6 +2,7 @@ import 'package:path/path.dart' as p;
 import 'package:tekartik_app_cv_sembast/app_cv_sembast.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
+import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 
@@ -50,14 +51,8 @@ class FirebaseAuthServiceSembastImpl
 }
 
 /// Firebase auth Sembast
-abstract class FirebaseAuthSembast implements FirebaseAuth {
-  /// Set/Create user
-  Future<void> setUser(
-    String uid, {
-    required String email,
-    bool? emailVerified,
-  });
-}
+abstract class FirebaseAuthSembast
+    implements FirebaseAuth, FirebaseAuthLocalAdmin {}
 
 /// User record
 class DbUser extends DbStringRecordBase {
@@ -90,7 +85,9 @@ class DbCurrentUser extends DbStringRecordBase {
 }
 
 var _currentUserStore = cvStringStoreFactory.store<DbCurrentUser>('info');
-var _currentUserRecord = _currentUserStore.record('currentUser');
+
+/// Current user id
+var firebaseAuthCurrentUserRecord = _currentUserStore.record('currentUser');
 var _userStore = cvStringStoreFactory.store<DbUser>('user');
 
 /// Firebase auth Sembast implementation
@@ -103,20 +100,35 @@ class FirebaseAuthSembastImpl
   @override
   Future<void> setUser(
     String uid, {
-    required String email,
+    String? email,
     bool? emailVerified,
+    bool? isAnonymous,
   }) async {
     await _ready;
     await _database.transaction((txn) async {
-      await _userStore.delete(txn, finder: Finder(filter: _emailFilter(email)));
+      if (email != null) {
+        await _userStore.delete(
+          txn,
+          finder: Finder(filter: _emailFilter(email)),
+        );
+      }
       await _userStore
           .record(uid)
           .put(
             txn,
             DbUser()
               ..email.v = email
-              ..emailVerified.v = emailVerified,
+              ..emailVerified.setValue(emailVerified)
+              ..isAnonymous.setValue(isAnonymous),
           );
+    });
+  }
+
+  @override
+  Future<void> deleteUser(String uid) async {
+    await _ready;
+    await _database.transaction((txn) async {
+      await _userStore.record(uid).delete(txn);
     });
   }
 
@@ -162,7 +174,7 @@ class FirebaseAuthSembastImpl
     _database = await authServiceSembast.databaseFactory.openDatabase(
       p.join(appLocal.localPath, 'auth.db'),
     );
-    _currentUserRecordSubscription = _currentUserRecord
+    _currentUserRecordSubscription = firebaseAuthCurrentUserRecord
         .onRecord(_database)
         .listen((record) {
           _currentUserSubscription?.cancel();
@@ -177,7 +189,7 @@ class FirebaseAuthSembastImpl
                   if (dbUser != null) {
                     currentUserAdd(_FirebaseUserSembast(dbUser));
                   } else {
-                    _currentUserRecord.delete(_database);
+                    firebaseAuthCurrentUserRecord.delete(_database);
                   }
                 });
           } else {
@@ -204,7 +216,10 @@ class FirebaseAuthSembastImpl
         finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)),
       );
       dbUser ??= await _userStore.add(txn, DbUser()..email.v = email);
-      await _currentUserRecord.put(txn, DbCurrentUser()..uid.v = dbUser.id);
+      await firebaseAuthCurrentUserRecord.put(
+        txn,
+        DbCurrentUser()..uid.v = dbUser.id,
+      );
       // Also set the current user directly
       currentUserAdd(_FirebaseUserSembast(dbUser));
       return dbUser;
@@ -230,7 +245,10 @@ class FirebaseAuthSembastImpl
           ..name.v = 'Anonymous'
           ..isAnonymous.v = true,
       );
-      await _currentUserRecord.put(txn, DbCurrentUser()..uid.v = dbUser.id);
+      await firebaseAuthCurrentUserRecord.put(
+        txn,
+        DbCurrentUser()..uid.v = dbUser.id,
+      );
       // Also set the current user directly
       currentUserAdd(_FirebaseUserSembast(dbUser));
       return dbUser;
@@ -243,7 +261,7 @@ class FirebaseAuthSembastImpl
   Future<void> signOut() async {
     // ignore: unnecessary_statements
     await _ready;
-    await _currentUserRecord.delete(_database);
+    await firebaseAuthCurrentUserRecord.delete(_database);
     currentUserAdd(null);
   }
 
@@ -272,6 +290,17 @@ class FirebaseAuthSembastImpl
 
   @override
   FirebaseAuthService get service => authServiceSembast;
+
+  @override
+  Stream<UserRecord?> onUserRecord(String uid) async* {
+    await _ready;
+    yield* _userStore.record(uid).onRecord(_database).map((record) {
+      if (record == null) {
+        return null;
+      }
+      return _UserRecordSembast(record);
+    });
+  }
 }
 
 /// User Sembast
@@ -284,6 +313,8 @@ class _FirebaseUserSembast with FirebaseUserMixin {
 
   @override
   bool get isAnonymous => _dbUser.isAnonymous.v ?? false;
+  @override
+  bool get emailVerified => _dbUser.emailVerified.v ?? false;
 
   @override
   String? get displayName => _dbUser.name.v;
@@ -327,6 +358,9 @@ class _UserRecordSembast with FirebaseUserRecordDefaultMixin {
 
   @override
   bool get emailVerified => dbUser.emailVerified.v ?? false;
+
+  @override
+  bool get isAnonymous => dbUser.isAnonymous.v ?? false;
 
   @override
   String? get email => dbUser.email.v;

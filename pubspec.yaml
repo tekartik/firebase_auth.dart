@@ -10,3 +10,4 @@ workspace:
   - auth_sembast
   - auth_test
   - repo_support
+  - auth_sim

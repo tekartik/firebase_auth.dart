@@ -18,6 +18,9 @@ class UserRecordMock implements UserRecord {
   String? email;
 
   @override
+  bool isAnonymous = false;
+
+  @override
   bool emailVerified = false;
 
   @override
