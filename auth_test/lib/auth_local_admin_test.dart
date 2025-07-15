@@ -78,6 +78,7 @@ void localAdminTests({
         auth = authService.auth(app) as FirebaseAuthLocalAdmin;
         expect(authService.getExistingInstance(app), auth);
         var currentUser = await auth.onCurrentUser.first;
+        print('currentUser: $currentUser');
         expect(currentUser!.uid, user.user.uid);
         expect(currentUser.email, email);
         expect(currentUser.emailVerified, isFalse);

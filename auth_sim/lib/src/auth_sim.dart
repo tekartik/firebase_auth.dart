@@ -36,8 +36,12 @@ class _FirebaseAuthSim
 
   @override
   void dispose() {
-    _currentUserIdSubscription?.cancel();
-    _currentUserSubscription?.cancel();
+    _ready.then((_) {
+      _currentUserIdSubscription?.cancel();
+      _currentUserSubscription?.cancel();
+      _database.close();
+    });
+
     super.dispose();
   }
 
@@ -227,9 +231,16 @@ class _FirebaseAuthSim
         if (result[paramDone] == true) {
           break;
         }
-        subscription.add(
-          UserRecordSim(userResponse: result.cv<UserGetResponse>()),
-        );
+        var user = result[paramUserRecord];
+        if (user is Map) {
+          var userResponse = user.cv<UserGetResponse>();
+          var userId = userResponse.userId.v;
+          if (userId != null) {
+            subscription.add(UserRecordSim(userResponse: userResponse));
+          } else {
+            subscription.add(null);
+          }
+        }
       } else {
         break;
       }

@@ -88,7 +88,7 @@ class FirebaseAuthSimPluginServer {
   }
 
   /// Sign in anonymous
-  Future<void> handleFirebaseAuthSignOut(Map<String, Object?> params) async {
+  Future<void> handleFirebaseAuthSixgnOut(Map<String, Object?> params) async {
     // var signOutRequest = params.cv<UserSignOutRequest>();
 
     await _lock.synchronized(() async {
