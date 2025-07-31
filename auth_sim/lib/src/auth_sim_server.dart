@@ -15,7 +15,7 @@ import 'auth_sim_plugin.dart'; // ignore: implementation_imports
 /// One per client/app
 class FirebaseAuthSimPluginServer {
   /// Firebase auth sim server
-  final FirebaseAuthSimPlugin firebaseAuthSimServer;
+  final FirebaseAuthSimPlugin firebaseAuthSimPlugin;
 
   /// Firebase auth
   final FirebaseAuthLocalAdmin firebaseAuth;
@@ -23,7 +23,7 @@ class FirebaseAuthSimPluginServer {
   final _lock = Lock();
 
   /// Constructor
-  FirebaseAuthSimPluginServer(this.firebaseAuthSimServer, this.firebaseAuth);
+  FirebaseAuthSimPluginServer(this.firebaseAuthSimPlugin, this.firebaseAuth);
 
   /// Last subscriptionId
   int lastSubscriptionId = 0;

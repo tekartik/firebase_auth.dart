@@ -15,7 +15,7 @@ import 'auth_sim_message.dart';
 import 'auth_sim_server.dart';
 
 /// Auth sim service
-class FirebaseAuthSimService extends FirebaseSimServiceBase {
+class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
   /// Firebase auth sim plugin
   late FirebaseAuthSimPlugin firebaseAuthSimPlugin;
   final _expando = Expando<FirebaseAuthSimPluginServer>();
@@ -24,7 +24,7 @@ class FirebaseAuthSimService extends FirebaseSimServiceBase {
   static final serviceName = 'firebase_auth';
 
   /// Sim service
-  FirebaseAuthSimService() : super(serviceName) {
+  FirebaseAuthSimServerService() : super(serviceName) {
     initAuthSimBuilders();
   }
 

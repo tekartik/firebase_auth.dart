@@ -15,7 +15,7 @@ Future<void> main(List<String> args) async {
     port: urlKvPort,
     plugins: [
       FirebaseAuthSimPlugin(
-        firebaseAuthSimService: FirebaseAuthSimService(),
+        firebaseAuthSimServerService: FirebaseAuthSimServerService(),
         firebaseAuthService: FirebaseAuthServiceSembast(
           databaseFactory: databaseFactoryMemory,
         ),

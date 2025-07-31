@@ -4,7 +4,7 @@ import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_app_web_socket/web_socket.dart';
 import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_plugin.dart';
-import 'package:tekartik_firebase_auth_sim/src/auth_sim_service.dart';
+import 'package:tekartik_firebase_auth_sim/src/auth_sim_server_service.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_sim/firebase_sim.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
@@ -22,9 +22,9 @@ Future<TestContext> initTestContextSim() async {
     databaseFactory: databaseFactory,
   );
   var testContext = TestContext();
-  var firebaseAuthSimService = FirebaseAuthSimService();
+  var firebaseAuthSimService = FirebaseAuthSimServerService();
   var firebaseAuthSimPlugin = FirebaseAuthSimPlugin(
-    firebaseAuthSimService: firebaseAuthSimService,
+    firebaseAuthSimServerService: firebaseAuthSimService,
     firebaseAuthService: firebaseAuthService,
   );
   // The server use firebase io

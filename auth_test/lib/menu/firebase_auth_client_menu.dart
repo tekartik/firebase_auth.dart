@@ -17,7 +17,7 @@ void firebaseAuthMainMenu({required FirebaseAuthMainMenuContext context}) {
   StreamSubscription? subscription;
   menu('signIn', () {
     item('current user', () async {
-      auth.currentUser;
+      write('current user: ${auth.currentUser}');
     });
     item('register on current user', () async {
       subscription?.cancel().unawait();

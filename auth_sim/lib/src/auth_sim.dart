@@ -8,7 +8,7 @@ import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_sembast/auth_sembast_mixin.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_message.dart';
-import 'package:tekartik_firebase_auth_sim/src/auth_sim_service.dart';
+import 'package:tekartik_firebase_auth_sim/src/auth_sim_server_service.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_user_sim.dart';
 import 'package:tekartik_firebase_sim/firebase_sim.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
@@ -120,7 +120,7 @@ class _FirebaseAuthSim
       ..anonymous.setValue(isAnonymous)
       ..emailVerified.setValue(emailVerified);
     await simClient.sendRequest<void>(
-      FirebaseAuthSimService.serviceName,
+      FirebaseAuthSimServerService.serviceName,
       methodAuthUserSet,
       userSetRequest.toMap(),
     );
@@ -132,7 +132,7 @@ class _FirebaseAuthSim
     var userDeleteRequest = UserGetRequest()..userId.setValue(uid);
 
     await simClient.sendRequest<void>(
-      FirebaseAuthSimService.serviceName,
+      FirebaseAuthSimServerService.serviceName,
       methodAuthUserDelete,
       userDeleteRequest.toMap(),
     );
@@ -143,7 +143,7 @@ class _FirebaseAuthSim
     var simClient = await appSim.simClient;
     var userGetRequest = UserGetRequest()..userId.setValue(uid);
     var map = await simClient.sendRequest<Model>(
-      FirebaseAuthSimService.serviceName,
+      FirebaseAuthSimServerService.serviceName,
       methodAuthUserGet,
       userGetRequest.toMap(),
     );
@@ -160,7 +160,7 @@ class _FirebaseAuthSim
     var simClient = await appSim.simClient;
     var userGetRequest = UserGetByEmailRequest()..email.setValue(email);
     var map = await simClient.sendRequest<Model>(
-      FirebaseAuthSimService.serviceName,
+      FirebaseAuthSimServerService.serviceName,
       methodAuthUserGetByEmail,
       userGetRequest.toMap(),
     );
@@ -183,7 +183,7 @@ class _FirebaseAuthSim
           await lock.synchronized(() async {
             await removeSubscription(subscription);
             await simClient?.sendRequest<void>(
-              FirebaseAuthSimService.serviceName,
+              FirebaseAuthSimServerService.serviceName,
               methodAuthUserGetCancel,
               {paramSubscriptionId: subscription.id},
             );
@@ -197,7 +197,7 @@ class _FirebaseAuthSim
       await lock.synchronized(() async {
         simClient = await appSim.simClient;
         var result = await simClient!.sendRequest<Map>(
-          FirebaseAuthSimService.serviceName,
+          FirebaseAuthSimServerService.serviceName,
           methodAuthUserGetListen,
           (UserGetRequest()..userId.v = userId).toMap(),
         );
@@ -222,7 +222,7 @@ class _FirebaseAuthSim
     while (true) {
       if (_subscriptions.containsKey(subscriptionId)) {
         var result = await simClient.sendRequest<Map>(
-          FirebaseAuthSimService.serviceName,
+          FirebaseAuthSimServerService.serviceName,
           methodAuthUserGetStream,
           {paramSubscriptionId: subscriptionId},
         );
@@ -259,7 +259,7 @@ class _FirebaseAuthSim
       ..email.setValue(email)
       ..password.setValue(password);
     var map = await simClient.sendRequest<Map>(
-      FirebaseAuthSimService.serviceName,
+      FirebaseAuthSimServerService.serviceName,
       methodAuthSignInEmailPassword,
       signInRequest.toMap(),
     );
@@ -291,7 +291,7 @@ class _FirebaseAuthSim
     ///
     var signInRequest = UserSignInAnonymouslyRequest();
     var map = await simClient.sendRequest<Map>(
-      FirebaseAuthSimService.serviceName,
+      FirebaseAuthSimServerService.serviceName,
       methodAuthSignInAnonymously,
       signInRequest.toMap(),
     );
