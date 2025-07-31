@@ -21,7 +21,7 @@ class FirebaseAuthSimService extends FirebaseSimServiceBase {
   final _expando = Expando<FirebaseAuthSimPluginServer>();
 
   /// Service name
-  static final serviceName = 'firebase_firebaseAuth';
+  static final serviceName = 'firebase_auth';
 
   /// Sim service
   FirebaseAuthSimService() : super(serviceName) {

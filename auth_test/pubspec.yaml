@@ -29,6 +29,15 @@ dependencies:
       url: https://github.com/tekartik/firebase.dart
       ref: dart3a
       path: firebase_local
+  tekartik_app_dev_menu:
+    git:
+      url: https://github.com/tekartik/app_common_utils.dart
+      ref: dart3a
+      path: app_dev_menu
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+      ref: dart3a
 
 dev_dependencies:
   process_run: ">=1.2.1+1"

@@ -10,10 +10,6 @@ updates:
     schedule:
       interval: "monthly"
   - package-ecosystem: "pub"
-    directory: "auth_browser"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "pub"
     directory: "auth_jwt"
     schedule:
       interval: "monthly"

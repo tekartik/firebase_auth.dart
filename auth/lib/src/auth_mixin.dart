@@ -122,6 +122,9 @@ mixin FirebaseUserCredentialMixin implements UserCredential {
   @override
   FirebaseUser get user =>
       throw UnimplementedError('FirebaseUserCredential.user');
+
+  @override
+  String toString() => 'UserCredential($user, $credential)';
 }
 
 /// Firebase auth credential mixin

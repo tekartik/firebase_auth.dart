@@ -64,4 +64,7 @@ class UserCredentialSim with FirebaseUserCredentialMixin {
 class FirebaseAuthCredentialSim implements FirebaseAuthCredential {
   @override
   String get providerId => 'sim';
+
+  @override
+  String toString() => 'AuthCredential(provider: $providerId)';
 }
