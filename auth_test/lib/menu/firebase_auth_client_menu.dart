@@ -33,8 +33,8 @@ void firebaseAuthMainMenu({required FirebaseAuthMainMenuContext context}) {
       var credentials = await auth.signInAnonymously();
       write('credentials: $credentials');
     });
-    item('signOut', () {
-      subscription?.cancel();
+    item('signOut', () async {
+      await auth.signOut();
     });
   });
 }

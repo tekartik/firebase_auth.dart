@@ -10,6 +10,9 @@ abstract class FirebaseAuthServiceSim implements FirebaseAuthService {
   /// database factory to store local current user id
   factory FirebaseAuthServiceSim({required DatabaseFactory databaseFactory}) =>
       _FirebaseAuthServiceSim(databaseFactory: databaseFactory);
+
+  @override
+  FirebaseAuthSim auth(App app);
 }
 
 class _FirebaseAuthServiceSim
@@ -21,7 +24,7 @@ class _FirebaseAuthServiceSim
     initAuthSimBuilders();
   }
   @override
-  FirebaseAuth auth(App app) {
+  FirebaseAuthSim auth(App app) {
     return getInstance(app, () {
       assert(app is FirebaseAppSim, 'app not compatible (${app.runtimeType})');
       return FirebaseAuthSim(

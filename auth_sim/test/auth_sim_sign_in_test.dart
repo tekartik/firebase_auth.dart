@@ -4,10 +4,8 @@ library;
 
 import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
-import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
 import 'package:tekartik_firebase_auth_sim/auth_sim.dart';
 import 'package:tekartik_firebase_auth_test/auth_local_admin_test.dart';
-import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:test/test.dart';
@@ -28,7 +26,7 @@ void main() {
       var databaseFactory = newDatabaseFactoryMemory();
       authService = FirebaseAuthServiceSim(databaseFactory: databaseFactory);
       app = testContext.firebase.initializeApp();
-      auth = authService.auth(app) as FirebaseAuthSim;
+      auth = authService.auth(app);
     });
 
     tearDownAll(() {
