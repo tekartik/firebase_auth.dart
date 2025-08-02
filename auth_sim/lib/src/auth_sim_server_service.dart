@@ -12,7 +12,7 @@ import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 
 import 'auth_sim_message.dart';
-import 'auth_sim_server.dart';
+import 'auth_sim_plugin_server.dart';
 
 /// Auth sim service
 class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
