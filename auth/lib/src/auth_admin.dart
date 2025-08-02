@@ -15,4 +15,13 @@ abstract class FirebaseAuthLocalAdmin implements FirebaseAuth {
 
   /// User record stream
   Stream<UserRecord?> onUserRecord(String uid);
+
+  /// Do not sign in but get the credentials
+  Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
+    required String email,
+    required String password,
+  });
+
+  /// Do not sign in but get the credentials
+  Future<UserCredential> getSignInAnonymouslyUserCredential();
 }

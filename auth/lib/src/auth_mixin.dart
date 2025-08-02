@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:tekartik_common_utils/stream/subject.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth/auth_admin.dart';
 
 /// Compat.
 typedef AuthServiceMixin = FirebaseAuthServiceMixin;
@@ -180,4 +181,24 @@ mixin FirebaseUserRecordDefaultMixin implements UserRecord {
   @override
   String? get tokensValidAfterTime =>
       throw UnimplementedError('FirebaseUserRecord.tokensValidAfterTime');
+}
+
+/// Mixin
+mixin FirebaseAuthLocalAdminDefaultMixin implements FirebaseAuthLocalAdmin {
+  @override
+  Future<UserCredential> getSignInAnonymouslyUserCredential() {
+    throw UnimplementedError(
+      'FirebaseAuthLocalAdmin.getSignInAnonymouslyUserCredential',
+    );
+  }
+
+  @override
+  Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
+    required String email,
+    required String password,
+  }) {
+    throw UnimplementedError(
+      'FirebaseAuthLocalAdmin.getSignInWithEmailAndPasswordUserCredential',
+    );
+  }
 }

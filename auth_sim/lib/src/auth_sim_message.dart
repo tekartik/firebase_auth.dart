@@ -41,7 +41,7 @@ const methodAuthSignInEmailPassword = 'auth/sign_in/email_password';
 /// Signin anonymously
 const methodAuthSignInAnonymously = 'auth/sign_in/anonymous';
 
-/// Signout sign out
+/// Signout sign out, delete the user if needed
 const methodAuthSignOut = 'auth/sign_out';
 
 /// User sign in email password

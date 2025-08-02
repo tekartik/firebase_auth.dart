@@ -26,17 +26,26 @@ void localAdminTests({
       await auth.setUser('u2', email: email);
       expect((await auth.getUserByEmail(email))!.uid, 'u2');
     });
+
     test('signIn/signOut email password', () async {
       var auth = getAuth();
       var email = 'user1';
       var password = 'password1';
+      var userCredential = await auth
+          .getSignInWithEmailAndPasswordUserCredential(
+            email: email,
+            password: password,
+          );
+      expect(userCredential.user.isAnonymous, isFalse);
+      var currentUser = await auth.onCurrentUser.first;
+      expect(currentUser, isNull);
       var user = await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      var currentUser = await auth.onCurrentUser.first;
-      print('currentUser: $currentUser');
+      currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
+      expect(currentUser.uid, userCredential.user.uid);
       expect(currentUser.email, email);
       expect(currentUser.emailVerified, isFalse);
       expect(currentUser.isAnonymous, isFalse);
@@ -47,9 +56,17 @@ void localAdminTests({
 
     test('signIn/signOut anonymously', () async {
       var auth = getAuth();
-      var user = await auth.signInAnonymously();
+      var userCredential = await auth.getSignInAnonymouslyUserCredential();
+      expect(userCredential.user.isAnonymous, isTrue);
+
       var currentUser = await auth.onCurrentUser.first;
+      expect(currentUser, isNull);
+      var user = await auth.signInAnonymously();
+      currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
+
+      /// A new user is created each time!
+      expect(currentUser.uid, isNot(userCredential.user.uid));
       expect(currentUser.email, isNull);
       expect(currentUser.isAnonymous, isTrue);
       print('currentUser: $currentUser');

@@ -1,8 +1,6 @@
-import 'dart:async';
-
 import 'package:path/path.dart';
-import 'package:synchronized/synchronized.dart';
 import 'package:tekartik_app_cv_sembast/app_cv_sembast.dart';
+import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
@@ -26,13 +24,20 @@ abstract class FirebaseAuthSim implements FirebaseAuth, FirebaseAuthLocalAdmin {
 }
 
 class _FirebaseAuthSim
-    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
+    with
+        FirebaseAppProductMixin<FirebaseAuth>,
+        FirebaseAuthMixin,
+        FirebaseAuthLocalAdminDefaultMixin
     implements FirebaseAuthSim, FirebaseAuthLocalAdmin {
   final FirebaseAppSim appSim;
   final FirebaseAuthServiceSim authServiceSim;
   FirebaseSim get firebaseSim => appSim.firebase as FirebaseSim;
 
-  _FirebaseAuthSim({required this.appSim, required this.authServiceSim});
+  _FirebaseAuthSim({required this.appSim, required this.authServiceSim}) {
+    // Lazy start
+    // ignore: unnecessary_statements
+    _ready;
+  }
 
   @override
   void dispose() {
@@ -53,6 +58,7 @@ class _FirebaseAuthSim
   StreamSubscription? _currentUserSubscription;
   String? _currentUserId;
   late final _ready = () async {
+    firebaseAuthSembastInitDbBuilders();
     _database = await authServiceSim.databaseFactory.openDatabase(
       join(firebaseSim.localPath, appSim.name, 'auth.db'),
     );
@@ -248,8 +254,7 @@ class _FirebaseAuthSim
     subscription.doneCompleter.complete();
   }
 
-  @override
-  Future<UserCredential> signInWithEmailAndPassword({
+  Future<UserGetResponse> _getSignInWithEmailAndPasswordUserReponse({
     required String email,
     required String password,
   }) async {
@@ -264,6 +269,37 @@ class _FirebaseAuthSim
       signInRequest.toMap(),
     );
     var userResponse = map.cv<UserGetResponse>();
+    return userResponse;
+  }
+
+  @override
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    var userResponse = await _getSignInWithEmailAndPasswordUserReponse(
+      email: email,
+      password: password,
+    );
+    return await _handleSignInResponse(userResponse);
+  }
+
+  @override
+  Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
+    required String email,
+    required String password,
+  }) async {
+    var userResponse = await _getSignInWithEmailAndPasswordUserReponse(
+      email: email,
+      password: password,
+    );
+    var userRecordSim = UserRecordSim(userResponse: userResponse);
+    return UserCredentialSim(userRecordSim);
+  }
+
+  Future<UserCredentialSim> _handleSignInResponse(
+    UserGetResponse userResponse,
+  ) async {
     var responseUid = userResponse.userId.v;
     if (responseUid == null) {
       throw StateError('Login failed');
@@ -277,15 +313,9 @@ class _FirebaseAuthSim
     return UserCredentialSim(userRecordSim);
   }
 
-  @override
-  Future<UserCredential> signInAnonymously() async {
+  Future<UserGetResponse> _getSignInAnonymouslyUserResponse() async {
     await _ready;
     var simClient = await appSim.simClient;
-
-    var currentUser = this.currentUser as FirebaseUserSim?;
-    if (currentUser != null && currentUser.isAnonymous) {
-      return UserCredentialSim(currentUser.userRecordSim);
-    }
 
     /// Reuse current if any
     ///
@@ -296,18 +326,41 @@ class _FirebaseAuthSim
       signInRequest.toMap(),
     );
     var userResponse = map.cv<UserGetResponse>();
-    var responseUid = userResponse.userId.v;
-    if (responseUid == null) {
-      throw StateError('Login failed');
+    return userResponse;
+  }
+
+  @override
+  Future<UserCredential> signInAnonymously() async {
+    await _ready;
+
+    /*
+    // Re-use existing?
+    var currentUser = this.currentUser as FirebaseUserSim?;
+    if (currentUser != null && currentUser.isAnonymous) {
+      return UserCredentialSim(currentUser.userRecordSim);
     }
+    */
+
+    var userResponse = await _getSignInAnonymouslyUserResponse();
+    return await _handleSignInResponse(userResponse);
+  }
+
+  @override
+  Future<UserCredential> getSignInAnonymouslyUserCredential() async {
+    var userResponse = await _getSignInAnonymouslyUserResponse();
     var userRecordSim = UserRecordSim(userResponse: userResponse);
-    currentUserAdd(FirebaseUserSim(userRecordSim));
     return UserCredentialSim(userRecordSim);
   }
 
   @override
   Future signOut() async {
+    // ignore: unnecessary_statements
+    await _ready;
+    var currentUser = await onCurrentUser.first;
     await firebaseAuthCurrentUserRecord.delete(_database);
+    if (currentUser != null && currentUser.isAnonymous) {
+      await deleteUser(currentUser.uid);
+    }
     currentUserAdd(null);
     _currentUserId = null;
   }

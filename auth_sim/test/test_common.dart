@@ -15,9 +15,11 @@ class TestContext {
 }
 
 // memory only
-Future<TestContext> initTestContextSim() async {
+Future<TestContext> initTestContextSim({
+  DatabaseFactory? databaseFactory,
+}) async {
   var firebaseLocalServer = FirebaseLocal();
-  var databaseFactory = newDatabaseFactoryMemory();
+  databaseFactory ??= newDatabaseFactoryMemory();
   var firebaseAuthService = FirebaseAuthServiceSembast(
     databaseFactory: databaseFactory,
   );

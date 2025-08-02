@@ -1,4 +1,5 @@
 import 'package:path/path.dart' as p;
+import 'package:sembast/timestamp.dart';
 import 'package:tekartik_app_cv_sembast/app_cv_sembast.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
@@ -16,8 +17,13 @@ abstract class FirebaseAuthServiceSembast implements FirebaseAuthService {
   }) => FirebaseAuthServiceSembastImpl(databaseFactory: databaseFactory);
 }
 
-var _cvInitialized = () {
+/// Init db builders
+void firebaseAuthSembastInitDbBuilders() {
   cvAddConstructors([DbUser.new, DbCurrentUser.new]);
+}
+
+var _cvInitialized = () {
+  firebaseAuthSembastInitDbBuilders();
 }();
 
 /// Firebase auth Sembast implementation
@@ -56,6 +62,9 @@ abstract class FirebaseAuthSembast
 
 /// User record
 class DbUser extends DbStringRecordBase {
+  /// Creation date
+  final created = CvField<Timestamp>('created');
+
   /// Name
   final name = CvField<String>('name');
 
@@ -69,7 +78,7 @@ class DbUser extends DbStringRecordBase {
   final isAnonymous = CvField<bool>('isAnonymous');
 
   @override
-  CvFields get fields => [name, email, emailVerified, isAnonymous];
+  CvFields get fields => [created, name, email, emailVerified, isAnonymous];
 }
 
 /// User mode
@@ -92,7 +101,10 @@ var _userStore = cvStringStoreFactory.store<DbUser>('user');
 
 /// Firebase auth Sembast implementation
 class FirebaseAuthSembastImpl
-    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
+    with
+        FirebaseAppProductMixin<FirebaseAuth>,
+        FirebaseAuthMixin,
+        FirebaseAuthLocalAdminDefaultMixin
     implements FirebaseAuthSembast {
   StreamSubscription? _currentUserRecordSubscription;
   StreamSubscription? _currentUserSubscription;
@@ -211,11 +223,87 @@ class FirebaseAuthSembastImpl
   }) async {
     await _ready;
     var dbUser = await _database.transaction((txn) async {
-      var dbUser = await _userStore.findFirst(
+      var dbUser = await _txnGetSignInWithEmailAndPasswordUserCredential(
         txn,
-        finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)),
+        email: email,
+        password: password,
       );
-      dbUser ??= await _userStore.add(txn, DbUser()..email.v = email);
+      await firebaseAuthCurrentUserRecord.put(
+        txn,
+        DbCurrentUser()..uid.v = dbUser.id,
+      );
+      // Also set the current user directly
+      currentUserAdd(_FirebaseUserSembast(dbUser));
+      return dbUser;
+    });
+
+    return _FirebaseUserCredentialSembast(dbUser);
+  }
+
+  Future<DbUser> _txnGetSignInWithEmailAndPasswordUserCredential(
+    Transaction txn, {
+    required String email,
+    required String password,
+  }) async {
+    var dbUser = await _userStore.findFirst(
+      txn,
+      finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)),
+    );
+    dbUser ??= await _userStore.add(txn, DbUser()..email.v = email);
+    return dbUser;
+  }
+
+  @override
+  Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
+    required String email,
+    required String password,
+  }) async {
+    await _ready;
+    var dbUser = await _database.transaction((txn) async {
+      var dbUser = await _txnGetSignInWithEmailAndPasswordUserCredential(
+        txn,
+        email: email,
+        password: password,
+      );
+      return dbUser;
+    });
+
+    return _FirebaseUserCredentialSembast(dbUser);
+  }
+
+  Future<DbUser> _txnGetSignInAnonymouslyUserCredential(Transaction txn) async {
+    /// Delete old existing
+    await _userStore.delete(
+      txn,
+      finder: Finder(
+        filter: Filter.and([
+          Filter.equals(dbUserModel.isAnonymous.name, true),
+          Filter.or([
+            Filter.isNull(dbUserModel.created.name),
+            Filter.lessThan(
+              dbUserModel.created.name,
+              Timestamp.now().addDuration(const Duration(days: 30)),
+            ),
+          ]),
+        ]),
+      ),
+    );
+    var created = Timestamp.now();
+    var dbUser = await _userStore.add(
+      txn,
+      DbUser()
+        ..created.v = created
+        ..name.v = 'Anonymous ${created.toIso8601String()}'
+        ..isAnonymous.v = true,
+    );
+    return dbUser;
+  }
+
+  @override
+  Future<UserCredential> signInAnonymously() async {
+    await _ready;
+    var dbUser = await _database.transaction((txn) async {
+      var dbUser = await _txnGetSignInAnonymouslyUserCredential(txn);
       await firebaseAuthCurrentUserRecord.put(
         txn,
         DbCurrentUser()..uid.v = dbUser.id,
@@ -229,28 +317,10 @@ class FirebaseAuthSembastImpl
   }
 
   @override
-  Future<UserCredential> signInAnonymously() async {
+  Future<UserCredential> getSignInAnonymouslyUserCredential() async {
     await _ready;
     var dbUser = await _database.transaction((txn) async {
-      /// Delete existing
-      await _userStore.delete(
-        txn,
-        finder: Finder(
-          filter: Filter.equals(dbUserModel.isAnonymous.name, true),
-        ),
-      );
-      var dbUser = await _userStore.add(
-        txn,
-        DbUser()
-          ..name.v = 'Anonymous'
-          ..isAnonymous.v = true,
-      );
-      await firebaseAuthCurrentUserRecord.put(
-        txn,
-        DbCurrentUser()..uid.v = dbUser.id,
-      );
-      // Also set the current user directly
-      currentUserAdd(_FirebaseUserSembast(dbUser));
+      var dbUser = await _txnGetSignInAnonymouslyUserCredential(txn);
       return dbUser;
     });
 
@@ -261,7 +331,22 @@ class FirebaseAuthSembastImpl
   Future<void> signOut() async {
     // ignore: unnecessary_statements
     await _ready;
-    await firebaseAuthCurrentUserRecord.delete(_database);
+
+    await _database.transaction((txn) async {
+      var currentUser = await firebaseAuthCurrentUserRecord.get(txn);
+      if (currentUser != null) {
+        var id = currentUser.uid.v!;
+
+        var record = _userStore.record(id);
+        var dbUser = await record.get(txn);
+        if (dbUser?.isAnonymous.v == true) {
+          await record.delete(txn);
+        }
+
+        await firebaseAuthCurrentUserRecord.delete(txn);
+      }
+    });
+
     currentUserAdd(null);
   }
 
