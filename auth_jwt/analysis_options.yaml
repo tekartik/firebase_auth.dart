@@ -7,6 +7,6 @@ include: package:tekartik_lints/strict.yaml
 #   rules:
 #     - camel_case_types
 
-analyzer:
+# analyzer:
 #   exclude:
 #     - path/to/excluded/files/**

@@ -6,7 +6,6 @@ var topDir = '..';
 Future<void> main() async {
   for (var dir in [
     'auth',
-    'auth_browser',
     'auth_jwt',
     'auth_local',
     'auth_sembast',
