@@ -77,6 +77,8 @@ class _FirebaseAuthSim
           }
           _currentUserSubscription = onUserRecord(userId).listen((record) {
             if (record == null) {
+              // Record not found, delete current user
+              firebaseAuthCurrentUserRecord.delete(_database);
               currentUserAdd(null);
             } else {
               currentUserAdd(FirebaseUserSim(record));
@@ -232,7 +234,6 @@ class _FirebaseAuthSim
           methodAuthUserGetStream,
           {paramSubscriptionId: subscriptionId},
         );
-        // devPrint(result);
         // null means cancelled
         if (result[paramDone] == true) {
           break;
@@ -246,6 +247,8 @@ class _FirebaseAuthSim
           } else {
             subscription.add(null);
           }
+        } else {
+          subscription.add(null);
         }
       } else {
         break;

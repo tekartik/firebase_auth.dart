@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, unused_import
+// ignore_for_file:  unused_import
 
 library;
 
@@ -41,6 +41,9 @@ void main() {
     test('re-init', () async {
       var email = 'user1';
       var password = 'password1';
+
+      var currentUser = await auth.onCurrentUser.first;
+      expect(currentUser, isNull);
       var user = await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -49,8 +52,14 @@ void main() {
       await app.delete();
       await initContext();
 
-      var currentUser = await auth.onCurrentUser.first;
+      currentUser = await auth.onCurrentUser.first;
+
       expect(currentUser!.uid, uid);
+      await auth.deleteUser(uid);
+      await app.delete();
+      await initContext();
+      currentUser = await auth.onCurrentUser.first;
+      expect(currentUser, isNull);
     });
   });
 }
