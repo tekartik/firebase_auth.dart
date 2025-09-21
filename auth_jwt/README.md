@@ -16,7 +16,6 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth_jwt
-      ref: dart3a
     version: '>=0.1.1'
 ```
 

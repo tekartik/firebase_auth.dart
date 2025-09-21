@@ -12,7 +12,6 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth_local
-      ref: dart3a
     version: '>=0.3.8'
 ```
 
@@ -33,7 +32,6 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth_node
-      ref: dart3a
     version: '>=0.3.8'
 ```
 
@@ -54,7 +52,6 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: dart3a
     version: '>=0.3.8'
 ```
 

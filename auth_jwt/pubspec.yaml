@@ -15,14 +15,12 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase
-      ref: dart3a
     version: '>=0.4.0+0'
 
   tekartik_firebase_auth:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: dart3a
     version: '>=0.1.0'
 
   rsa_pkcs: '>=1.1.2'
@@ -30,18 +28,15 @@ dependencies:
     git:
       url: https://github.com/tekartik/http.dart
       path: http
-      ref: dart3a
     version: '>=0.5.5'
   tekartik_app_crypto:
     git:
       url: https://github.com/tekartik/app_common_utils.dart
-      ref: dart3a
       path: app_crypto
     version: '>=0.1.0'
   tekartik_common_utils:
     git:
       url: https://github.com/tekartik/common_utils.dart
-      ref: dart3a
 dev_dependencies:
   test: ">=1.24.0"
   yaml: ">=3.1.2"
@@ -53,7 +48,6 @@ dev_dependencies:
   tekartik_browser_utils:
     git:
       url: https://github.com/tekartik/browser_utils.dart
-      ref: dart3a
     version: '>=0.1.0'
 dependency_overrides:
 resolution: workspace

@@ -8,5 +8,4 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth_sim
-      ref: dart3a
 ```

@@ -13,18 +13,15 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth
-      ref: dart3a
     version: '>=0.9.1'
   tekartik_firebase_local:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase_local
-      ref: dart3a
     version: '>=0.4.0+0'
   tekartik_firebase:
     git:
       url: https://github.com/tekartik/firebase.dart
-      ref: dart3a
       path: firebase
 
 dev_dependencies:
@@ -34,7 +31,6 @@ dev_dependencies:
     git:
       url: https://github.com/tekartik/firebase_auth.dart
       path: auth_test
-      ref: dart3a
     version: '>=0.8.0'
   build_runner: ">=2.4.13"
   build_test: ">=0.10.9+1"
