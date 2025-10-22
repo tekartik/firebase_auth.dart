@@ -8,8 +8,6 @@ import 'package:tekartik_firebase_auth_sembast/auth_sembast_mixin.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_message.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_server_service.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_user_sim.dart';
-import 'package:tekartik_firebase_sim/firebase_sim.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 
 import 'auth_service_sim.dart';

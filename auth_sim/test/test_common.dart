@@ -17,6 +17,7 @@ class TestContext {
 // memory only
 Future<TestContext> initTestContextSim({
   DatabaseFactory? databaseFactory,
+  int? port,
 }) async {
   var firebaseLocalServer = FirebaseLocal();
   databaseFactory ??= newDatabaseFactoryMemory();
@@ -34,6 +35,7 @@ Future<TestContext> initTestContextSim({
     firebaseLocalServer,
     webSocketChannelServerFactory: webSocketChannelServerFactoryMemory,
     plugins: [firebaseAuthSimPlugin],
+    port: port,
   );
   testContext.firebase = getFirebaseSim(
     clientFactory: webSocketChannelClientFactoryMemory,

@@ -6,7 +6,7 @@ import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth_sim/auth_sim.dart';
 import 'package:tekartik_firebase_auth_test/auth_local_admin_test.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_client.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:test/test.dart';
 
@@ -24,7 +24,10 @@ void main() {
     var databaseFactory = newDatabaseFactoryMemory();
 
     Future<void> initContext() async {
-      testContext = await initTestContextSim(databaseFactory: databaseFactory);
+      testContext = await initTestContextSim(
+        databaseFactory: databaseFactory,
+        port: 0,
+      );
       authService = FirebaseAuthServiceSim(databaseFactory: databaseFactory);
       app = testContext.firebase.initializeApp();
       auth = authService.auth(app);

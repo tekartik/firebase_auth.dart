@@ -7,7 +7,7 @@ import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_plugin.dart';
-import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
+import 'package:tekartik_firebase_sim/firebase_sim_server_mixin.dart';
 // ignore: implementation_imports
 import 'package:tekartik_firebase_sim/src/firebase_sim_common.dart';
 
@@ -34,7 +34,7 @@ class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
     RpcMethodCall methodCall,
   ) async {
     try {
-      var simServerChannel = firebaseSimServerExpando[channel]!;
+      var simServerChannel = simServer.channel(channel);
       var firebaseAuthSimPluginServer = _expando[channel] ??= () {
         var app = simServerChannel.app!;
         var firebaseAuth =
