@@ -14,8 +14,8 @@ import 'test_common.dart';
 
 void main() {
   // debugRpcServer = devTrue;
-  debugFirebaseSimServer = devTrue;
-  debugFirebaseSimClient = devTrue;
+  // debugFirebaseSimServer = devTrue;
+  // debugFirebaseSimClient = devTrue;
   group('sign_in', () {
     late FirebaseApp app;
     late FirebaseAuthSim auth;
