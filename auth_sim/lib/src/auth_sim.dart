@@ -1,6 +1,7 @@
 import 'package:path/path.dart';
 import 'package:tekartik_app_cv_sembast/app_cv_sembast.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
+import 'package:tekartik_common_utils/env_utils.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
@@ -112,6 +113,7 @@ class _FirebaseAuthSim
   @override
   FirebaseAuthService get service => authServiceSim;
 
+  Future<FirebaseSimAppClient> get _simClient => appSim.simAppClient;
   @override
   Future<void> setUser(
     String uid, {
@@ -119,7 +121,7 @@ class _FirebaseAuthSim
     bool? emailVerified,
     bool? isAnonymous,
   }) async {
-    var simClient = await appSim.simClient;
+    var simClient = await _simClient;
     var userSetRequest = UserSetRequest()
       ..userId.setValue(uid)
       ..email.setValue(email)
@@ -134,7 +136,7 @@ class _FirebaseAuthSim
 
   @override
   Future<void> deleteUser(String uid) async {
-    var simClient = await appSim.simClient;
+    var simClient = await _simClient;
     var userDeleteRequest = UserGetRequest()..userId.setValue(uid);
 
     await simClient.sendRequest<void>(
@@ -146,7 +148,7 @@ class _FirebaseAuthSim
 
   @override
   Future<UserRecord?> getUser(String uid) async {
-    var simClient = await appSim.simClient;
+    var simClient = await _simClient;
     var userGetRequest = UserGetRequest()..userId.setValue(uid);
     var map = await simClient.sendRequest<Model>(
       FirebaseAuthSimServerService.serviceName,
@@ -163,7 +165,7 @@ class _FirebaseAuthSim
 
   @override
   Future<UserRecord?> getUserByEmail(String email) async {
-    var simClient = await appSim.simClient;
+    var simClient = await _simClient;
     var userGetRequest = UserGetByEmailRequest()..email.setValue(email);
     var map = await simClient.sendRequest<Model>(
       FirebaseAuthSimServerService.serviceName,
@@ -181,18 +183,26 @@ class _FirebaseAuthSim
   @override
   Stream<UserRecordSim?> onUserRecord(String userId) {
     late ServerSubscriptionSim<UserRecordSim?> subscription;
-    late FirebaseSimClient? simClient;
+    late FirebaseSimAppClient? simClient;
     final lock = Lock();
     subscription = ServerSubscriptionSim(
       StreamController(
         onCancel: () async {
           await lock.synchronized(() async {
             await removeSubscription(subscription);
-            await simClient?.sendRequest<void>(
-              FirebaseAuthSimServerService.serviceName,
-              methodAuthUserGetCancel,
-              {paramSubscriptionId: subscription.id},
-            );
+            // Allow failure here, in case server already closed
+            try {
+              await simClient?.sendRequest<void>(
+                FirebaseAuthSimServerService.serviceName,
+                methodAuthUserGetCancel,
+                {paramSubscriptionId: subscription.id},
+              );
+            } catch (e) {
+              if (isDebug) {
+                // ignore: avoid_print
+                print('Ignoring subscription cancel error $e');
+              }
+            }
             await subscription.done;
           });
         },
@@ -201,7 +211,7 @@ class _FirebaseAuthSim
 
     () async {
       await lock.synchronized(() async {
-        simClient = await appSim.simClient;
+        simClient = await _simClient;
         var result = await simClient!.sendRequest<Map>(
           FirebaseAuthSimServerService.serviceName,
           methodAuthUserGetListen,
@@ -220,7 +230,7 @@ class _FirebaseAuthSim
 
   // do until cancelled
   Future _getStream(
-    FirebaseSimClient simClient,
+    FirebaseSimAppClient simClient,
     String path,
     ServerSubscriptionSim subscription,
   ) async {
@@ -260,7 +270,7 @@ class _FirebaseAuthSim
     required String password,
   }) async {
     await _ready;
-    var simClient = await appSim.simClient;
+    var simClient = await _simClient;
     var signInRequest = UserSignInEmailPasswordRequest()
       ..email.setValue(email)
       ..password.setValue(password);
@@ -316,7 +326,7 @@ class _FirebaseAuthSim
 
   Future<UserGetResponse> _getSignInAnonymouslyUserResponse() async {
     await _ready;
-    var simClient = await appSim.simClient;
+    var simClient = await _simClient;
 
     /// Reuse current if any
     ///

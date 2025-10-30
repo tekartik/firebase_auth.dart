@@ -18,7 +18,8 @@ import 'auth_sim_plugin_server.dart';
 class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
   /// Firebase auth sim plugin
   late FirebaseAuthSimPlugin firebaseAuthSimPlugin;
-  final _expando = Expando<FirebaseAuthSimPluginServer>();
+  final _appServers =
+      <FirebaseSimServerProjectApp, FirebaseAuthSimPluginServer>{};
 
   /// Service name
   static final serviceName = 'firebase_auth';
@@ -29,14 +30,15 @@ class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
   }
 
   @override
-  FutureOr<Object?> onCall(
+  FutureOr<Object?> onAppCall(
+    FirebaseSimServerProjectApp projectApp,
     RpcServerChannel channel,
     RpcMethodCall methodCall,
   ) async {
     try {
-      var simServerChannel = simServer.channel(channel);
-      var firebaseAuthSimPluginServer = _expando[channel] ??= () {
-        var app = simServerChannel.app!;
+      var firebaseAuthSimPluginServer = _appServers[projectApp] ??= () {
+        var app = projectApp.app!;
+
         var firebaseAuth =
             firebaseAuthSimPlugin.firebaseAuthService.auth(app)
                 as FirebaseAuthLocalAdmin;
@@ -89,7 +91,7 @@ class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
           var map = resultAsMap(parameters);
           return await firebaseAuthSimPluginServer.handleAuthUserGetCancel(map);
       }
-      return super.onCall(channel, methodCall);
+      return super.onAppCall(projectApp, channel, methodCall);
     } catch (e, st) {
       if (isDebug) {
         // ignore: avoid_print
