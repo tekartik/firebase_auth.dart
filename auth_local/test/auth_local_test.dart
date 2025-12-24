@@ -7,18 +7,20 @@ import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
 void main() {
+  var authService = authServiceLocal;
   var firebase = FirebaseLocal();
-  runAuthTests(firebase: firebase, authService: authServiceLocal);
+  runAuthTests(firebase: firebase, authService: authService);
 
   group('auth', () {
-    test('factory', () {
-      expect(authServiceLocal.supportsListUsers, isTrue);
+    test('service', () {
+      expect(authService.supportsListUsers, isTrue);
+      expect(authService.supportsCurrentUser, isTrue);
     });
-    runAuthTests(firebase: firebase, authService: authServiceLocal);
+    runAuthTests(firebase: firebase, authService: authService);
 
     group('auth', () {
       var app = firebase.initializeApp(name: 'auth');
-      var auth = authServiceLocal.auth(app) as AuthLocal;
+      var auth = authService.auth(app) as AuthLocal;
 
       tearDownAll(() {
         return app.delete();

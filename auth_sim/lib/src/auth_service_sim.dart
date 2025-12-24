@@ -38,7 +38,7 @@ class _FirebaseAuthServiceSim
   bool get supportsCurrentUser => true;
 
   @override
-  bool get supportsListUsers => true;
+  bool get supportsListUsers => false;
 }
 
 /// Private extension
