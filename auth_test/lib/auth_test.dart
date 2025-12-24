@@ -42,6 +42,7 @@ void runAuthAppTests({
     test('app', () {
       expect(firebaseAuth.app, app);
       expect(firebaseAuth.service, authService);
+      expect(app.getProduct<FirebaseAuth>(), firebaseAuth);
     });
     test('unique', () {
       expect(authService.auth(app), firebaseAuth);
