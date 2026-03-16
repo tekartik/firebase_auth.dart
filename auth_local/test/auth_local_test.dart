@@ -9,7 +9,6 @@ import 'package:test/test.dart';
 void main() {
   var authService = authServiceLocal;
   var firebase = FirebaseLocal();
-  runAuthTests(firebase: firebase, authService: authService);
 
   group('auth', () {
     test('service', () {

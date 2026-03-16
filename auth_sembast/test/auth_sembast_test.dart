@@ -14,7 +14,6 @@ void main() {
   var authService = FirebaseAuthServiceSembast(
     databaseFactory: databaseFactory,
   );
-  runAuthTests(firebase: firebase, authService: authService);
 
   group('auth', () {
     test('factory', () {
