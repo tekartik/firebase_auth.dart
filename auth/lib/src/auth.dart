@@ -129,6 +129,9 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
   /// was revoked.
   Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked});
 
+  /// Sends a verification email to a user.
+  Future<void> sendEmailVerification();
+
   /// Default Firebase Auth instance.
   static FirebaseAuth get instance =>
       (FirebaseApp.instance as FirebaseAppMixin).getProduct<FirebaseAuth>()!;

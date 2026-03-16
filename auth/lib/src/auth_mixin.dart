@@ -74,6 +74,12 @@ mixin FirebaseAuthMixin
     throw UnsupportedError('$runtimeType.verifyIdToken not supported');
   }
 
+  /// Sends a verification email to a user.
+  @override
+  Future<void> sendEmailVerification() {
+    throw UnsupportedError('$runtimeType.sendEmailVerification not supported');
+  }
+
   @override
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
