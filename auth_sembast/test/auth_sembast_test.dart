@@ -21,5 +21,16 @@ void main() {
       expect(authService.supportsCurrentUser, isTrue);
     });
     runAuthTests(firebase: firebase, authService: authService);
+
+    test('memory', () async {
+      var auth1 = newFirebaseAuthMemory() as FirebaseAuthSembast;
+      var auth2 = newFirebaseAuthMemory();
+      expect(auth1, isNot(auth2));
+      await auth1.setUser('1234');
+      expect(await auth1.getUser('1234'), isNotNull);
+      expect(await auth2.getUser('1234'), isNull);
+      await auth1.app.delete();
+      await auth2.app.delete();
+    });
   });
 }

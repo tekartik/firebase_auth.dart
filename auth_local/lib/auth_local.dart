@@ -23,4 +23,4 @@ FirebaseAuthService newAuthServiceLocal() => auth_local.AuthServiceLocal();
 
 /// Quick firestore test helper
 FirebaseAuth newAuthLocal() =>
-    newAuthServiceLocal().auth(newFirebaseAppLocal());
+    newAuthServiceLocal().auth(newFirebaseAppMemory());
