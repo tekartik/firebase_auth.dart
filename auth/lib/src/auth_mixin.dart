@@ -187,6 +187,10 @@ mixin FirebaseUserRecordDefaultMixin implements UserRecord {
   @override
   String? get tokensValidAfterTime =>
       throw UnimplementedError('FirebaseUserRecord.tokensValidAfterTime');
+
+  @override
+  String toString() =>
+      '$uid, $email, $displayName${isAnonymous ? ', anonymous' : ''}, ${emailVerified ? '' : ' email not verified'}';
 }
 
 /// Mixin

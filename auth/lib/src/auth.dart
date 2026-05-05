@@ -289,10 +289,28 @@ abstract class UserInfoWithIdToken {
 /// User list result
 abstract class ListUsersResult {
   /// to use for next page token
-  String get pageToken;
+  String? get pageToken;
 
   /// The user list, some items can be null
   List<UserRecord?> get users;
+
+  /// Factory constructor
+  factory ListUsersResult({
+    String? pageToken,
+    required List<UserRecord?> users,
+  }) {
+    return _ListUsersResult(pageToken: pageToken, users: users);
+  }
+}
+
+class _ListUsersResult implements ListUsersResult {
+  @override
+  final String? pageToken;
+
+  @override
+  final List<UserRecord?> users;
+
+  _ListUsersResult({required this.pageToken, required this.users});
 }
 
 /// Interface representing a decoded Firebase ID token, returned from the
