@@ -22,7 +22,7 @@ class DatabaseAuthException implements Exception {
   String toString() => 'DatabaseAuthException($message)';
 }
 
-Future databaseGetRecord({
+Future<void> databaseGetRecord({
   required String idToken,
   required String? database,
   required String path,
@@ -43,5 +43,6 @@ Future databaseGetRecord({
       'https://$database.firebaseio.com/$path.json?access_token=$idToken',
     ),
   );
+  // ignore: avoid_print
   print(text);
 }

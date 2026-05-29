@@ -54,14 +54,18 @@ void runAuthAppTests({
           var user = (await firebaseAuth.listUsers(
             maxResults: 1,
           )).users.firstOrNull;
+          // ignore: avoid_print
           print('user: $user');
         } catch (e) {
           // Error: Credential implementation provided to initializeApp() via the 'credential' property has insufficient permission to access the requested resource. See https://firebase.google.com/docs/admin/setup for details on how to authenticate this SDK with appropriate permissions.
           if (e.toString().contains('insufficient permission')) {
             // Ok!
+            // ignore: avoid_print
             print('insufficient permission $e');
           } else {
+            // ignore: avoid_print
             print('runtimeType: ${e.runtimeType}');
+            // ignore: avoid_print
             print(e);
             rethrow;
           }
@@ -74,6 +78,7 @@ void runAuthAppTests({
         Future checkUser(UserInfo? user) async {
           if (user != null) {
             if (user is UserInfoWithIdToken) {
+              // ignore: avoid_print
               print(
                 'idToken: ${await (user as UserInfoWithIdToken).getIdToken()}',
               );
@@ -83,10 +88,12 @@ void runAuthAppTests({
         }
 
         var user = firebaseAuth.currentUser;
+        // ignore: avoid_print
         print('currentUser: $user');
         await checkUser(user);
 
         user = await firebaseAuth.onCurrentUser.first;
+        // ignore: avoid_print
         print('currentUser: $user');
         await checkUser(user);
       });

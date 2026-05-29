@@ -3,7 +3,7 @@ import 'package:http/http.dart';
 
 import 'import.dart';
 
-abstract class FirebaseAuthException {}
+abstract class FirebaseAuthException implements Exception {}
 
 class FirebaseAuthValidationException implements FirebaseAuthException {
   final String message;
@@ -149,6 +149,11 @@ abstract class FirebaseAuthInfo {
       FirebaseAuthInfoImpl.fromIdToken(idToken);
 }
 
+void _log(Object? object) {
+  // ignore: avoid_print
+  print(object);
+}
+
 class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
   @override
   String? get userId => payload!.userId;
@@ -160,8 +165,8 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
     var headers = jwt.headers;
     var claims = jwt.claims;
     if (debugFirebaseAuthInfo) {
-      print(jsonPretty(headers));
-      print(jsonPretty(claims));
+      _log('headers: ${jsonPretty(headers)}');
+      _log('claims: ${jsonPretty(claims)}');
       // devPrint(jwt);
     }
 
@@ -219,7 +224,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
   }) async {
     fetchKey ??= httpFetchKey;
     if (header?.alg != 'RS256') {
-      print('invalid jwt alg $header');
+      _log('invalid jwt alg $header');
       return false;
     }
 
@@ -247,7 +252,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
     // static const String pkcs1PublicHeader = '-----BEGIN RSA PUBLIC KEY-----';
     // static const String pkcs1PublicFooter = '-----END RSA PUBLIC KEY-----';
     if (key == null) {
-      print('no key for kid ${header!.kid}');
+      _log('no key for kid ${header!.kid}');
       return false;
     }
     var signer = JWTRsaSha256Signer(pem: key);
@@ -259,7 +264,7 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
         throw FirebaseAuthValidationException(errors.toString());
       }
     } catch (e) {
-      print('validator error $e');
+      _log('validator error $e');
       rethrow;
     }
 

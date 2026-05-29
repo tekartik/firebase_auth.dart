@@ -6,6 +6,7 @@ OutBuffer _outBuffer = OutBuffer(100);
 web.Element? _output = web.document.getElementById('output');
 
 void write([Object? message]) {
+  // ignore: avoid_print
   print(message);
   _output?.textContent = (_outBuffer..add('$message')).toString();
 }

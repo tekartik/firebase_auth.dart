@@ -61,6 +61,7 @@ void main() {
       });
       test('listUsers', () async {
         var user = (await auth.listUsers(maxResults: 1)).users.first!;
+        // ignore: avoid_print
         print(userRecordToJson(user));
       });
 
@@ -91,8 +92,10 @@ void main() {
       group('currentUser', () {
         test('currentUser', () async {
           var user = auth.currentUser;
+          // ignore: avoid_print
           print('currentUser: $user');
           user = await auth.onCurrentUser.first;
+          // ignore: avoid_print
           print('currentUser: $user');
           if (user != null) {
             expect(user, const TypeMatcher<UserInfoWithIdToken>());
