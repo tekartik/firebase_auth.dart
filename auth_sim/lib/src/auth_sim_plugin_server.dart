@@ -10,6 +10,7 @@ import 'package:tekartik_firebase_auth_sim/src/auth_sim_message.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 
 import 'auth_sim_plugin.dart'; // ignore: implementation_imports
+
 // ignore: implementation_imports
 
 /// One per client/app
