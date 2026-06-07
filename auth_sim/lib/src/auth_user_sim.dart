@@ -21,6 +21,15 @@ class UserRecordSim with FirebaseUserRecordDefaultMixin {
 
   @override
   String? get displayName => userResponse.name.v;
+
+  @override
+  bool get disabled => userResponse.disabled.v ?? false;
+
+  @override
+  String? get phoneNumber => userResponse.phoneNumber.v;
+
+  @override
+  String? get photoURL => userResponse.photoURL.v;
 }
 
 /// User Sembast

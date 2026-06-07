@@ -193,8 +193,32 @@ mixin FirebaseUserRecordDefaultMixin implements UserRecord {
       '$uid, $email, $displayName${isAnonymous ? ', anonymous' : ''}, ${emailVerified ? '' : ' email not verified'}';
 }
 
-/// Mixin
+/// Mixin for [FirebaseAuthAdmin]
+mixin FirebaseAuthAdminDefaultMixin implements FirebaseAuthAdmin {
+  @override
+  Future<UserRecord> createUser(FirebaseAuthCreateUserRequest request) {
+    throw UnsupportedError('$runtimeType.createUser not supported');
+  }
+
+  @override
+  Future<UserRecord?> getUser(String uid) {
+    throw UnsupportedError('$runtimeType.getUser not supported');
+  }
+
+  @override
+  Future<UserRecord?> getUserByEmail(String email) {
+    throw UnsupportedError('$runtimeType.getUserByEmail not supported');
+  }
+
+  @override
+  Future<void> deleteUser(String uid) {
+    throw UnsupportedError('$runtimeType.deleteUser not supported');
+  }
+}
+
+/// Mixin for [FirebaseAuthLocalAdmin]
 mixin FirebaseAuthLocalAdminDefaultMixin implements FirebaseAuthLocalAdmin {
+  /// Do not sign in but get the credentials
   @override
   Future<UserCredential> getSignInAnonymouslyUserCredential() {
     throw UnimplementedError(
@@ -202,6 +226,7 @@ mixin FirebaseAuthLocalAdminDefaultMixin implements FirebaseAuthLocalAdmin {
     );
   }
 
+  /// Do not sign in but get the credentials
   @override
   Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
     required String email,
@@ -210,5 +235,36 @@ mixin FirebaseAuthLocalAdminDefaultMixin implements FirebaseAuthLocalAdmin {
     throw UnimplementedError(
       'FirebaseAuthLocalAdmin.getSignInWithEmailAndPasswordUserCredential',
     );
+  }
+}
+
+/// Extension for [FirebaseAuthAdmin].
+extension FirebaseAuthAdminExt on FirebaseAuthAdmin {
+  /// Get or create a user based on the request.
+  ///
+  /// If [request.uid] is provided, it tries to get the user by uid first.
+  /// If not found or if uid was not provided, it tries to get the user by email.
+  /// If still not found, it creates a new user.
+  Future<UserRecord?> getOrCreateUserWith(
+    FirebaseAuthCreateUserRequest request,
+  ) async {
+    var uid = request.uid;
+    if (uid != null) {
+      var user = await getUser(uid);
+      if (user != null) {
+        return user;
+      }
+    }
+    var email = request.email;
+    if (email == null) {
+      throw StateError('Email is required to create user');
+    }
+
+    var user = await getUserByEmail(email);
+    if (user != null) {
+      return user;
+    }
+
+    return createUser(request);
   }
 }

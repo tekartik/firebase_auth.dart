@@ -2,10 +2,27 @@ import 'dart:async';
 
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart'; // ignore: implementation_imports
 import 'package:tekartik_firebase_local/firebase_local.dart';
+import 'package:uuid/uuid.dart';
 
 import 'import.dart';
+
+@Deprecated('Use firebaseAuthServiceLocal')
+FirebaseAuthService get authService => firebaseAuthServiceLocal;
+
+FirebaseAuthService newAuthServiceLocal() => newFirebaseAuthServiceLocal();
+
+/// For unit test
+FirebaseAuthService newFirebaseAuthServiceLocal() => AuthServiceLocal();
+
+/// Deprecated
+FirebaseAuth newAuthLocal() => newFirebaseAuthLocal();
+
+/// Quick firestore test helper
+FirebaseAuth newFirebaseAuthLocal() =>
+    newFirebaseAuthServiceLocal().auth(newFirebaseAppMemory());
 
 abstract class AuthLocalProvider implements AuthProvider {
   factory AuthLocalProvider() {
@@ -178,10 +195,15 @@ class UserLocal extends UserInfoLocal implements User {
 
 typedef AuthLocal = FirebaseAuthLocal;
 
-abstract class FirebaseAuthLocal implements FirebaseAuth {}
+abstract class FirebaseAuthLocal
+    implements FirebaseAuth, FirebaseAuthLocalAdmin, FirebaseAuthAdmin {}
 
 class AuthLocalImpl
-    with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin
+    with
+        FirebaseAppProductMixin<FirebaseAuth>,
+        FirebaseAuthMixin,
+        FirebaseAuthAdminDefaultMixin,
+        FirebaseAuthLocalAdminDefaultMixin
     implements AuthLocal {
   final AuthServiceLocal _authServiceLocal;
   final AppLocal _appLocal;
@@ -208,7 +230,11 @@ class AuthLocalImpl
   }
 
   @override
-  Future<UserRecord?> getUser(String? uid) async {
+  Future<UserRecord?> getUser(String uid) async {
+    return _getUserById(uid);
+  }
+
+  UserRecord? _getUserById(String uid) {
     for (var user in allUsers) {
       if (user.uid == uid) {
         return user;
@@ -231,6 +257,10 @@ class AuthLocalImpl
 
   @override
   Future<UserRecord?> getUserByEmail(String email) async {
+    return _getUserByEmail(email);
+  }
+
+  UserRecord? _getUserByEmail(String email) {
     for (var user in allUsers) {
       if (user.email == email) {
         return user;
@@ -246,6 +276,9 @@ class AuthLocalImpl
   }) async {
     var localOptions = options as AuthLocalSignInOptions?;
     var uid = localOptions?._userRecordLocal.uid;
+    if (uid == null) {
+      throw StateError('uid is null');
+    }
     var userRecord = await getUser(uid) as UserRecordLocal?;
 
     if (userRecord == null) {
@@ -288,6 +321,57 @@ class AuthLocalImpl
 
   @override
   FirebaseApp get app => _appLocal;
+
+  @override
+  Future<void> deleteUser(String uid) async {
+    allUsers.removeWhere((user) => user.uid == uid);
+  }
+
+  @override
+  Stream<UserRecord?> onUserRecord(String uid) =>
+      throw UnimplementedError('onUserRecord not implemented for auth local');
+
+  @override
+  Future<UserRecord> createUser(FirebaseAuthCreateUserRequest request) async {
+    var uid = request.uid;
+    if (uid != null) {
+      if (await getUser(uid) != null) {
+        throw StateError('user $uid already exists');
+      }
+    }
+    if (request.email != null) {
+      if (await getUserByEmail(request.email!) != null) {
+        throw StateError('user ${request.email} already exists');
+      }
+    }
+    uid ??= _generateId();
+    var userRecord = UserRecordLocal(uid: uid, isAnonymous: false)
+      ..email = request.email
+      ..displayName = request.displayName;
+
+    allUsers.add(userRecord);
+    return userRecord;
+  }
+
+  @override
+  Future<void> setUser(
+    String uid, {
+    String? email,
+    bool? isAnonymous,
+    bool? emailVerified,
+  }) async {
+    var userRecord = await getUser(uid) as UserRecordLocal?;
+    if (userRecord == null) {
+      userRecord = UserRecordLocal(
+        uid: uid,
+        emailVerified: emailVerified ?? true,
+        isAnonymous: isAnonymous ?? false,
+      )..email = email;
+      allUsers.add(userRecord);
+    } else {
+      userRecord.email = email ?? userRecord.email;
+    }
+  }
 }
 
 class DecodedIdTokenLocal implements DecodedIdToken {
@@ -320,7 +404,8 @@ class FirebaseAuthServiceLocal
 
 AuthServiceLocal? _authServiceLocal;
 
-AuthServiceLocal get authServiceLocal =>
+FirebaseAuthService get authServiceLocal => firebaseAuthServiceLocal;
+AuthServiceLocal get firebaseAuthServiceLocal =>
     _authServiceLocal ??= AuthServiceLocal();
 
-FirebaseAuthService get authService => authServiceLocal;
+String _generateId() => const Uuid().v4().toString();

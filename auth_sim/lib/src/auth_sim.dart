@@ -6,6 +6,7 @@ import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
 import 'package:tekartik_firebase_auth_sembast/auth_sembast_mixin.dart';
+
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_message.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_server_service.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_user_sim.dart';
@@ -132,6 +133,34 @@ class _FirebaseAuthSim
       methodAuthUserSet,
       userSetRequest.toMap(),
     );
+  }
+
+  @override
+  Future<UserRecord> createUser(FirebaseAuthCreateUserRequest request) async {
+    var simClient = await _simClient;
+    var userCreateRequest = UserCreateRequest()
+      ..uid.setValue(request.uid)
+      ..disabled.setValue(request.disabled)
+      ..displayName.setValue(request.displayName)
+      ..email.setValue(request.email)
+      ..emailVerified.setValue(request.emailVerified)
+      ..password.setValue(request.password)
+      ..phoneNumber.setValue(request.phoneNumber)
+      ..photoURL.setValue(request.photoURL);
+    try {
+      var map = await simClient.sendRequest<Model>(
+        FirebaseAuthSimServerService.serviceName,
+        methodAuthUserCreate,
+        userCreateRequest.toMap(),
+      );
+      var userResponse = map.cv<UserGetResponse>();
+      return UserRecordSim(userResponse: userResponse);
+    } catch (e) {
+      if (e.toString().contains('already-exists')) {
+        throw StateError(e.toString());
+      }
+      rethrow;
+    }
   }
 
   @override

@@ -63,6 +63,10 @@ class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
           var map = resultAsMap(parameters);
           return await firebaseAuthSimPluginServer
               .handleFirebaseAuthSetUserRequest(map);
+        case methodAuthUserCreate:
+          var map = resultAsMap(parameters);
+          return await firebaseAuthSimPluginServer
+              .handleFirebaseAuthCreateUserRequest(map);
         case methodAuthUserDelete:
           var map = resultAsMap(parameters);
           await firebaseAuthSimPluginServer.handleFirebaseAuthDeleteUserRequest(

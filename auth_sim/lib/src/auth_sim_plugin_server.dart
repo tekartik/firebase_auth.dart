@@ -7,6 +7,7 @@ import 'package:tekartik_common_utils/stream/stream_poller.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth_sim/src/auth_sim_message.dart';
+
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 
 import 'auth_sim_plugin.dart'; // ignore: implementation_imports
@@ -53,6 +54,37 @@ class FirebaseAuthSimPluginServer {
     });
   }
 
+  /// Create user
+  Future<Model> handleFirebaseAuthCreateUserRequest(
+    Map<String, Object?> params,
+  ) async {
+    var userCreateRequest = params.cv<UserCreateRequest>();
+    var uid = userCreateRequest.uid.v;
+    var email = userCreateRequest.email.v;
+    var displayName = userCreateRequest.displayName.v;
+    var emailVerified = userCreateRequest.emailVerified.v;
+    var disabled = userCreateRequest.disabled.v;
+    var password = userCreateRequest.password.v;
+    var phoneNumber = userCreateRequest.phoneNumber.v;
+    var photoURL = userCreateRequest.photoURL.v;
+
+    var request = FirebaseAuthCreateUserRequest(
+      uid: uid,
+      email: email,
+      displayName: displayName,
+      emailVerified: emailVerified,
+      disabled: disabled,
+      password: password,
+      phoneNumber: phoneNumber,
+      photoURL: photoURL,
+    );
+
+    return await _lock.synchronized(() async {
+      var user = await firebaseAuth.createUser(request);
+      return _fromUserRecord(user).toMap();
+    });
+  }
+
   /// Sign in email password
   Future<Model?> handleFirebaseAuthSignInEmailPassword(
     Map<String, Object?> params,
@@ -89,7 +121,7 @@ class FirebaseAuthSimPluginServer {
   }
 
   /// Sign in anonymous
-  Future<void> handleFirebaseAuthSixgnOut(Map<String, Object?> params) async {
+  Future<void> handleFirebaseAuthSignOut(Map<String, Object?> params) async {
     // var signOutRequest = params.cv<UserSignOutRequest>();
 
     await _lock.synchronized(() async {
@@ -130,7 +162,11 @@ class FirebaseAuthSimPluginServer {
       ..emailVerified.v = user.emailVerified
       ..email.v = user.email
       ..anonymous.v = user.isAnonymous
-      ..userId.v = user.uid;
+      ..userId.v = user.uid
+      ..name.v = user.displayName
+      ..disabled.v = user.disabled
+      ..phoneNumber.v = user.phoneNumber
+      ..photoURL.v = user.photoURL;
   }
 
   /// Get user

@@ -2,6 +2,7 @@
 
 import 'package:tekartik_firebase/firebase_mixin.dart';
 import 'package:tekartik_firebase_auth/auth.dart';
+import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/src/auth_mixin.dart';
 import 'package:test/test.dart';
 
@@ -22,6 +23,27 @@ class FirebaseAuthMock
   FirebaseApp get app => throw UnimplementedError();
 
   @override
+  FirebaseAuthService get service => throw UnimplementedError();
+}
+
+class FirebaseAuthAdminMock
+    with
+        FirebaseAppProductMixin<FirebaseAuth>,
+        FirebaseAuthMixin,
+        FirebaseAuthAdminDefaultMixin
+    implements FirebaseAuthAdmin {
+  @override
+  // TODO: implement app
+  FirebaseApp get app => throw UnimplementedError();
+
+  @override
+  Future<FirebaseUser?> reloadCurrentUser() {
+    // TODO: implement reloadCurrentUser
+    throw UnimplementedError();
+  }
+
+  @override
+  // TODO: implement service
   FirebaseAuthService get service => throw UnimplementedError();
 }
 

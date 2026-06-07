@@ -10,6 +10,7 @@ void initAuthSimBuilders() {
     UserSignInEmailPasswordRequest.new,
     UserSignInAnonymouslyRequest.new,
     UserSignOutRequest.new,
+    UserCreateRequest.new,
   ]);
 }
 
@@ -18,6 +19,9 @@ const paramUserRecord = 'user';
 
 /// Auth user set
 const methodAuthUserSet = 'auth/user/set';
+
+/// Auth user create
+const methodAuthUserCreate = 'auth/user/create';
 
 /// Auth user delete
 const methodAuthUserDelete = 'auth/user/delete';
@@ -112,6 +116,63 @@ class UserGetResponse extends CvModelBase {
   /// name
   final name = CvField<String>('name');
 
+  /// disabled
+  final disabled = CvField<bool>('disabled');
+
+  /// phoneNumber
+  final phoneNumber = CvField<String>('phoneNumber');
+
+  /// photoURL
+  final photoURL = CvField<String>('photoURL');
+
   @override
-  CvFields get fields => [userId, email, anonymous, emailVerified, name];
+  CvFields get fields => [
+    userId,
+    email,
+    anonymous,
+    emailVerified,
+    name,
+    disabled,
+    phoneNumber,
+    photoURL,
+  ];
+}
+
+/// UserCreateRequest
+class UserCreateRequest extends CvModelBase {
+  /// User id
+  final uid = CvField<String>('uid');
+
+  /// disabled
+  final disabled = CvField<bool>('disabled');
+
+  /// displayName
+  final displayName = CvField<String>('displayName');
+
+  /// email
+  final email = CvField<String>('email');
+
+  /// emailVerified
+  final emailVerified = CvField<bool>('emailVerified');
+
+  /// password
+  final password = CvField<String>('password');
+
+  /// phoneNumber
+  final phoneNumber = CvField<String>('phoneNumber');
+
+  /// photoURL
+  final photoURL = CvField<String>('photoURL');
+
+  @override
+  CvFields get fields => [
+    uid,
+    disabled,
+    displayName,
+    email,
+    emailVerified,
+    password,
+    phoneNumber,
+    photoURL,
+  ];
 }

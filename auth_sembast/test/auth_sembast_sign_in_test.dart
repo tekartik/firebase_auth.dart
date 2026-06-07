@@ -4,7 +4,8 @@ library;
 
 import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
-import 'package:tekartik_firebase_auth_test/auth_local_admin_test.dart';
+import 'package:tekartik_firebase_auth_test/auth_admin_test_runner.dart';
+import 'package:tekartik_firebase_auth_test/auth_local_admin_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
@@ -27,5 +28,11 @@ void main() {
     });
 
     localAdminTests(getAuth: () => auth, newApp: () => newFirebaseAppLocal());
+    firebaseAuthAdminTests(
+      getAuth: () => auth,
+      newApp: () => newFirebaseAppLocal(),
+      email: 'sembastemail',
+      password: 'sembastpassword',
+    );
   });
 }

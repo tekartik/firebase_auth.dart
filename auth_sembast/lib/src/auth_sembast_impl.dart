@@ -58,7 +58,7 @@ class FirebaseAuthServiceSembastImpl
 
 /// Firebase auth Sembast
 abstract class FirebaseAuthSembast
-    implements FirebaseAuth, FirebaseAuthLocalAdmin {}
+    implements FirebaseAuth, FirebaseAuthLocalAdmin, FirebaseAuthAdmin {}
 
 /// User record
 class DbUser extends DbStringRecordBase {
@@ -77,8 +77,26 @@ class DbUser extends DbStringRecordBase {
   /// Anonymous
   final isAnonymous = CvField<bool>('isAnonymous');
 
+  /// Disabled
+  final disabled = CvField<bool>('disabled');
+
+  /// Phone number
+  final phoneNumber = CvField<String>('phoneNumber');
+
+  /// Photo URL
+  final photoURL = CvField<String>('photoURL');
+
   @override
-  CvFields get fields => [created, name, email, emailVerified, isAnonymous];
+  CvFields get fields => [
+    created,
+    name,
+    email,
+    emailVerified,
+    isAnonymous,
+    disabled,
+    phoneNumber,
+    photoURL,
+  ];
 }
 
 /// User mode
@@ -134,6 +152,50 @@ class FirebaseAuthSembastImpl
               ..isAnonymous.setValue(isAnonymous),
           );
     });
+  }
+
+  @override
+  Future<UserRecord> createUser(FirebaseAuthCreateUserRequest request) async {
+    await _ready;
+    var dbUser = await _database.transaction((txn) async {
+      var uid = request.uid;
+      if (uid != null) {
+        var existing = await _userStore.record(uid).get(txn);
+        if (existing != null) {
+          throw StateError('uid-already-exists');
+        }
+      }
+      var email = request.email;
+      if (email != null) {
+        var existing = await _userStore.findFirst(
+          txn,
+          finder: Finder(filter: _emailFilter(email)),
+        );
+        if (existing != null) {
+          throw StateError('email-already-exists');
+        }
+      }
+
+      var created = Timestamp.now();
+      var user = DbUser()
+        ..created.v = created
+        ..name.v = request.displayName
+        ..email.v = email
+        ..emailVerified.v = request.emailVerified
+        ..isAnonymous.v = false
+        ..disabled.v = request.disabled
+        ..phoneNumber.v = request.phoneNumber
+        ..photoURL.v = request.photoURL;
+
+      if (uid != null) {
+        await _userStore.record(uid).put(txn, user);
+        return (await _userStore.record(uid).get(txn))!;
+      } else {
+        var added = await _userStore.add(txn, user);
+        return added;
+      }
+    });
+    return _UserRecordSembast(dbUser);
   }
 
   @override
@@ -436,7 +498,7 @@ class _UserRecordSembast with FirebaseUserRecordDefaultMixin {
   _UserRecordSembast(this.dbUser);
 
   @override
-  String? get displayName => null;
+  String? get displayName => dbUser.name.v;
 
   @override
   String get uid => dbUser.id;
@@ -449,4 +511,13 @@ class _UserRecordSembast with FirebaseUserRecordDefaultMixin {
 
   @override
   String? get email => dbUser.email.v;
+
+  @override
+  bool get disabled => dbUser.disabled.v ?? false;
+
+  @override
+  String? get phoneNumber => dbUser.phoneNumber.v;
+
+  @override
+  String? get photoURL => dbUser.photoURL.v;
 }

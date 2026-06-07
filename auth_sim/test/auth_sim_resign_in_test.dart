@@ -5,7 +5,7 @@ library;
 import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth_sim/auth_sim.dart';
-import 'package:tekartik_firebase_auth_test/auth_local_admin_test.dart';
+import 'package:tekartik_firebase_auth_test/auth_local_admin_test_runner.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:test/test.dart';
