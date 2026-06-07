@@ -30,7 +30,6 @@ void main() {
     localAdminTests(getAuth: () => auth, newApp: () => newFirebaseAppLocal());
     firebaseAuthAdminTests(
       getAuth: () => auth,
-      newApp: () => newFirebaseAppLocal(),
       email: 'sembastemail',
       password: 'sembastpassword',
     );

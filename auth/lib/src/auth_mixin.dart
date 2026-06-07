@@ -237,34 +237,3 @@ mixin FirebaseAuthLocalAdminDefaultMixin implements FirebaseAuthLocalAdmin {
     );
   }
 }
-
-/// Extension for [FirebaseAuthAdmin].
-extension FirebaseAuthAdminExt on FirebaseAuthAdmin {
-  /// Get or create a user based on the request.
-  ///
-  /// If [request.uid] is provided, it tries to get the user by uid first.
-  /// If not found or if uid was not provided, it tries to get the user by email.
-  /// If still not found, it creates a new user.
-  Future<UserRecord?> getOrCreateUserWith(
-    FirebaseAuthCreateUserRequest request,
-  ) async {
-    var uid = request.uid;
-    if (uid != null) {
-      var user = await getUser(uid);
-      if (user != null) {
-        return user;
-      }
-    }
-    var email = request.email;
-    if (email == null) {
-      throw StateError('Email is required to create user');
-    }
-
-    var user = await getUserByEmail(email);
-    if (user != null) {
-      return user;
-    }
-
-    return createUser(request);
-  }
-}

@@ -40,7 +40,7 @@ void main() {
     );
     firebaseAuthAdminTests(
       getAuth: () => auth,
-      newApp: () => testContext.firebase.initializeApp(),
+
       email: 'simemail',
       password: 'simpassword',
     );

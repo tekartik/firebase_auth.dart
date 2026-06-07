@@ -25,7 +25,6 @@ void main() {
 
     firebaseAuthAdminTests(
       getAuth: () => auth,
-      newApp: () => newFirebaseAppLocal(),
       email: 'testemail',
       password: 'testpwd',
     );
