@@ -49,7 +49,7 @@ extension FirebaseAuthAdminExt on FirebaseAuthAdmin {
   /// If [request.uid] is provided, it tries to get the user by uid first.
   /// If not found or if uid was not provided, it tries to get the user by email.
   /// If still not found, it creates a new user.
-  Future<UserRecord?> getOrCreateUser(
+  Future<UserRecord> getOrCreateUser(
     FirebaseAuthCreateUserRequest request,
   ) async {
     var uid = request.uid;
