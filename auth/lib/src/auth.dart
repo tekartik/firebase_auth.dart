@@ -350,3 +350,48 @@ abstract class DecodedIdToken {
   /// The uid corresponding to the user who the ID token belonged to.
   String get uid;
 }
+
+/// Firebase Auth extension
+extension TekartikFirebaseAuthExt on FirebaseAuth {
+  /// Sign in or sign up with email and password.
+  Future<UserCredential> signInOrUpWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      var credential = await signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return credential;
+    } catch (e) {
+      return await createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    }
+  }
+
+  /// Get or create a user with email and password.
+  ///
+  /// This implementation signs out the user after the operation.
+  Future<FirebaseUser> getOrCreateUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    UserCredential userCredential;
+    try {
+      userCredential = await signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } catch (_) {
+      userCredential = await createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    }
+    await signOut();
+    return userCredential.user;
+  }
+}

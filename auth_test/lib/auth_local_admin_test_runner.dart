@@ -92,12 +92,11 @@ void localAdminTests({
       var password = 'password1';
       await auth.signOut();
 
-      var userCredential = await auth
-          .getSignInWithEmailAndPasswordUserCredential(
-            email: email,
-            password: password,
-          );
-      expect(userCredential.user.isAnonymous, isFalse);
+      var userInfo = await auth.getOrCreateUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      expect(userInfo.isAnonymous, isFalse);
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser, isNull);
       var user = await auth.signInWithEmailAndPassword(
@@ -106,7 +105,7 @@ void localAdminTests({
       );
       currentUser = await auth.onCurrentUser.first;
       expect(currentUser!.uid, user.user.uid);
-      expect(currentUser.uid, userCredential.user.uid);
+      expect(currentUser.uid, userInfo.uid);
       expect(currentUser.email, email);
       expect(currentUser.emailVerified, isFalse);
       expect(currentUser.isAnonymous, isFalse);
