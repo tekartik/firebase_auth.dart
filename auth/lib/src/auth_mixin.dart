@@ -91,6 +91,16 @@ mixin FirebaseAuthMixin
   }
 
   @override
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) {
+    throw UnimplementedError(
+      '$runtimeType.createUserWithEmailAndPassword not supported',
+    );
+  }
+
+  @override
   Future<UserCredential> signInAnonymously() {
     throw UnsupportedError('$runtimeType.signInAnonymously not supported');
   }

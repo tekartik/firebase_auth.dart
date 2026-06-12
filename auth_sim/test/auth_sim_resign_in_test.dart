@@ -45,13 +45,16 @@ void main() {
       var email = 'user1';
       var password = 'password1';
 
+      await auth.signOut();
       var currentUser = await auth.onCurrentUser.first;
       expect(currentUser, isNull);
-      var user = await auth.signInWithEmailAndPassword(
+      var credential = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      var uid = user.user.uid;
+      currentUser = await auth.onCurrentUser.first;
+      expect(currentUser, isNotNull);
+      var uid = credential.user.uid;
       await app.delete();
       await initContext();
 

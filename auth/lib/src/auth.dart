@@ -106,6 +106,37 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
     required String password,
   });
 
+  /// Tries to create a new user account with the given email address and
+  /// password.
+  ///
+  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// - **email-already-in-use**:
+  ///  - Thrown if there already exists an account with the given email address.
+  /// - **invalid-email**:
+  ///  - Thrown if the email address is not valid.
+  /// - **operation-not-allowed**:
+  ///  - Thrown if email/password accounts are not enabled. Enable
+  ///    email/password accounts in the Firebase Console, under the Auth tab.
+  /// - **weak-password**:
+  ///  - Thrown if the password is not strong enough.
+  /// - **too-many-requests**:
+  ///  - Thrown if the user sent too many requests at the same time, for security
+  ///     the api will not allow too many attempts at the same time, user will have
+  ///     to wait for some time
+  /// - **user-token-expired**:
+  ///  - Thrown if the user is no longer authenticated since his refresh token
+  ///    has been expired
+  /// - **network-request-failed**:
+  ///  - Thrown if there was a network request error, for example the user
+  ///    doesn't have internet connection
+  /// - **operation-not-allowed**:
+  ///  - Thrown if email/password accounts are not enabled. Enable
+  ///    email/password accounts in the Firebase Console, under the Auth tab.
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  });
+
   /// Asynchronously creates and becomes an anonymous user.
   ///
   /// If there is already an anonymous user signed in, that user will be

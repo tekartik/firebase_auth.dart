@@ -294,7 +294,18 @@ class _FirebaseAuthSim
     subscription.doneCompleter.complete();
   }
 
-  Future<UserGetResponse> _getSignInWithEmailAndPasswordUserReponse({
+  @override
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    await createUser(
+      FirebaseAuthCreateUserRequest(email: email, password: password),
+    );
+    return signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  Future<UserGetResponse> _signInWithEmailAndPasswordUser({
     required String email,
     required String password,
   }) async {
@@ -317,7 +328,7 @@ class _FirebaseAuthSim
     required String email,
     required String password,
   }) async {
-    var userResponse = await _getSignInWithEmailAndPasswordUserReponse(
+    var userResponse = await _signInWithEmailAndPasswordUser(
       email: email,
       password: password,
     );
@@ -329,11 +340,11 @@ class _FirebaseAuthSim
     required String email,
     required String password,
   }) async {
-    var userResponse = await _getSignInWithEmailAndPasswordUserReponse(
+    var userRecord = await getOrCreateUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    var userRecordSim = UserRecordSim(userResponse: userResponse);
+    var userRecordSim = userRecord as UserRecordSim;
     return UserCredentialSim(userRecordSim);
   }
 

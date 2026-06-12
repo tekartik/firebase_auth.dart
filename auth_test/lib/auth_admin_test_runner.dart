@@ -56,5 +56,48 @@ void firebaseAuthAdminTests({
         await auth.deleteUser(uid);
       }
     });
+    test('create user with email/password', () async {
+      var auth = getAuth();
+
+      // Check user exists
+      var fetched = await auth.getUserByEmail(email);
+      if (fetched != null) {
+        await auth.deleteUser(fetched.uid);
+      }
+      await auth.signOut();
+      expect(auth.currentUser?.uid, isNull);
+      var userCredentials = await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      var user = userCredentials.user;
+      var uid = user.uid;
+      try {
+        expect(user.uid, uid);
+        expect(user.email, email);
+        //expect(user.displayName, 'Create User 1');
+        // expect(user.emailVerified, isTrue);
+        // expect(user.disabled, isFalse);
+        /*expect(user.phoneNumber, '+1234567890');
+        expect(user.photoURL, 'https://example.com/photo.jpg');*/
+
+        // Check user exists
+        fetched = await auth.getUser(uid);
+        expect(fetched!.uid, uid);
+        expect(fetched.email, email);
+
+        expect(auth.currentUser?.uid, uid);
+        // Check user exists
+        fetched = await auth.getUserByEmail(email);
+        expect(fetched!.uid, uid);
+        // Create with existing email should throw StateError
+        expect(
+          () => auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
+          throwsA(isA<StateError>()),
+        );
+      } finally {
+        await auth.deleteUser(uid);
+      }
+    });
   });
 }

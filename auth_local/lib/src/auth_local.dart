@@ -86,8 +86,13 @@ class UserRecordLocal
     this.disabled = false,
     this.emailVerified = true,
     this.isAnonymous = false,
+    this.localPassword,
+    this.email,
+    this.displayName,
   });
 
+  /// Optional
+  final String? localPassword;
   @override
   dynamic get customClaims => null;
 
@@ -212,7 +217,34 @@ class AuthLocalImpl
     currentUserAdd(adminUserInfo);
   }
 
-  //String get localPath => _appLocal?.localPath;
+  @override
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    await createUser(
+      FirebaseAuthCreateUserRequest(email: email, password: password),
+    );
+    return signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  @override
+  Future<UserCredential> signInWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    var userRecord = _getUserByEmail(email);
+    if (userRecord == null) {
+      throw StateError('user $email not found');
+    }
+    if (userRecord.localPassword != null &&
+        userRecord.localPassword != password) {
+      throw StateError('invalid password');
+    }
+    var user = userRecord.toUser();
+    currentUserAdd(user);
+    return _wrapUserAsCredential(userRecord);
+  }
 
   @override
   Future<ListUsersResult> listUsers({
@@ -260,7 +292,11 @@ class AuthLocalImpl
     return _getUserByEmail(email);
   }
 
-  UserRecord? _getUserByEmail(String email) {
+  UserCredentialImpl _wrapUserAsCredential(UserRecordLocal user) {
+    return UserCredentialImpl(AuthCredentialImpl(), user.toUser());
+  }
+
+  UserRecordLocal? _getUserByEmail(String email) {
     for (var user in allUsers) {
       if (user.email == email) {
         return user;
@@ -345,9 +381,14 @@ class AuthLocalImpl
       }
     }
     uid ??= _generateId();
-    var userRecord = UserRecordLocal(uid: uid, isAnonymous: false)
-      ..email = request.email
-      ..displayName = request.displayName;
+    var userRecord = UserRecordLocal(
+      uid: uid,
+      isAnonymous: false,
+      localPassword: request.password,
+
+      email: request.email,
+      displayName: request.displayName,
+    );
 
     allUsers.add(userRecord);
     return userRecord;

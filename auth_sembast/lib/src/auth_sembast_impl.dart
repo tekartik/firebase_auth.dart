@@ -86,6 +86,9 @@ class DbUser extends DbStringRecordBase {
   /// Photo URL
   final photoURL = CvField<String>('photoURL');
 
+  /// Local password
+  final localPassword = CvField<String>('localPassword');
+
   @override
   CvFields get fields => [
     created,
@@ -96,6 +99,7 @@ class DbUser extends DbStringRecordBase {
     disabled,
     phoneNumber,
     photoURL,
+    localPassword,
   ];
 }
 
@@ -185,7 +189,8 @@ class FirebaseAuthSembastImpl
         ..isAnonymous.v = false
         ..disabled.v = request.disabled
         ..phoneNumber.v = request.phoneNumber
-        ..photoURL.v = request.photoURL;
+        ..photoURL.v = request.photoURL
+        ..localPassword.v = request.password;
 
       if (uid != null) {
         await _userStore.record(uid).put(txn, user);
@@ -279,13 +284,24 @@ class FirebaseAuthSembastImpl
   FirebaseAuthSembastImpl(this.authServiceSembast, this.appLocal);
 
   @override
+  Future<UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    await createUser(
+      FirebaseAuthCreateUserRequest(email: email, password: password),
+    );
+    return signInWithEmailAndPassword(email: email, password: password);
+  }
+
+  @override
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     await _ready;
     var dbUser = await _database.transaction((txn) async {
-      var dbUser = await _txnGetSignInWithEmailAndPasswordUserCredential(
+      var dbUser = await _txnGetSignInWithEmailAndPasswordUserCredentialOrThrow(
         txn,
         email: email,
         password: password,
@@ -300,6 +316,24 @@ class FirebaseAuthSembastImpl
     });
 
     return _FirebaseUserCredentialSembast(dbUser);
+  }
+
+  Future<DbUser> _txnGetSignInWithEmailAndPasswordUserCredentialOrThrow(
+    Transaction txn, {
+    required String email,
+    required String password,
+  }) async {
+    var dbUser = await _userStore.findFirst(
+      txn,
+      finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)),
+    );
+    if (dbUser == null) {
+      throw StateError('user-not-found');
+    }
+    if (dbUser.localPassword.v != null && dbUser.localPassword.v != password) {
+      throw StateError('wrong-password');
+    }
+    return dbUser;
   }
 
   Future<DbUser> _txnGetSignInWithEmailAndPasswordUserCredential(
@@ -419,9 +453,8 @@ class FirebaseAuthSembastImpl
   }
 
   @override
-  Future<User?> reloadCurrentUser() {
-    // TODO: implement reloadCurrentUser
-    throw UnimplementedError();
+  Future<User?> reloadCurrentUser() async {
+    return currentUser;
   }
 
   /// Dispose

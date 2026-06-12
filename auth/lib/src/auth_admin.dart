@@ -16,6 +16,7 @@ abstract class FirebaseAuthLocalAdmin
   Stream<UserRecord?> onUserRecord(String uid);
 
   /// Do not sign in but get the credentials
+  /// Create the user if needed
   Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
     required String email,
     required String password,
@@ -23,6 +24,28 @@ abstract class FirebaseAuthLocalAdmin
 
   /// Do not sign in but get the credentials
   Future<UserCredential> getSignInAnonymouslyUserCredential();
+}
+
+/// Extension for [FirebaseAuthLocalAdmin].
+extension FirebaseAuthLocalAdminExt on FirebaseAuthLocalAdmin {
+  /// Get or create a user based on the request.
+  ///
+  /// If [request.uid] is provided, it tries to get the user by uid first.
+  /// If not found or if uid was not provided, it tries to get the user by email.
+  /// If still not found, it creates a new user.
+  Future<UserRecord> getOrCreateUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async {
+    var user = await getUserByEmail(email);
+    if (user != null) {
+      return user;
+    }
+
+    return await createUser(
+      FirebaseAuthCreateUserRequest(email: email, password: password),
+    );
+  }
 }
 
 /// Firebase Auth Admin interface.

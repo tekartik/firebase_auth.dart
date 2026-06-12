@@ -11,12 +11,14 @@ import 'package:test/test.dart';
 
 void main() {
   group('sign in', () {
+    late FirebaseLocal firebase;
     late FirebaseAppLocal app;
     late FirebaseAuthSembast auth;
     late FirebaseAuthServiceSembast authService;
     setUp(() async {
       var databaseFactory = newDatabaseFactoryMemory();
-      app = newFirebaseAppLocal();
+      firebase = newFirebaseMemory();
+      app = firebase.initializeApp();
       authService = FirebaseAuthServiceSembast(
         databaseFactory: databaseFactory,
       );
@@ -27,7 +29,10 @@ void main() {
       return app.delete();
     });
 
-    localAdminTests(getAuth: () => auth, newApp: () => newFirebaseAppLocal());
+    localAdminTests(
+      getAuth: () => auth,
+      newApp: () => firebase.initializeApp(name: 'local_admin_test'),
+    );
     firebaseAuthAdminTests(
       getAuth: () => auth,
       email: 'sembastemail',

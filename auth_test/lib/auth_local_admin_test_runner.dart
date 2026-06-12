@@ -90,6 +90,8 @@ void localAdminTests({
       var auth = getAuth();
       var email = 'user1';
       var password = 'password1';
+      await auth.signOut();
+
       var userCredential = await auth
           .getSignInWithEmailAndPasswordUserCredential(
             email: email,
@@ -140,6 +142,10 @@ void localAdminTests({
       var app = auth.app;
       var email = 'user1';
       var password = 'password1';
+      await auth.getOrCreateUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       var user = await auth.signInWithEmailAndPassword(
         email: email,
         password: password,

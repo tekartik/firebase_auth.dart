@@ -30,7 +30,7 @@ const methodAuthUserDelete = 'auth/user/delete';
 const methodAuthUserGet = 'auth/user/get';
 
 /// Auth user get by email
-const methodAuthUserGetByEmail = 'auth/get_by_email';
+const methodAuthUserGetByEmail = 'auth/user/get_by_email';
 
 /// Auth user get listen
 const methodAuthUserGetListen = 'auth/get/listen'; // first query then next
