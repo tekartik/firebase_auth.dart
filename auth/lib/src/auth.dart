@@ -395,3 +395,16 @@ extension TekartikFirebaseAuthExt on FirebaseAuth {
     return userCredential.user;
   }
 }
+
+/// Firebase helper extension
+extension TekartikFirebaseAuthFirebaseAppExt on FirebaseApp {
+  /// Get auth app product.
+  FirebaseAuth auth() {
+    var auth = getProduct<FirebaseAuth>();
+    if (auth == null) {
+      throw StateError('No auth product for app $name');
+    } else {
+      return auth;
+    }
+  }
+}

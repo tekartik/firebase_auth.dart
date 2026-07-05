@@ -19,7 +19,8 @@ export 'package:tekartik_firebase_auth/src/auth.dart'
         UserInfoWithIdToken,
         UserRecord,
         ListUsersResult,
-        DecodedIdToken;
+        DecodedIdToken,
+        TekartikFirebaseAuthFirebaseAppExt;
 
 export 'package:tekartik_firebase_auth/src/user_create.dart'
     show FirebaseAuthCreateUserRequest;
