@@ -46,6 +46,7 @@ void runAuthAppTests({
     test('unique', () {
       expect(authService.auth(app), firebaseAuth);
       expect(app.getProduct<FirebaseAuth>(), firebaseAuth);
+      expect(app.auth(), firebaseAuth);
     });
 
     group('listUsers', () {
