@@ -388,6 +388,7 @@ class AuthLocalImpl
   @override
   Future<void> deleteUser(String uid) async {
     _allUsers.removeWhere((user) => user.uid == uid);
+    await signOut();
   }
 
   @override

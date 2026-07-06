@@ -506,7 +506,8 @@ class _FirebaseUserSembast with FirebaseUserMixin {
 
   @override
   Future<void> delete() async {
-    return auth.deleteUser(uid);
+    await auth.deleteUser(uid);
+    await auth.signOut();
   }
 }
 

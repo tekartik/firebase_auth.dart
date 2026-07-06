@@ -4,6 +4,7 @@ library;
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:test/test.dart';
 
+/// Auth
 void firebaseAuthAdminTests({
   required FirebaseAuthAdmin Function() getAuth,
   required String email,

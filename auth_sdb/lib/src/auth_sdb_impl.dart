@@ -221,6 +221,7 @@ class FirebaseAuthSdbImpl
         await _userStore.record(uid).delete(txn);
       },
     );
+    await signOut();
   }
 
   UserRecord? _dbUserToRecordOrNull(DbUser? dbUser) {
