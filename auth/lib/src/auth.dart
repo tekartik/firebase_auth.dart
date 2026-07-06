@@ -283,6 +283,19 @@ abstract class FirebaseUser extends UserInfo {
 
   /// If the user is anonymous.
   bool get isAnonymous;
+
+  /// Deletes and signs out the user.
+  ///
+  /// **Important**: this is a security-sensitive operation that requires the
+  /// user to have recently signed in. If this requirement isn't met, ask the
+  /// user to authenticate again and then call [User.reauthenticateWithCredential].
+  ///
+  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// - **requires-recent-login**:
+  ///  - Thrown if the user's last sign-in time does not meet the security
+  ///    threshold. Use [User.reauthenticateWithCredential] to resolve. This
+  ///    does not apply if the user is anonymous.
+  Future<void> delete();
 }
 
 /// Compat

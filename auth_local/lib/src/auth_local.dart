@@ -78,11 +78,20 @@ class AuthCredentialImpl implements AuthCredential {
   String get providerId => localProviderId;
 }
 
-class UserRecordLocal
+extension on UserRecordLocal {
+  _UserRecordLocal get _ => this as _UserRecordLocal;
+}
+
+abstract class UserRecordLocal implements UserRecord {}
+
+class _UserRecordLocal
     with FirebaseUserRecordDefaultMixin
-    implements UserRecord {
-  UserRecordLocal({
+    implements UserRecordLocal {
+  final FirebaseAuthLocal auth;
+  _UserRecordLocal({
+    required this.auth,
     required this.uid,
+    // ignore: unused_element_parameter
     this.disabled = false,
     this.emailVerified = true,
     this.isAnonymous = false,
@@ -136,38 +145,29 @@ class UserRecordLocal
   final String uid;
 
   UserInfo toUserInfo() {
-    return UserInfoLocal(uid: uid)
+    return _UserInfoLocal(auth: auth, uid: uid)
       ..email = email
       ..displayName = displayName;
   }
 
   User toUser() {
-    return UserLocal(uid: uid)
+    return _UserLocal(auth: auth, uid: uid)
       ..email = email
       ..displayName = displayName;
   }
 }
 
-UserRecordLocal localAdminUser = UserRecordLocal(uid: '1')
-  ..displayName = 'admin'
-  ..email = 'admin@example.com';
+abstract class UserInfoLocal implements UserInfo, UserInfoWithIdToken {}
 
-User adminUserInfo = localAdminUser.toUser();
+class _UserInfoLocal with FirebaseUserMixin implements UserInfoLocal {
+  final FirebaseAuthLocal auth;
+  _UserInfoLocal({required this.auth, required this.uid});
 
-UserRecordLocal localRegularUser = UserRecordLocal(uid: '2')
-  ..displayName = 'user'
-  ..email = 'user@example.com';
-
-List<UserRecordLocal> allUsers = [localAdminUser, localRegularUser];
-
-class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   @override
   String? displayName;
 
   @override
   String? email;
-
-  UserInfoLocal({required this.uid});
 
   @override
   String? get phoneNumber => null;
@@ -188,20 +188,30 @@ class UserInfoLocal implements UserInfo, UserInfoWithIdToken {
   Future<String> getIdToken({bool? forceRefresh}) async => uid;
 }
 
-class UserLocal extends UserInfoLocal implements User {
-  UserLocal({required super.uid});
+abstract class UserLocal implements User {}
+
+class _UserLocal extends _UserInfoLocal implements UserLocal {
+  _UserLocal({required super.auth, required super.uid});
 
   @override
   bool get emailVerified => true;
 
   @override
   bool get isAnonymous => false;
+
+  @override
+  Future<void> delete() async {
+    await auth.deleteUser(uid);
+  }
 }
 
 typedef AuthLocal = FirebaseAuthLocal;
 
 abstract class FirebaseAuthLocal
-    implements FirebaseAuth, FirebaseAuthLocalAdmin, FirebaseAuthAdmin {}
+    implements FirebaseAuth, FirebaseAuthLocalAdmin, FirebaseAuthAdmin {
+  UserRecordLocal get localAdminUser;
+  UserRecordLocal get localRegularUser;
+}
 
 class AuthLocalImpl
     with
@@ -212,6 +222,23 @@ class AuthLocalImpl
     implements AuthLocal {
   final AuthServiceLocal _authServiceLocal;
   final AppLocal _appLocal;
+
+  late final _UserRecordLocal _localAdminUser =
+      _UserRecordLocal(auth: this, uid: '1')
+        ..displayName = 'admin'
+        ..email = 'admin@example.com';
+
+  late final User adminUserInfo = _localAdminUser.toUser();
+
+  late final _UserRecordLocal _localRegularUser =
+      _UserRecordLocal(auth: this, uid: '2')
+        ..displayName = 'user'
+        ..email = 'user@example.com';
+
+  late final List<_UserRecordLocal> _allUsers = [
+    _localAdminUser,
+    _localRegularUser,
+  ];
 
   AuthLocalImpl(this._authServiceLocal, this._appLocal) {
     currentUserAdd(adminUserInfo);
@@ -255,7 +282,7 @@ class AuthLocalImpl
     var lastIndex = startIndex + (maxResults ?? 10);
     var result = ListUsersResultLocal(
       pageToken: lastIndex.toString(),
-      users: listSubList(allUsers, startIndex, lastIndex),
+      users: listSubList(_allUsers, startIndex, lastIndex),
     );
 
     return result;
@@ -267,7 +294,7 @@ class AuthLocalImpl
   }
 
   UserRecord? _getUserById(String uid) {
-    for (var user in allUsers) {
+    for (var user in _allUsers) {
       if (user.uid == uid) {
         return user;
       }
@@ -293,11 +320,11 @@ class AuthLocalImpl
   }
 
   UserCredentialImpl _wrapUserAsCredential(UserRecordLocal user) {
-    return UserCredentialImpl(AuthCredentialImpl(), user.toUser());
+    return UserCredentialImpl(AuthCredentialImpl(), user._.toUser());
   }
 
-  UserRecordLocal? _getUserByEmail(String email) {
-    for (var user in allUsers) {
+  _UserRecordLocal? _getUserByEmail(String email) {
+    for (var user in _allUsers) {
       if (user.email == email) {
         return user;
       }
@@ -321,7 +348,7 @@ class AuthLocalImpl
       throw StateError('user $uid not found');
       // return AuthSignInResultImpl(null);
     } else {
-      var user = userRecord.toUser();
+      var user = userRecord._.toUser();
       currentUserAdd(user);
       return AuthSignInResultImpl(
         UserCredentialImpl(AuthCredentialImpl(), user),
@@ -360,7 +387,7 @@ class AuthLocalImpl
 
   @override
   Future<void> deleteUser(String uid) async {
-    allUsers.removeWhere((user) => user.uid == uid);
+    _allUsers.removeWhere((user) => user.uid == uid);
   }
 
   @override
@@ -381,7 +408,8 @@ class AuthLocalImpl
       }
     }
     uid ??= _generateId();
-    var userRecord = UserRecordLocal(
+    var userRecord = _UserRecordLocal(
+      auth: this,
       uid: uid,
       isAnonymous: false,
       localPassword: request.password,
@@ -390,7 +418,7 @@ class AuthLocalImpl
       displayName: request.displayName,
     );
 
-    allUsers.add(userRecord);
+    _allUsers.add(userRecord);
     return userRecord;
   }
 
@@ -403,16 +431,23 @@ class AuthLocalImpl
   }) async {
     var userRecord = await getUser(uid) as UserRecordLocal?;
     if (userRecord == null) {
-      userRecord = UserRecordLocal(
+      var userRecordLocal = _UserRecordLocal(
+        auth: this,
         uid: uid,
         emailVerified: emailVerified ?? true,
         isAnonymous: isAnonymous ?? false,
       )..email = email;
-      allUsers.add(userRecord);
+      _allUsers.add(userRecordLocal);
     } else {
-      userRecord.email = email ?? userRecord.email;
+      userRecord._.email = email ?? userRecord.email;
     }
   }
+
+  @override
+  UserRecordLocal get localAdminUser => _localAdminUser;
+
+  @override
+  UserRecordLocal get localRegularUser => _localRegularUser;
 }
 
 class DecodedIdTokenLocal implements DecodedIdToken {

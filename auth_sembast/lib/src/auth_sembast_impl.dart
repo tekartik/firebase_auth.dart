@@ -266,7 +266,7 @@ class FirebaseAuthSembastImpl
                 .listen((record) {
                   var dbUser = record;
                   if (dbUser != null) {
-                    currentUserAdd(_FirebaseUserSembast(dbUser));
+                    currentUserAdd(_FirebaseUserSembast(this, dbUser));
                   } else {
                     firebaseAuthCurrentUserRecord.delete(_database);
                   }
@@ -311,11 +311,11 @@ class FirebaseAuthSembastImpl
         DbCurrentUser()..uid.v = dbUser.id,
       );
       // Also set the current user directly
-      currentUserAdd(_FirebaseUserSembast(dbUser));
+      currentUserAdd(_FirebaseUserSembast(this, dbUser));
       return dbUser;
     });
 
-    return _FirebaseUserCredentialSembast(dbUser);
+    return _FirebaseUserCredentialSembast(this, dbUser);
   }
 
   Future<DbUser> _txnGetSignInWithEmailAndPasswordUserCredentialOrThrow(
@@ -364,7 +364,7 @@ class FirebaseAuthSembastImpl
       return dbUser;
     });
 
-    return _FirebaseUserCredentialSembast(dbUser);
+    return _FirebaseUserCredentialSembast(this, dbUser);
   }
 
   Future<DbUser> _txnGetSignInAnonymouslyUserCredential(Transaction txn) async {
@@ -405,11 +405,11 @@ class FirebaseAuthSembastImpl
         DbCurrentUser()..uid.v = dbUser.id,
       );
       // Also set the current user directly
-      currentUserAdd(_FirebaseUserSembast(dbUser));
+      currentUserAdd(_FirebaseUserSembast(this, dbUser));
       return dbUser;
     });
 
-    return _FirebaseUserCredentialSembast(dbUser);
+    return _FirebaseUserCredentialSembast(this, dbUser);
   }
 
   @override
@@ -420,7 +420,7 @@ class FirebaseAuthSembastImpl
       return dbUser;
     });
 
-    return _FirebaseUserCredentialSembast(dbUser);
+    return _FirebaseUserCredentialSembast(this, dbUser);
   }
 
   @override
@@ -485,6 +485,7 @@ class FirebaseAuthSembastImpl
 
 /// User Sembast
 class _FirebaseUserSembast with FirebaseUserMixin {
+  final FirebaseAuthSembast auth;
   @override
   String get uid => _dbUser.id;
 
@@ -501,18 +502,24 @@ class _FirebaseUserSembast with FirebaseUserMixin {
 
   final DbUser _dbUser;
 
-  _FirebaseUserSembast(this._dbUser);
+  _FirebaseUserSembast(this.auth, this._dbUser);
+
+  @override
+  Future<void> delete() async {
+    return auth.deleteUser(uid);
+  }
 }
 
 /// User credential Sembast
 class _FirebaseUserCredentialSembast with FirebaseUserCredentialMixin {
+  final FirebaseAuthSembast auth;
   final DbUser _dbUser;
 
   /// Constructor
-  _FirebaseUserCredentialSembast(this._dbUser);
+  _FirebaseUserCredentialSembast(this.auth, this._dbUser);
 
   @override
-  late final user = _FirebaseUserSembast(_dbUser);
+  late final user = _FirebaseUserSembast(auth, _dbUser);
 
   @override
   late final credential = _FirebaseAuthCredentialSembast();

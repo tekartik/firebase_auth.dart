@@ -47,7 +47,7 @@ class FirebaseAuthAdminMock
   FirebaseAuthService get service => throw UnimplementedError();
 }
 
-class UserInfoMock implements UserInfo {
+class UserInfoMock with FirebaseUserMixin implements UserInfo {
   @override
   final String? displayName;
 

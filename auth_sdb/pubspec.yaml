@@ -1,0 +1,46 @@
+name: tekartik_firebase_auth_sdb
+description: Local auth on top of sdb
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.0
+
+# Add regular dependencies here.
+dependencies:
+  idb_shim: '>=2.9.6+2'
+  sembast: ">=3.7.4+3"
+  cv: ">=1.1.0+4"
+  tekartik_app_cv_sdb:
+    git:
+      url: https://github.com/tekartik/app_common_utils.dart
+      path: app_cv_sdb
+  tekartik_firebase:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      path: firebase
+  tekartik_firebase_auth:
+    git:
+      url: https://github.com/tekartik/firebase_auth.dart
+      path: auth
+  tekartik_firebase_auth_local:
+    git:
+      url: https://github.com/tekartik/firebase_auth.dart
+      path: auth_local
+  tekartik_firebase_local:
+    git:
+      url: https://github.com/tekartik/firebase.dart
+      path: firebase_local
+  path: ">=1.9.1"
+  tekartik_common_utils:
+    git:
+      url: https://github.com/tekartik/common_utils.dart
+dev_dependencies:
+  lints: ">=6.1.0"
+  tekartik_firebase_auth_test:
+    git:
+      url: https://github.com/tekartik/firebase_auth.dart
+      path: auth_test
+  test: ">=1.31.0"
+
+resolution: workspace

@@ -4,8 +4,6 @@ export 'package:tekartik_firebase_auth_local/src/auth_local.dart'
         FirebaseAuthServiceLocal,
         AuthLocal,
         FirebaseAuthLocal,
-        localAdminUser,
-        localRegularUser,
         AuthLocalSignInOptions,
         AuthLocalProvider,
         UserRecordLocal,

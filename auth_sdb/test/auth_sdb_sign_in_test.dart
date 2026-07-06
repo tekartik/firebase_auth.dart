@@ -2,8 +2,8 @@
 
 library;
 
-import 'package:sembast/sembast_memory.dart';
-import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
+import 'package:tekartik_app_cv_sdb/app_cv_sdb.dart';
+import 'package:tekartik_firebase_auth_sdb/auth_sdb.dart';
 import 'package:tekartik_firebase_auth_test/auth_admin_test_runner.dart';
 import 'package:tekartik_firebase_auth_test/auth_local_admin_test_runner.dart';
 import 'package:tekartik_firebase_auth_test/auth_sign_in_delete_test_runner.dart';
@@ -14,16 +14,14 @@ void main() {
   group('sign in', () {
     late FirebaseLocal firebase;
     late FirebaseAppLocal app;
-    late FirebaseAuthSembast auth;
-    late FirebaseAuthServiceSembast authService;
+    late FirebaseAuthSdb auth;
+    late FirebaseAuthServiceSdb authService;
     setUp(() async {
-      var databaseFactory = newDatabaseFactoryMemory();
+      var sdbFactory = sdbFactoryMemory;
       firebase = newFirebaseMemory();
       app = firebase.initializeApp();
-      authService = FirebaseAuthServiceSembast(
-        databaseFactory: databaseFactory,
-      );
-      auth = authService.auth(app) as FirebaseAuthSembast;
+      authService = FirebaseAuthServiceSdb(sdbFactory: sdbFactory);
+      auth = authService.auth(app) as FirebaseAuthSdb;
     });
 
     tearDownAll(() {
@@ -36,8 +34,8 @@ void main() {
     );
     firebaseAuthAdminTests(
       getAuth: () => auth,
-      email: 'sembastemail',
-      password: 'sembastpassword',
+      email: 'sdbemail',
+      password: 'sdbpassword',
     );
     firebaseAuthSignInDeleteTests(
       getAuth: () => auth,

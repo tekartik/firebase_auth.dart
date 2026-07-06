@@ -5,6 +5,7 @@ library;
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
 import 'package:tekartik_firebase_auth_test/auth_admin_test_runner.dart';
+import 'package:tekartik_firebase_auth_test/auth_sign_in_delete_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
 
@@ -24,6 +25,11 @@ void main() {
     });
 
     firebaseAuthAdminTests(
+      getAuth: () => auth,
+      email: 'testemail',
+      password: 'testpwd',
+    );
+    firebaseAuthSignInDeleteTests(
       getAuth: () => auth,
       email: 'testemail',
       password: 'testpwd',

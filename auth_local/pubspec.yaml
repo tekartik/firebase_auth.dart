@@ -23,6 +23,8 @@ dependencies:
     git:
       url: https://github.com/tekartik/firebase.dart
       path: firebase
+  tekartik_common_utils:
+    git: https://github.com/tekartik/common_utils.dart
 
 dev_dependencies:
   test: ">=1.31.0"

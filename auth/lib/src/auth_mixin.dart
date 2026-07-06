@@ -106,7 +106,7 @@ mixin FirebaseAuthMixin
   }
 }
 
-/// Firebase user mixin
+/// Firebase user default mixin
 mixin FirebaseUserMixin implements User {
   @override
   String? get displayName => null;
@@ -132,6 +132,11 @@ mixin FirebaseUserMixin implements User {
   @override
   String toString() =>
       'User($uid${email != null ? ', $email' : ((displayName != null) ? ', $displayName' : '')})';
+
+  @override
+  Future<void> delete() {
+    throw UnimplementedError('FirebaseUser $runtimeType.delete');
+  }
 }
 
 /// Firebase user credential mixin
