@@ -150,6 +150,7 @@ class FirebaseAuthSembastImpl
           .record(uid)
           .put(
             txn,
+
             DbUser()
               ..email.v = email
               ..emailVerified.setValue(emailVerified)
@@ -291,6 +292,7 @@ class FirebaseAuthSembastImpl
     await createUser(
       FirebaseAuthCreateUserRequest(email: email, password: password),
     );
+
     return signInWithEmailAndPassword(email: email, password: password);
   }
 
@@ -308,6 +310,7 @@ class FirebaseAuthSembastImpl
       );
       await firebaseAuthCurrentUserRecord.put(
         txn,
+
         DbCurrentUser()..uid.v = dbUser.id,
       );
       // Also set the current user directly
@@ -387,6 +390,7 @@ class FirebaseAuthSembastImpl
     var created = Timestamp.now();
     var dbUser = await _userStore.add(
       txn,
+
       DbUser()
         ..created.v = created
         ..name.v = 'Anonymous ${created.toIso8601String()}'
@@ -402,6 +406,7 @@ class FirebaseAuthSembastImpl
       var dbUser = await _txnGetSignInAnonymouslyUserCredential(txn);
       await firebaseAuthCurrentUserRecord.put(
         txn,
+
         DbCurrentUser()..uid.v = dbUser.id,
       );
       // Also set the current user directly

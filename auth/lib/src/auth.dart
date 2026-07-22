@@ -544,6 +544,7 @@ extension TekartikFirebaseAuthExt on FirebaseAuth {
         password: password,
       );
     }
+
     await signOut();
     return userCredential.user;
   }

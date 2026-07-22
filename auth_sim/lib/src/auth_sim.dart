@@ -68,6 +68,7 @@ class _FirebaseAuthSim
           var userId = record?.uid.v;
           if (userId == null) {
             _currentUserId = null;
+
             currentUserAdd(null);
             _currentUserSubscription?.cancel();
             return;
@@ -79,6 +80,7 @@ class _FirebaseAuthSim
             if (record == null) {
               // Record not found, delete current user
               firebaseAuthCurrentUserRecord.delete(_database);
+
               currentUserAdd(null);
             } else {
               currentUserAdd(FirebaseUserSim(record));
@@ -154,6 +156,7 @@ class _FirebaseAuthSim
         userCreateRequest.toMap(),
       );
       var userResponse = map.cv<UserGetResponse>();
+
       return UserRecordSim(userResponse: userResponse);
     } catch (e) {
       if (e.toString().contains('already-exists')) {
@@ -189,6 +192,7 @@ class _FirebaseAuthSim
     if (responseUid == null) {
       return null;
     }
+
     return UserRecordSim(userResponse: userResponse);
   }
 
@@ -206,6 +210,7 @@ class _FirebaseAuthSim
     if (responseUid == null) {
       return null;
     }
+
     return UserRecordSim(userResponse: userResponse);
   }
 
@@ -248,6 +253,7 @@ class _FirebaseAuthSim
         );
 
         subscription.id = result[paramSubscriptionId] as int?;
+
         addSubscription(subscription);
       });
 
@@ -302,6 +308,7 @@ class _FirebaseAuthSim
     await createUser(
       FirebaseAuthCreateUserRequest(email: email, password: password),
     );
+
     return signInWithEmailAndPassword(email: email, password: password);
   }
 
@@ -345,6 +352,7 @@ class _FirebaseAuthSim
       password: password,
     );
     var userRecordSim = userRecord as UserRecordSim;
+
     return UserCredentialSim(userRecordSim);
   }
 
@@ -357,10 +365,13 @@ class _FirebaseAuthSim
     }
     await firebaseAuthCurrentUserRecord.put(
       _database,
+
       DbCurrentUser()..uid.v = responseUid,
     );
     var userRecordSim = UserRecordSim(userResponse: userResponse);
+
     currentUserAdd(FirebaseUserSim(userRecordSim));
+
     return UserCredentialSim(userRecordSim);
   }
 
@@ -369,7 +380,6 @@ class _FirebaseAuthSim
     var simClient = await _simClient;
 
     /// Reuse current if any
-    ///
     var signInRequest = UserSignInAnonymouslyRequest();
     var map = await simClient.sendRequest<Map>(
       FirebaseAuthSimServerService.serviceName,
@@ -400,6 +410,7 @@ class _FirebaseAuthSim
   Future<UserCredential> getSignInAnonymouslyUserCredential() async {
     var userResponse = await _getSignInAnonymouslyUserResponse();
     var userRecordSim = UserRecordSim(userResponse: userResponse);
+
     return UserCredentialSim(userRecordSim);
   }
 
@@ -412,6 +423,7 @@ class _FirebaseAuthSim
     if (currentUser != null && currentUser.isAnonymous) {
       await deleteUser(currentUser.uid);
     }
+
     currentUserAdd(null);
     _currentUserId = null;
   }

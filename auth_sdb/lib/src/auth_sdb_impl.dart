@@ -47,6 +47,7 @@ class FirebaseAuthServiceSdbImpl
   FirebaseAuthSdb auth(FirebaseApp app) {
     return getInstance(app, () {
           assert(app is FirebaseAppLocal, 'invalid app type - not AppLocal');
+
           return FirebaseAuthSdbImpl(this, app as FirebaseAppLocal);
         })
         as FirebaseAuthSdb;
@@ -153,6 +154,7 @@ class FirebaseAuthSdbImpl
             .record(uid)
             .put(
               txn,
+
               DbUser()
                 ..email.v = email
                 ..emailVerified.setValue(emailVerified)
@@ -221,6 +223,7 @@ class FirebaseAuthSdbImpl
         await _userStore.record(uid).delete(txn);
       },
     );
+
     await signOut();
   }
 
@@ -308,6 +311,7 @@ class FirebaseAuthSdbImpl
     await createUser(
       FirebaseAuthCreateUserRequest(email: email, password: password),
     );
+
     return signInWithEmailAndPassword(email: email, password: password);
   }
 
@@ -329,6 +333,7 @@ class FirebaseAuthSdbImpl
             );
         await firebaseAuthCurrentUserRecord.put(
           txn,
+
           DbCurrentUser()..uid.v = dbUser.id,
         );
         // Also set the current user directly
@@ -416,6 +421,7 @@ class FirebaseAuthSdbImpl
     var created = SdbTimestamp.now();
     var dbUser = await _userStore.add(
       txn,
+
       DbUser()
         ..created.v = created
         ..name.v = 'Anonymous ${created.toIso8601String()}'
@@ -434,6 +440,7 @@ class FirebaseAuthSdbImpl
         var dbUser = await _txnGetSignInAnonymouslyUserCredential(txn);
         await firebaseAuthCurrentUserRecord.put(
           txn,
+
           DbCurrentUser()..uid.v = dbUser.id,
         );
         // Also set the current user directly
