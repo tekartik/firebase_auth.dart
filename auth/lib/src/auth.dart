@@ -3,95 +3,185 @@ import 'dart:async';
 import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
 
-/// To deprecate: Use FirebaseAuthService
+/// Deprecated alias for [FirebaseAuthService]. New code should reference
+/// [FirebaseAuthService] directly.
 typedef AuthService = FirebaseAuthService;
 
-/// To deprecate: Use FirebaseAuthService
+/// Deprecated alias for [FirebaseAuth]. New code should reference
+/// [FirebaseAuth] directly.
 typedef Auth = FirebaseAuth;
 
-/// Represents a Firebase Auth service.
+/// Represents a Firebase Auth service, i.e. the product-level object that
+/// creates and owns [FirebaseAuth] instances for each [App].
+///
+/// A concrete [FirebaseAuthService] typically corresponds to one backend
+/// (REST, Node.js, Flutter, mock/local) and is registered once per process;
+/// use [auth] to obtain the [FirebaseAuth] instance bound to a given [App].
 abstract class FirebaseAuthService implements FirebaseProductService {
-  /// true if it supports listing and finding users
+  /// Whether this service implementation supports listing users
+  /// ([FirebaseAuth.listUsers], [FirebaseAuth.getUsers]) and looking users
+  /// up by email or uid.
+  ///
+  /// When `false`, calling those members on the [FirebaseAuth] instances it
+  /// creates typically throws (most implementations throw
+  /// [UnsupportedError]).
   bool get supportsListUsers;
 
-  /// true if it supports the current user
+  /// Whether this service implementation tracks a signed-in
+  /// [FirebaseAuth.currentUser] and exposes it through
+  /// [FirebaseAuth.onCurrentUser].
+  ///
+  /// When `false`, [FirebaseAuth.currentUser] and [FirebaseAuth.onCurrentUser]
+  /// are not meaningful for the instances it creates.
   bool get supportsCurrentUser;
 
-  /// Creates/get a [FirebaseAuth] instance.
+  /// Returns the [FirebaseAuth] instance for [app], creating it on first
+  /// access and reusing the same instance on subsequent calls for the same
+  /// [app].
   FirebaseAuth auth(App app);
 }
 
-/// Represents an auth provider.
+/// Represents an identity provider (for example Google, Facebook or
+/// email/password) that can be used with [FirebaseAuth.signIn].
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthProvider>.
 abstract class AuthProvider {
-  /// Provider id.
+  /// The provider identifier (for example `'google.com'` or `'password'`)
+  /// as defined by the underlying Firebase Auth provider.
   String get providerId;
 }
 
-/// Abstract sign in options, per provider.
+/// Base type for provider-specific sign-in options passed to
+/// [FirebaseAuth.signIn].
+///
+/// This interface has no members of its own; each [AuthProvider]
+/// implementation defines its own concrete subclass carrying the options
+/// relevant to that provider (scopes, custom parameters, and so on).
 abstract class AuthSignInOptions {}
 
-/// Sign in result;
+/// The outcome of a [FirebaseAuth.signIn] call.
 abstract class AuthSignInResult {
-  /// If true, especially during redirect, we have no clue of what is going on...
+  /// Whether this result carries meaningful information about the sign-in
+  /// outcome.
+  ///
+  /// Some sign-in flows (typically redirect-based ones) return control to
+  /// the app before the actual result is known; in that case [hasInfo] is
+  /// `false` and [credential] being `null` does not indicate failure - the
+  /// real outcome will arrive later, for example through
+  /// [FirebaseAuth.onCurrentUser].
   bool get hasInfo;
 
-  /// The credentials if any. null might not mean failure if [hasInfo] is true
+  /// The resulting credential, if the sign-in completed with one.
+  ///
+  /// May be `null` even on success; in particular a `null` value does not
+  /// necessarily mean failure when [hasInfo] is `true`.
   UserCredential? get credential;
 }
 
-/// Represents a Auth Database and is the entry point for all
-/// Auth operations.
+/// Represents a Firebase Auth database and is the entry point for all
+/// Auth operations for a given [App].
+///
+/// Obtain an instance through [FirebaseAuthService.auth],
+/// [TekartikFirebaseAuthFirebaseAppExt.auth] or the [instance] shortcut.
 abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
-  /// Retrieves a list of users (single batch only) with a size of [maxResults]
-  /// and starting from the offset as specified by [pageToken].
+  /// Retrieves a single batch of users of up to [maxResults] users, starting
+  /// after the offset represented by [pageToken].
   ///
-  /// This is used to retrieve all the users of a specified project in batches.
+  /// [maxResults]: the maximum number of users to return in this batch. If
+  /// omitted, an implementation-defined default batch size is used.
+  ///
+  /// [pageToken]: the [ListUsersResult.pageToken] returned by a previous
+  /// call, used to fetch the next batch. If omitted, the first batch is
+  /// returned.
+  ///
+  /// Call this repeatedly, passing the returned [ListUsersResult.pageToken]
+  /// back in, until it is `null`, to iterate over all the users of the
+  /// project in batches.
+  ///
+  /// Only supported when [FirebaseAuthService.supportsListUsers] is `true`;
+  /// most implementations throw [UnsupportedError] otherwise.
   Future<ListUsersResult> listUsers({int? maxResults, String? pageToken});
 
-  /// Gets the user data for the user corresponding to a given [email].
+  /// Gets the user data for the user corresponding to the given [email], or
+  /// `null` if no user has that primary email.
+  ///
+  /// Only supported when [FirebaseAuthService.supportsListUsers] is `true`;
+  /// most implementations throw [UnsupportedError] otherwise.
   Future<UserRecord?> getUserByEmail(String email);
 
-  /// Gets the user data for the user corresponding to a given [uid].
+  /// Gets the user data for the user corresponding to the given [uid], or
+  /// `null` if no such user exists.
+  ///
+  /// Only supported when [FirebaseAuthService.supportsListUsers] is `true`;
+  /// most implementations throw [UnsupportedError] otherwise.
   Future<UserRecord?> getUser(String uid);
 
-  /// Gets the user data for all the users.
+  /// Gets the user data for all the users identified by [uids].
+  ///
+  /// Users that cannot be found are typically omitted from the result, so
+  /// the returned list may be shorter than [uids].
+  ///
+  /// Only supported when [FirebaseAuthService.supportsListUsers] is `true`;
+  /// most implementations throw [UnsupportedError] otherwise.
   Future<List<UserRecord>> getUsers(List<String> uids);
 
-  /// only if [FirebaseAuthService.supportsCurrentUser] is true
+  /// The currently signed-in user, or `null` if no user is signed in or the
+  /// current user has not been resolved yet.
+  ///
+  /// Only meaningful when [FirebaseAuthService.supportsCurrentUser] is
+  /// `true`; otherwise it is always `null`. Use [onCurrentUser] to be
+  /// notified when this value changes.
   User? get currentUser;
 
-  /// Reload user (needed after email verification)
+  /// Reloads the current user's data from the backend and returns it.
+  ///
+  /// Needed to observe server-side changes to the current user, such as
+  /// after email verification. Returns `null` if there is no current user.
   Future<FirebaseUser?> reloadCurrentUser();
 
-  /// Current user stream.
+  /// A stream of the current user, emitting a new value each time the
+  /// signed-in user changes (including sign-in, sign-out and, for some
+  /// implementations, token refresh).
   ///
-  /// It also trigger upon start when the current user is ready (can be null if
-  /// none)
+  /// Newly-added listeners also immediately receive the current value once
+  /// it is known, which can be `null` if no user is signed in.
+  ///
+  /// Only meaningful when [FirebaseAuthService.supportsCurrentUser] is
+  /// `true`.
   Stream<FirebaseUser?> get onCurrentUser;
 
-  /// only if [FirebaseAuthService.supportsCurrentUser] is true.
+  /// Starts a sign-in flow with [authProvider], optionally configured with
+  /// provider-specific [options].
   ///
-  /// Credential can be null and the login happen later
+  /// Only supported when [FirebaseAuthService.supportsCurrentUser] is
+  /// `true`.
+  ///
+  /// The returned [AuthSignInResult.credential] can be `null` even on
+  /// success - for example during a redirect-based flow the actual sign-in
+  /// may complete later and be observed through [onCurrentUser]; check
+  /// [AuthSignInResult.hasInfo] to know whether the result is meaningful.
   Future<AuthSignInResult> signIn(
     AuthProvider authProvider, {
     AuthSignInOptions? options,
   });
 
   /// Signs out the current user.
+  ///
+  /// After this completes, [currentUser] is `null` and [onCurrentUser]
+  /// emits `null`.
   Future signOut();
 
-  /// Attempts to sign in a user with the given email address and password.
+  /// Attempts to sign in a user with the given [email] address and
+  /// [password].
   ///
-  /// If successful, it also signs the user in into the app and updates
-  /// any [authStateChanges], [idTokenChanges] or [userChanges] stream
-  /// listeners.
+  /// If successful, it also signs the user in into the app, updates
+  /// [currentUser] and notifies [onCurrentUser] listeners, and completes
+  /// with a [UserCredential] describing the signed-in user.
   ///
   /// **Important**: You must enable Email & Password accounts in the Auth
   /// section of the Firebase console before being able to use them.
   ///
-  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// A `FirebaseAuthException` maybe thrown with the following error code:
   /// - **invalid-email**:
   ///  - Thrown if the email address is not valid.
   /// - **user-disabled**:
@@ -106,10 +196,12 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
     required String password,
   });
 
-  /// Tries to create a new user account with the given email address and
-  /// password.
+  /// Tries to create a new user account with the given [email] address and
+  /// [password], and signs that user in on success.
   ///
-  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// Completes with a [UserCredential] for the newly created user.
+  ///
+  /// A `FirebaseAuthException` maybe thrown with the following error code:
   /// - **email-already-in-use**:
   ///  - Thrown if there already exists an account with the given email address.
   /// - **invalid-email**:
@@ -146,55 +238,68 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
   /// **Important**: You must enable Anonymous accounts in the Auth section
   /// of the Firebase console before being able to use them.
   ///
-  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// A `FirebaseAuthException` maybe thrown with the following error code:
   /// - **operation-not-allowed**:
   ///  - Thrown if anonymous accounts are not enabled. Enable anonymous accounts
   /// in the Firebase Console, under the Auth tab.
   Future<UserCredential> signInAnonymously();
 
-  /// Verifies a Firebase ID token (JWT).
+  /// Verifies a Firebase ID token (JWT) [idToken].
   ///
-  /// If the token is valid, the returned [Future] is completed with an instance
-  /// of [DecodedIdToken]; otherwise, the future is completed with an error.
-  /// An optional flag can be passed to additionally check whether the ID token
-  /// was revoked.
+  /// If [checkRevoked] is `true`, the token is additionally checked against
+  /// the backend to make sure it has not been revoked (for example after a
+  /// password change or a call to revoke refresh tokens); omitting it or
+  /// passing `false` skips that extra check.
+  ///
+  /// If the token is valid, the returned [Future] is completed with an
+  /// instance of [DecodedIdToken]; otherwise, the future completes with an
+  /// error.
   Future<DecodedIdToken> verifyIdToken(String idToken, {bool? checkRevoked});
 
-  /// Sends a verification email to a user.
+  /// Sends a verification email to the [currentUser].
+  ///
+  /// Most implementations require a signed-in user and throw if
+  /// [currentUser] is `null`.
   Future<void> sendEmailVerification();
 
-  /// Default Firebase Auth instance.
+  /// The default [FirebaseAuth] instance, bound to [FirebaseApp.instance].
+  ///
+  /// Throws if there is no default [App] or if no [FirebaseAuth] product has
+  /// been registered on it.
   static FirebaseAuth get instance =>
       (FirebaseApp.instance as FirebaseAppMixin).getProduct<FirebaseAuth>()!;
 
-  /// Service access
+  /// The [FirebaseAuthService] that created this instance.
   FirebaseAuthService get service;
 }
 
-/// Represents a Firebase user record
+/// Represents a Firebase user record as returned by admin-level lookups such
+/// as [FirebaseAuth.getUser], [FirebaseAuth.getUserByEmail],
+/// [FirebaseAuth.getUsers] and [FirebaseAuth.listUsers].
 abstract class UserRecord {
-  /// The user's custom claims object if available, typically used to define user
-  /// roles and propagated to an authenticated user's ID token.
-  ///
-  /// This is set via [FirebaseAuth.setCustomUserClaims].
+  /// The user's custom claims object, if any custom claims have been set on
+  /// this user, typically used to define user roles and propagated to an
+  /// authenticated user's ID token. `null` if none have been set.
   Object? get customClaims;
 
-  /// Whether or not the user is disabled: true for disabled; false for enabled.
+  /// Whether or not the user is disabled: `true` for disabled; `false` for
+  /// enabled. A disabled user cannot sign in.
   bool get disabled;
 
-  /// The user's display name.
+  /// The user's display name, or `null` if none is set.
   String? get displayName;
 
-  /// The user's primary email, if set.
+  /// The user's primary email, or `null` if none is set.
   String? get email;
 
   /// Whether or not the user's primary email is verified.
   bool get emailVerified;
 
-  /// Additional metadata about the user.
+  /// Additional metadata about the user (creation and last sign-in time), or
+  /// `null` if not available.
   UserMetadata? get metadata;
 
-  /// True for anonymous
+  /// `true` if this is an anonymous user, `false` otherwise.
   bool get isAnonymous;
 
   /// The user’s hashed password (base64-encoded), only if Firebase Auth hashing
@@ -217,27 +322,30 @@ abstract class UserRecord {
   /// This is only available when the user is obtained from [FirebaseAuth.listUsers].
   String? get passwordSalt;
 
-  /// The user's primary phone number or `null`.
+  /// The user's primary phone number, or `null` if none is set.
   String? get phoneNumber;
 
-  /// The user's photo URL or `null`.
+  /// The user's photo URL, or `null` if none is set.
   String? get photoURL;
 
-  /// An array of providers (for example, Google, Facebook) linked to the user.
+  /// The linked identity providers (for example, Google, Facebook) for this
+  /// user, or `null` if not available.
   List<UserInfo>? get providerData;
 
-  /// The date the user's tokens are valid after, formatted as a UTC string.
+  /// The date the user's tokens are valid after, formatted as a UTC string,
+  /// or `null` if not available.
   ///
-  /// This is updated every time the user's refresh token are revoked either from
-  /// the [FirebaseAuth.revokeRefreshTokens] API or from the Firebase Auth backend on big
-  /// account changes (password resets, password or email updates, etc).
+  /// This is updated every time the user's refresh tokens are revoked,
+  /// either through the backend admin API or as a result of major account
+  /// changes (password resets, password or email updates, etc). Tokens
+  /// issued before this date should be considered invalid.
   String? get tokensValidAfterTime;
 
-  /// The user's uid.
+  /// The user's unique identifier.
   String get uid;
 }
 
-/// Additional metadata about the user.
+/// Additional metadata about a [UserRecord], such as account timestamps.
 abstract class UserMetadata {
   /// The date the user was created, formatted as a UTC string.
   String get creationTime;
@@ -246,59 +354,69 @@ abstract class UserMetadata {
   String get lastSignInTime;
 }
 
-/// Compat
+/// Deprecated alias for [FirebaseUserInfo]. New code should reference
+/// [FirebaseUserInfo] directly.
 typedef UserInfo = FirebaseUserInfo;
 
 /// Interface representing a user's info from a third-party identity provider
 /// such as Google or Facebook.
+///
+/// [FirebaseUser] extends this with sign-in specific members; a
+/// [UserRecord]'s [UserRecord.providerData] is a list of these.
 abstract class FirebaseUserInfo {
-  /// The display name for the linked provider.
+  /// The display name for the linked provider, or `null` if none is set.
   String? get displayName;
 
-  /// The email for the linked provider.
+  /// The email for the linked provider, or `null` if none is set.
   String? get email;
 
-  /// The phone number for the linked provider.
+  /// The phone number for the linked provider, or `null` if none is set.
   String? get phoneNumber;
 
-  /// The photo URL for the linked provider.
+  /// The photo URL for the linked provider, or `null` if none is set.
   String? get photoURL;
 
-  /// The linked provider ID (for example, 'google.com' for the Google provider).
+  /// The linked provider ID (for example, `'google.com'` for the Google
+  /// provider), or `null` if not available.
   String? get providerId;
 
   /// The user identifier for the linked provider.
   String get uid;
 }
 
-/// Compat
+/// Deprecated alias for [FirebaseUser]. New code should reference
+/// [FirebaseUser] directly.
 typedef User = FirebaseUser;
 
-/// User account.
+/// A signed-in user account, as returned by sign-in and current-user
+/// operations such as [FirebaseAuth.currentUser], [FirebaseAuth.onCurrentUser]
+/// and [UserCredential.user].
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.User>.
 abstract class FirebaseUser extends UserInfo {
-  /// If the user's email address has been already verified.
+  /// Whether the user's email address has already been verified.
   bool get emailVerified;
 
-  /// If the user is anonymous.
+  /// Whether this is an anonymous user (created through
+  /// [FirebaseAuth.signInAnonymously]).
   bool get isAnonymous;
 
   /// Deletes and signs out the user.
   ///
   /// **Important**: this is a security-sensitive operation that requires the
-  /// user to have recently signed in. If this requirement isn't met, ask the
-  /// user to authenticate again and then call [User.reauthenticateWithCredential].
+  /// user to have recently signed in. If this requirement isn't met, most
+  /// implementations require the user to authenticate again before this can
+  /// succeed.
   ///
-  /// A [FirebaseAuthException] maybe thrown with the following error code:
+  /// A `FirebaseAuthException` maybe thrown with the following error code:
   /// - **requires-recent-login**:
   ///  - Thrown if the user's last sign-in time does not meet the security
-  ///    threshold. Use [User.reauthenticateWithCredential] to resolve. This
-  ///    does not apply if the user is anonymous.
+  ///    threshold. This does not apply if the user is anonymous.
   Future<void> delete();
 }
 
-/// Compat
+/// Deprecated alias for [FirebaseAuthCredential]. New code should reference
+/// [FirebaseAuthCredential] directly.
 typedef AuthCredential = FirebaseAuthCredential;
 
 /// Represents the credentials returned by an auth provider.
@@ -307,38 +425,50 @@ typedef AuthCredential = FirebaseAuthCredential;
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.auth.AuthCredential>.
 abstract class FirebaseAuthCredential {
-  /// The authentication provider ID for the credential.
+  /// The authentication provider ID for the credential (for example
+  /// `'password'` or `'google.com'`).
   String get providerId;
 }
 
-/// A structure containing a [User], an [AuthCredential] and [operationType].
-/// operationType could be 'signIn' for a sign-in operation, 'link' for a
-/// linking operation and 'reauthenticate' for a reauthentication operation.
+/// The successful outcome of a sign-in, link, or re-authentication
+/// operation, pairing the resulting [user] with the [credential] that was
+/// used.
 ///
 /// See: <https://firebase.google.com/docs/reference/js/firebase.auth#.UserCredential>
 abstract class UserCredential {
-  /// Returns the user.
+  /// The user that signed in, was linked, or was re-authenticated.
   User get user;
 
-  /// Returns the auth credential.
+  /// The auth credential used for this operation.
   AuthCredential get credential;
 }
 
-/// Client interface.
+/// Interface for clients that can produce a Firebase ID token, typically
+/// implemented alongside [FirebaseUser] by client-side backends.
 abstract class UserInfoWithIdToken {
-  /// Get the auth token
+  /// Gets the current user's Firebase ID token.
+  ///
+  /// If [forceRefresh] is `true`, forces a refresh of the token regardless
+  /// of expiration; otherwise the cached token is reused when it is still
+  /// valid. Omitting [forceRefresh] behaves as `false`.
+  ///
+  /// Completes with the ID token string, or with an error if the token
+  /// could not be retrieved (for example if the user is signed out).
   Future<String> getIdToken({bool? forceRefresh});
 }
 
-/// User list result
+/// A single batch of results from [FirebaseAuth.listUsers].
 abstract class ListUsersResult {
-  /// to use for next page token
+  /// The token to pass as `pageToken` to [FirebaseAuth.listUsers] to fetch
+  /// the next batch, or `null` if this was the last batch.
   String? get pageToken;
 
-  /// The user list, some items can be null
+  /// The users in this batch. Individual entries can be `null` if a user
+  /// could not be resolved.
   List<UserRecord?> get users;
 
-  /// Factory constructor
+  /// Creates an immutable [ListUsersResult] with the given [pageToken] and
+  /// [users].
   factory ListUsersResult({
     String? pageToken,
     required List<UserRecord?> users,
@@ -364,9 +494,15 @@ abstract class DecodedIdToken {
   String get uid;
 }
 
-/// Firebase Auth extension
+/// Convenience extension methods on [FirebaseAuth].
 extension TekartikFirebaseAuthExt on FirebaseAuth {
-  /// Sign in or sign up with email and password.
+  /// Signs in with [email] and [password] via
+  /// [FirebaseAuth.signInWithEmailAndPassword]; if that fails (for example
+  /// because the account does not exist yet) falls back to creating the
+  /// account via [FirebaseAuth.createUserWithEmailAndPassword].
+  ///
+  /// Completes with the resulting [UserCredential], and leaves the user
+  /// signed in either way.
   Future<UserCredential> signInOrUpWithEmailAndPassword({
     required String email,
     required String password,
@@ -385,9 +521,13 @@ extension TekartikFirebaseAuthExt on FirebaseAuth {
     }
   }
 
-  /// Get or create a user with email and password.
+  /// Signs in with [email] and [password], creating the account first via
+  /// [FirebaseAuth.createUserWithEmailAndPassword] if signing in fails.
   ///
-  /// This implementation signs out the user after the operation.
+  /// Unlike [signInOrUpWithEmailAndPassword], this implementation signs the
+  /// user back out ([FirebaseAuth.signOut]) before returning, so it never
+  /// leaves a user signed in; it is meant for callers that only need the
+  /// resulting [FirebaseUser] record, not an active session.
   Future<FirebaseUser> getOrCreateUserWithEmailAndPassword({
     required String email,
     required String password,
@@ -409,9 +549,13 @@ extension TekartikFirebaseAuthExt on FirebaseAuth {
   }
 }
 
-/// Firebase helper extension
+/// Convenience extension for accessing the [FirebaseAuth] product of a
+/// [FirebaseApp].
 extension TekartikFirebaseAuthFirebaseAppExt on FirebaseApp {
-  /// Get auth app product.
+  /// Returns the [FirebaseAuth] product registered on this app.
+  ///
+  /// Throws a [StateError] if no auth product has been registered for this
+  /// app.
   FirebaseAuth auth() {
     var auth = getProduct<FirebaseAuth>();
     if (auth == null) {

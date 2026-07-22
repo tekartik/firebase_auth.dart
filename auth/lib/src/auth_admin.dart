@@ -1,10 +1,24 @@
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
 
-/// Admin mode
-/// To remove
+/// A [FirebaseAuth] implementation that also supports [FirebaseAuthAdmin]
+/// and can be driven programmatically without going through a real
+/// authentication flow.
+///
+/// This is primarily meant for local/mock/test backends, letting test code
+/// inject arbitrary user state directly with [setUser] and inspect
+/// credentials produced by a sign-in flow without actually signing in with
+/// [getSignInWithEmailAndPasswordUserCredential] and
+/// [getSignInAnonymouslyUserCredential].
 abstract class FirebaseAuthLocalAdmin
     implements FirebaseAuth, FirebaseAuthAdmin {
-  /// Set/Create user
+  /// Creates the user identified by [uid] if it does not exist yet, or
+  /// updates it in place, setting the given fields.
+  ///
+  /// [email]: the primary email to set, or `null` to leave it unset.
+  /// [isAnonymous]: whether the user should be marked as anonymous; omitting
+  /// it leaves the current/default value.
+  /// [emailVerified]: whether [email] should be marked as verified; omitting
+  /// it leaves the current/default value.
   Future<void> setUser(
     String uid, {
     String? email,
@@ -12,27 +26,30 @@ abstract class FirebaseAuthLocalAdmin
     bool? emailVerified,
   });
 
-  /// User record stream
+  /// A stream of the user record for [uid], emitting a new value whenever it
+  /// changes (for example through [setUser]), or `null` while/if the user
+  /// does not exist.
   Stream<UserRecord?> onUserRecord(String uid);
 
-  /// Do not sign in but get the credentials
-  /// Create the user if needed
+  /// Computes the [UserCredential] that would result from signing in with
+  /// [email] and [password], creating the user first if it does not exist
+  /// yet, but without actually signing the user in (does not affect
+  /// [FirebaseAuth.currentUser] or [FirebaseAuth.onCurrentUser]).
   Future<UserCredential> getSignInWithEmailAndPasswordUserCredential({
     required String email,
     required String password,
   });
 
-  /// Do not sign in but get the credentials
+  /// Computes the [UserCredential] that would result from an anonymous
+  /// sign-in, without actually signing the user in (does not affect
+  /// [FirebaseAuth.currentUser] or [FirebaseAuth.onCurrentUser]).
   Future<UserCredential> getSignInAnonymouslyUserCredential();
 }
 
-/// Extension for [FirebaseAuthLocalAdmin].
+/// Convenience extension methods on [FirebaseAuthLocalAdmin].
 extension FirebaseAuthLocalAdminExt on FirebaseAuthLocalAdmin {
-  /// Get or create a user based on the request.
-  ///
-  /// If [request.uid] is provided, it tries to get the user by uid first.
-  /// If not found or if uid was not provided, it tries to get the user by email.
-  /// If still not found, it creates a new user.
+  /// Gets the user with the given [email], or creates it with [email] and
+  /// [password] if it does not exist yet.
   Future<UserRecord> getOrCreateUserWithEmailAndPassword({
     required String email,
     required String password,
@@ -48,30 +65,47 @@ extension FirebaseAuthLocalAdminExt on FirebaseAuthLocalAdmin {
   }
 }
 
-/// Firebase Auth Admin interface.
+/// Administrative extension of [FirebaseAuth] that can create, look up and
+/// delete users directly, without those users signing in themselves.
+///
+/// Typically only available for trusted/server-side backends (for example
+/// the Firebase Admin SDK), unlike the plain [FirebaseAuth] operations which
+/// are meant to be safe for client use.
 abstract class FirebaseAuthAdmin implements FirebaseAuth {
-  /// Create user.
+  /// Creates a new user from the given [request] and returns the resulting
+  /// [UserRecord].
+  ///
+  /// Most implementations throw if a user with the same [request]
+  /// [FirebaseAuthCreateUserRequest.uid] or
+  /// [FirebaseAuthCreateUserRequest.email] already exists.
   Future<UserRecord> createUser(FirebaseAuthCreateUserRequest request);
 
-  /// Get user by uid.
+  /// Gets the user data for the user corresponding to the given [uid], or
+  /// `null` if no such user exists.
   @override
   Future<UserRecord?> getUser(String uid);
 
-  /// Get user by email.
+  /// Gets the user data for the user corresponding to the given [email], or
+  /// `null` if no user has that primary email.
   @override
   Future<UserRecord?> getUserByEmail(String email);
 
-  /// Delete user
+  /// Deletes the user identified by [uid].
   Future<void> deleteUser(String uid);
 }
 
-/// Extension for [FirebaseAuthAdmin].
+/// Convenience extension methods on [FirebaseAuthAdmin].
 extension FirebaseAuthAdminExt on FirebaseAuthAdmin {
-  /// Get or create a user based on the request.
+  /// Gets or creates a user based on [request].
   ///
-  /// If [request.uid] is provided, it tries to get the user by uid first.
-  /// If not found or if uid was not provided, it tries to get the user by email.
-  /// If still not found, it creates a new user.
+  /// If [FirebaseAuthCreateUserRequest.uid] is provided, it tries to get the
+  /// user by uid first. If not found (or if no uid was provided), it tries
+  /// to get the user by [FirebaseAuthCreateUserRequest.email]. If still not
+  /// found, it creates a new user from [request].
+  ///
+  /// Throws a [StateError] if no matching user is found by uid and
+  /// [FirebaseAuthCreateUserRequest.email] is `null`, since an email is
+  /// then required to create the user.
   Future<UserRecord> getOrCreateUser(
     FirebaseAuthCreateUserRequest request,
   ) async {

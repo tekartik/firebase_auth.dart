@@ -1,30 +1,42 @@
-/// CreateUserRequest class with to create a user record
+/// The set of properties used to create a new user, passed to
+/// [FirebaseAuthAdmin.createUser].
+///
+/// All properties are optional; omitting one leaves the corresponding value
+/// unset (or backend-default) on the created user.
 abstract class FirebaseAuthCreateUserRequest {
-  /// The user's `uid`.
+  /// The uid to assign to the new user, or `null` to let the backend
+  /// generate one automatically.
   String? get uid;
 
-  /// Whether or not the user is disabled.
+  /// Whether the new user should be created disabled (`true`) or enabled
+  /// (`false`/`null`). A disabled user cannot sign in.
   bool? get disabled;
 
-  /// The user's display name.
+  /// The display name to set on the new user, or `null` to leave it unset.
   String? get displayName;
 
-  /// The user's primary email.
+  /// The primary email to set on the new user, or `null` to leave it unset.
   String? get email;
 
-  /// Whether or not the user's primary email is verified.
+  /// Whether the primary [email] should be marked as verified (`true`) or
+  /// not (`false`/`null`).
   bool? get emailVerified;
 
-  /// The user's unhashed password.
+  /// The unhashed password to set for the new user, or `null` to create the
+  /// user without a password (for example for providers other than
+  /// email/password).
   String? get password;
 
-  /// The user's primary phone number.
+  /// The primary phone number to set on the new user, or `null` to leave it
+  /// unset.
   String? get phoneNumber;
 
-  /// The user's photo URL.
+  /// The photo URL to set on the new user, or `null` to leave it unset.
   String? get photoURL;
 
-  /// Factory constructor
+  /// Creates an immutable [FirebaseAuthCreateUserRequest] from the given
+  /// field values. See the corresponding getters for the meaning of each
+  /// parameter; all of them are optional and default to unset.
   factory FirebaseAuthCreateUserRequest({
     String? uid,
     bool? disabled,
