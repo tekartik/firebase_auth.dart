@@ -565,4 +565,10 @@ extension TekartikFirebaseAuthFirebaseAppExt on FirebaseApp {
       return auth;
     }
   }
+
+  /// Returns the [FirebaseAuth] product registered on this app, or `null` if
+  /// none has been registered.
+  FirebaseAuth? authOrNull() {
+    return getProduct<FirebaseAuth>();
+  }
 }
