@@ -95,7 +95,7 @@ class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
           var map = resultAsMap(parameters);
           return await firebaseAuthSimPluginServer.handleAuthUserGetCancel(map);
       }
-      return super.onAppCall(projectApp, channel, methodCall);
+      return await super.onAppCall(projectApp, channel, methodCall);
     } catch (e, st) {
       if (isDebug) {
         // ignore: avoid_print
