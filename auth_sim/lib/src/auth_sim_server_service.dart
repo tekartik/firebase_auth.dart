@@ -82,6 +82,11 @@ class FirebaseAuthSimServerService extends FirebaseSimServerServiceBase {
           var map = resultAsMap(parameters);
           return await firebaseAuthSimPluginServer
               .handleFirebaseAuthSignInAnonymously(map);
+        case methodAuthSendPasswordResetEmail:
+          var map = resultAsMap(parameters);
+          await firebaseAuthSimPluginServer
+              .handleFirebaseAuthSendPasswordResetEmail(map);
+          return null;
 
         case methodAuthUserGetListen:
           var map = resultAsMap(parameters);

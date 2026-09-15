@@ -11,6 +11,7 @@ void initAuthSimBuilders() {
     UserSignInAnonymouslyRequest.new,
     UserSignOutRequest.new,
     UserCreateRequest.new,
+    UserSendPasswordResetEmailRequest.new,
   ]);
 }
 
@@ -48,6 +49,9 @@ const methodAuthSignInAnonymously = 'auth/sign_in/anonymous';
 /// Signout sign out, delete the user if needed
 const methodAuthSignOut = 'auth/sign_out';
 
+/// Send a password reset email
+const methodAuthSendPasswordResetEmail = 'auth/password_reset/send_email';
+
 /// User sign in email password
 class UserSignInEmailPasswordRequest extends CvModelBase {
   /// email
@@ -64,6 +68,15 @@ class UserSignInEmailPasswordRequest extends CvModelBase {
 class UserSignInAnonymouslyRequest extends CvModelBase {
   @override
   CvFields get fields => [];
+}
+
+/// Send password reset email request
+class UserSendPasswordResetEmailRequest extends CvModelBase {
+  /// email
+  final email = CvField<String>('email');
+
+  @override
+  CvFields get fields => [email];
 }
 
 /// User sign in email password

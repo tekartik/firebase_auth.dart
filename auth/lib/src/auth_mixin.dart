@@ -125,6 +125,12 @@ mixin FirebaseAuthMixin
 
   /// {@macro tekartik_firebase_auth.auth_mixin.not_supported}
   @override
+  Future<void> sendPasswordResetEmail({required String email}) {
+    throw UnsupportedError('$runtimeType.sendPasswordResetEmail not supported');
+  }
+
+  /// {@macro tekartik_firebase_auth.auth_mixin.not_supported}
+  @override
   Future<UserCredential> signInWithEmailAndPassword({
     required String email,
     required String password,

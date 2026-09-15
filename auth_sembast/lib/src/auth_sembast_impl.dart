@@ -225,6 +225,18 @@ class FirebaseAuthSembastImpl
     return _dbUserToRecordOrNull(dbUser);
   }
 
+  /// Local implementation: only checks that the user exists, no email is sent.
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await _ready;
+    var dbUser = await _database.transaction((txn) async {
+      return _txnGetUserByEmail(txn, email);
+    });
+    if (dbUser == null) {
+      throw StateError('user-not-found');
+    }
+  }
+
   Filter _emailFilter(String email) {
     return Filter.equals(dbUserModel.email.name, email);
   }

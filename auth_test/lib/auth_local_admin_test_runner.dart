@@ -114,6 +114,24 @@ void localAdminTests({
       expect(currentUser, isNull);
     });
 
+    test('sendPasswordResetEmail', () async {
+      var auth = getAuth();
+      var email = 'userreset1';
+      var password = 'password1';
+      await auth.signOut();
+      await auth.getOrCreateUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      // Existing user: succeeds (no email is actually sent locally)
+      await auth.sendPasswordResetEmail(email: email);
+      // Unknown user: fails
+      await expectLater(
+        auth.sendPasswordResetEmail(email: 'unknown_user_reset'),
+        throwsA(anything),
+      );
+    });
+
     test('signIn/signOut anonymously', () async {
       var auth = getAuth();
       var userCredential = await auth.getSignInAnonymouslyUserCredential();

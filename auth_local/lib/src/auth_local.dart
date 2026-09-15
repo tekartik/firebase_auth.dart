@@ -273,6 +273,15 @@ class AuthLocalImpl
     return _wrapUserAsCredential(userRecord);
   }
 
+  /// Local implementation: only checks that the user exists, no email is sent.
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    var userRecord = _getUserByEmail(email);
+    if (userRecord == null) {
+      throw StateError('user $email not found');
+    }
+  }
+
   @override
   Future<ListUsersResult> listUsers({
     int? maxResults,

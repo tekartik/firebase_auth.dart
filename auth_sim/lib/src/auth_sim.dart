@@ -407,6 +407,18 @@ class _FirebaseAuthSim
   }
 
   @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await _ready;
+    var simClient = await _simClient;
+    var request = UserSendPasswordResetEmailRequest()..email.setValue(email);
+    await simClient.sendRequest<Object?>(
+      FirebaseAuthSimServerService.serviceName,
+      methodAuthSendPasswordResetEmail,
+      request.toMap(),
+    );
+  }
+
+  @override
   Future<UserCredential> getSignInAnonymouslyUserCredential() async {
     var userResponse = await _getSignInAnonymouslyUserResponse();
     var userRecordSim = UserRecordSim(userResponse: userResponse);

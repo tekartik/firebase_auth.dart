@@ -262,6 +262,24 @@ abstract class FirebaseAuth implements FirebaseAppProduct<FirebaseAuth> {
   /// [currentUser] is `null`.
   Future<void> sendEmailVerification();
 
+  /// Sends a password reset email to the user account registered with
+  /// [email].
+  ///
+  /// The user follows the link in the email to choose a new password. No
+  /// signed-in user is required.
+  ///
+  /// A `FirebaseAuthException` maybe thrown with the following error code:
+  /// - **invalid-email**:
+  ///  - Thrown if the email address is not valid.
+  /// - **user-not-found**:
+  ///  - Thrown if there is no user corresponding to the given email. Note
+  ///    that projects with email enumeration protection enabled silently
+  ///    succeed instead.
+  ///
+  /// Local implementations (sembast, sdb, sim, local) only check that a user
+  /// with this email exists; no email is sent.
+  Future<void> sendPasswordResetEmail({required String email});
+
   /// The default [FirebaseAuth] instance, bound to [FirebaseApp.instance].
   ///
   /// Throws if there is no default [App] or if no [FirebaseAuth] product has

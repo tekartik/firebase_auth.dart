@@ -120,6 +120,17 @@ class FirebaseAuthSimPluginServer {
     });
   }
 
+  /// Send password reset email
+  Future<void> handleFirebaseAuthSendPasswordResetEmail(
+    Map<String, Object?> params,
+  ) async {
+    var request = params.cv<UserSendPasswordResetEmailRequest>();
+    var email = request.email.v!;
+    await _lock.synchronized(() async {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+    });
+  }
+
   /// Sign in anonymous
   Future<void> handleFirebaseAuthSignOut(Map<String, Object?> params) async {
     // var signOutRequest = params.cv<UserSignOutRequest>();
