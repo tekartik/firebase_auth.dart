@@ -37,10 +37,12 @@ one `FirebaseAuth` per `FirebaseApp`. The service comes from a sibling package:
 * Check the service capabilities in generic code: `supportsCurrentUser`
   (sign-in, `currentUser`, `onCurrentUser`) and `supportsListUsers`
   (`listUsers`, `getUsers`, `getUser`, `getUserByEmail`). Unsupported members
-  throw `UnsupportedError`. Flutter, REST, sembast and sim report
+  throw `UnsupportedError`. Flutter, sembast and sim report
   `supportsListUsers == false` (sembast still answers `getUser` and
   `getUserByEmail` through its admin interface, see the backend skill). sdb
   lists them, ordered by uid, the page token being the last uid of the page.
+  REST reports it only for its admin service (`firebaseAuthServiceRestAdmin`,
+  an app initialized with a service account).
 * `currentUser` is a synchronous snapshot, `null` until the backend resolved
   the persisted session. React to sign-in state with `onCurrentUser`: it
   replays the latest known value (possibly `null`) to new listeners and emits
