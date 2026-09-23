@@ -15,10 +15,39 @@ void main() {
 
   group('auth', () {
     test('factory', () {
-      expect(authService.supportsListUsers, isFalse);
+      expect(authService.supportsListUsers, isTrue);
       expect(authService.supportsCurrentUser, isTrue);
     });
     runAuthTests(firebase: firebase, authService: authService);
+
+    test('listUsers', () async {
+      var auth = newFirebaseAuthSdbMemory() as FirebaseAuthSdb;
+      expect((await auth.listUsers()).users, isEmpty);
+      for (var uid in ['c', 'a', 'b']) {
+        await auth.createUser(
+          FirebaseAuthCreateUserRequest(uid: uid, email: '$uid@example.com'),
+        );
+      }
+      var result = await auth.listUsers();
+      expect(result.users.map((user) => user!.uid), ['a', 'b', 'c']);
+      expect(result.pageToken, isNull);
+
+      // Page by page.
+      result = await auth.listUsers(maxResults: 2);
+      expect(result.users.map((user) => user!.uid), ['a', 'b']);
+      expect(result.pageToken, 'b');
+      result = await auth.listUsers(maxResults: 2, pageToken: 'b');
+      expect(result.users.map((user) => user!.uid), ['c']);
+      expect(result.pageToken, isNull);
+      result = await auth.listUsers(maxResults: 3);
+      expect(result.pageToken, isNull);
+
+      expect(
+        (await auth.getUsers(['c', 'unknown', 'a'])).map((user) => user.uid),
+        ['c', 'a'],
+      );
+      await auth.app.delete();
+    });
 
     test('memory', () async {
       var auth1 = newFirebaseAuthSdbMemory() as FirebaseAuthSdb;

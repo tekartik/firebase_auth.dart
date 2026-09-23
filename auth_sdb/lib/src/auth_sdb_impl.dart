@@ -29,7 +29,7 @@ class FirebaseAuthServiceSdbImpl
     with FirebaseProductServiceMixin<FirebaseAuth>, FirebaseAuthServiceMixin
     implements FirebaseAuthServiceSdb {
   @override
-  bool get supportsListUsers => false; // For now
+  bool get supportsListUsers => true;
 
   @override
   bool get supportsCurrentUser => true;
@@ -225,6 +225,45 @@ class FirebaseAuthSdbImpl
     );
 
     await signOut();
+  }
+
+  /// Lists the users ordered by uid, [pageToken] being the uid of the last
+  /// user of the previous page, [maxResults] 1000 by default as in the admin
+  /// sdk.
+  @override
+  Future<ListUsersResult> listUsers({
+    int? maxResults,
+    String? pageToken,
+  }) async {
+    await _ready;
+    var pageSize = maxResults ?? 1000;
+    var dbUsers = await _userStore.findRecords(
+      _database,
+      boundaries: pageToken == null
+          ? null
+          : SdbBoundaries.lower(SdbLowerBoundary(pageToken, include: false)),
+      // One more tells whether there is a next page.
+      limit: pageSize + 1,
+    );
+    var hasMore = dbUsers.length > pageSize;
+    var users = dbUsers.take(pageSize).toList();
+    return ListUsersResult(
+      pageToken: hasMore ? users.last.id : null,
+      users: users.map(_UserRecordSdb.new).toList(),
+    );
+  }
+
+  @override
+  Future<List<UserRecord>> getUsers(List<String> uids) async {
+    await _ready;
+    var users = <UserRecord>[];
+    for (var uid in uids) {
+      var dbUser = await _userStore.record(uid).get(_database);
+      if (dbUser != null) {
+        users.add(_UserRecordSdb(dbUser));
+      }
+    }
+    return users;
   }
 
   UserRecord? _dbUserToRecordOrNull(DbUser? dbUser) {
