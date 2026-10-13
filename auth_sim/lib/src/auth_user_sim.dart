@@ -2,6 +2,9 @@ import 'package:tekartik_firebase_auth/auth_mixin.dart';
 
 import 'auth_sim_message.dart';
 
+/// Provider id of the sim users and credentials.
+const firebaseAuthSimProviderId = 'sim';
+
 /// User record sim
 class UserRecordSim with FirebaseUserRecordDefaultMixin {
   /// User response
@@ -50,6 +53,15 @@ class FirebaseUserSim with FirebaseUserMixin {
   @override
   String? get displayName => userRecordSim.displayName;
 
+  @override
+  String? get phoneNumber => userRecordSim.phoneNumber;
+
+  @override
+  String? get photoURL => userRecordSim.photoURL;
+
+  @override
+  String get providerId => firebaseAuthSimProviderId;
+
   /// Constructor
   FirebaseUserSim(this.userRecordSim);
 }
@@ -72,7 +84,7 @@ class UserCredentialSim with FirebaseUserCredentialMixin {
 /// Auth credential sim
 class FirebaseAuthCredentialSim implements FirebaseAuthCredential {
   @override
-  String get providerId => 'sim';
+  String get providerId => firebaseAuthSimProviderId;
 
   @override
   String toString() => 'AuthCredential(provider: $providerId)';

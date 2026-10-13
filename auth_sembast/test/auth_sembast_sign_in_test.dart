@@ -26,7 +26,8 @@ void main() {
       auth = authService.auth(app) as FirebaseAuthSembast;
     });
 
-    tearDownAll(() {
+    // Each test has its own app.
+    tearDown(() {
       return app.delete();
     });
 
@@ -44,5 +45,12 @@ void main() {
       email: 'sembastemail',
       password: 'sembastpassword',
     );
+    test('getUsers', () async {
+      var user = await auth.createUser(
+        FirebaseAuthCreateUserRequest(email: 'sembast_get_users1'),
+      );
+      var users = await auth.getUsers([user.uid, 'sembast_get_users_missing']);
+      expect(users.map((user) => user.uid), [user.uid]);
+    });
   });
 }

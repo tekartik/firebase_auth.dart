@@ -142,24 +142,31 @@ class FirebaseAuthSdbImpl
       SdbTransactionMode.readWrite,
       (txn) async {
         if (email != null) {
+          // The email moves to this user.
           var existing = await _userStore.findRecords(
             txn,
             filter: _emailFilter(email),
           );
           for (var r in existing) {
-            await r.delete(txn);
+            if (r.id != uid) {
+              await r.delete(txn);
+            }
           }
         }
-        await _userStore
-            .record(uid)
-            .put(
-              txn,
-
-              DbUser()
-                ..email.v = email
-                ..emailVerified.setValue(emailVerified)
-                ..isAnonymous.setValue(isAnonymous),
-            );
+        // Updated in place, the omitted fields keep their current value.
+        var record = _userStore.record(uid);
+        var dbUser =
+            await record.get(txn) ?? (DbUser()..created.v = SdbTimestamp.now());
+        if (email != null) {
+          dbUser.email.v = email;
+        }
+        if (emailVerified != null) {
+          dbUser.emailVerified.v = emailVerified;
+        }
+        if (isAnonymous != null) {
+          dbUser.isAnonymous.v = isAnonymous;
+        }
+        await record.put(txn, dbUser);
       },
     );
   }
@@ -216,15 +223,23 @@ class FirebaseAuthSdbImpl
   @override
   Future<void> deleteUser(String uid) async {
     await _ready;
-    await _database.inStoreTransaction(
-      _userStore.rawRef,
+    var wasCurrentUser = await _database.inStoresTransaction(
+      [_currentUserStore.rawRef, _userStore.rawRef],
       SdbTransactionMode.readWrite,
       (txn) async {
         await _userStore.record(uid).delete(txn);
+        // Only the deleted user is signed out.
+        var currentUser = await firebaseAuthCurrentUserRecord.get(txn);
+        if (currentUser?.uid.v == uid) {
+          await firebaseAuthCurrentUserRecord.delete(txn);
+          return true;
+        }
+        return false;
       },
     );
-
-    await signOut();
+    if (wasCurrentUser) {
+      currentUserAdd(null);
+    }
   }
 
   /// Lists the users ordered by uid, [pageToken] being the uid of the last
@@ -248,7 +263,8 @@ class FirebaseAuthSdbImpl
     var hasMore = dbUsers.length > pageSize;
     var users = dbUsers.take(pageSize).toList();
     return ListUsersResult(
-      pageToken: hasMore ? users.last.id : null,
+      // No token for an empty page (maxResults 0).
+      pageToken: hasMore && users.isNotEmpty ? users.last.id : null,
       users: users.map(_UserRecordSdb.new).toList(),
     );
   }
@@ -427,7 +443,16 @@ class FirebaseAuthSdbImpl
       txn,
       filter: SdbFilter.equals(dbUserModel.email.name, email),
     );
-    dbUser ??= await _userStore.add(txn, DbUser()..email.v = email);
+    // Created like createUser (an existing user is returned as is, like the
+    // sim).
+    dbUser ??= await _userStore.add(
+      txn,
+      DbUser()
+        ..created.v = SdbTimestamp.now()
+        ..email.v = email
+        ..isAnonymous.v = false
+        ..localPassword.v = password,
+    );
     return dbUser;
   }
 
@@ -456,7 +481,9 @@ class FirebaseAuthSdbImpl
   Future<DbUser> _txnGetSignInAnonymouslyUserCredential(
     SdbTransaction txn,
   ) async {
-    /// Delete old existing
+    /// Delete the anonymous users created more than 30 days ago, except the
+    /// current one.
+    var currentUserId = (await firebaseAuthCurrentUserRecord.get(txn))?.uid.v;
     var toDelete = await _userStore.findRecords(
       txn,
       filter: SdbFilter.and([
@@ -465,13 +492,15 @@ class FirebaseAuthSdbImpl
           SdbFilter.isNull(dbUserModel.created.name),
           SdbFilter.lessThan(
             dbUserModel.created.name,
-            SdbTimestamp.now().addDuration(const Duration(days: 30)),
+            SdbTimestamp.now().addDuration(const Duration(days: -30)),
           ),
         ]),
       ]),
     );
     for (var r in toDelete) {
-      await r.delete(txn);
+      if (r.id != currentUserId) {
+        await r.delete(txn);
+      }
     }
     var created = SdbTimestamp.now();
     var dbUser = await _userStore.add(
@@ -510,8 +539,8 @@ class FirebaseAuthSdbImpl
   @override
   Future<UserCredential> getSignInAnonymouslyUserCredential() async {
     await _ready;
-    var dbUser = await _database.inStoreTransaction(
-      _userStore.rawRef,
+    var dbUser = await _database.inStoresTransaction(
+      [_currentUserStore.rawRef, _userStore.rawRef],
       SdbTransactionMode.readWrite,
       (txn) async {
         var dbUser = await _txnGetSignInAnonymouslyUserCredential(txn);
@@ -603,10 +632,20 @@ class _FirebaseUserSdb with FirebaseUserMixin {
   @override
   String? get displayName => _dbUser.name.v;
 
+  @override
+  String? get phoneNumber => _dbUser.phoneNumber.v;
+
+  @override
+  String? get photoURL => _dbUser.photoURL.v;
+
+  @override
+  String get providerId => _authSdbProviderId;
+
   final DbUser _dbUser;
 
   _FirebaseUserSdb(this.auth, this._dbUser);
 
+  /// Deletes the user, signing it out if it is the current user.
   @override
   Future<void> delete() async {
     await auth.deleteUser(uid);

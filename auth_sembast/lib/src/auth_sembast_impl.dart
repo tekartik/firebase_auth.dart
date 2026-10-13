@@ -141,21 +141,31 @@ class FirebaseAuthSembastImpl
     await _ready;
     await _database.transaction((txn) async {
       if (email != null) {
+        // The email moves to this user.
         await _userStore.delete(
           txn,
-          finder: Finder(filter: _emailFilter(email)),
+          finder: Finder(
+            filter: Filter.and([
+              _emailFilter(email),
+              Filter.notEquals(Field.key, uid),
+            ]),
+          ),
         );
       }
-      await _userStore
-          .record(uid)
-          .put(
-            txn,
-
-            DbUser()
-              ..email.v = email
-              ..emailVerified.setValue(emailVerified)
-              ..isAnonymous.setValue(isAnonymous),
-          );
+      // Updated in place, the omitted fields keep their current value.
+      var record = _userStore.record(uid);
+      var dbUser =
+          await record.get(txn) ?? (DbUser()..created.v = Timestamp.now());
+      if (email != null) {
+        dbUser.email.v = email;
+      }
+      if (emailVerified != null) {
+        dbUser.emailVerified.v = emailVerified;
+      }
+      if (isAnonymous != null) {
+        dbUser.isAnonymous.v = isAnonymous;
+      }
+      await record.put(txn, dbUser);
     });
   }
 
@@ -207,9 +217,32 @@ class FirebaseAuthSembastImpl
   @override
   Future<void> deleteUser(String uid) async {
     await _ready;
-    await _database.transaction((txn) async {
+    var wasCurrentUser = await _database.transaction((txn) async {
       await _userStore.record(uid).delete(txn);
+      // Only the deleted user is signed out.
+      var currentUser = await firebaseAuthCurrentUserRecord.get(txn);
+      if (currentUser?.uid.v == uid) {
+        await firebaseAuthCurrentUserRecord.delete(txn);
+        return true;
+      }
+      return false;
     });
+    if (wasCurrentUser) {
+      currentUserAdd(null);
+    }
+  }
+
+  @override
+  Future<List<UserRecord>> getUsers(List<String> uids) async {
+    await _ready;
+    var users = <UserRecord>[];
+    for (var uid in uids) {
+      var dbUser = await _userStore.record(uid).get(_database);
+      if (dbUser != null) {
+        users.add(_UserRecordSembast(dbUser));
+      }
+    }
+    return users;
   }
 
   UserRecord? _dbUserToRecordOrNull(DbUser? dbUser) {
@@ -360,7 +393,16 @@ class FirebaseAuthSembastImpl
       txn,
       finder: Finder(filter: Filter.equals(dbUserModel.email.name, email)),
     );
-    dbUser ??= await _userStore.add(txn, DbUser()..email.v = email);
+    // Created like createUser (an existing user is returned as is, like the
+    // sim).
+    dbUser ??= await _userStore.add(
+      txn,
+      DbUser()
+        ..created.v = Timestamp.now()
+        ..email.v = email
+        ..isAnonymous.v = false
+        ..localPassword.v = password,
+    );
     return dbUser;
   }
 
@@ -383,7 +425,9 @@ class FirebaseAuthSembastImpl
   }
 
   Future<DbUser> _txnGetSignInAnonymouslyUserCredential(Transaction txn) async {
-    /// Delete old existing
+    /// Delete the anonymous users created more than 30 days ago, except the
+    /// current one.
+    var currentUserId = (await firebaseAuthCurrentUserRecord.get(txn))?.uid.v;
     await _userStore.delete(
       txn,
       finder: Finder(
@@ -393,9 +437,10 @@ class FirebaseAuthSembastImpl
             Filter.isNull(dbUserModel.created.name),
             Filter.lessThan(
               dbUserModel.created.name,
-              Timestamp.now().addDuration(const Duration(days: 30)),
+              Timestamp.now().addDuration(const Duration(days: -30)),
             ),
           ]),
+          if (currentUserId != null) Filter.notEquals(Field.key, currentUserId),
         ]),
       ),
     );
@@ -517,14 +562,23 @@ class _FirebaseUserSembast with FirebaseUserMixin {
   @override
   String? get displayName => _dbUser.name.v;
 
+  @override
+  String? get phoneNumber => _dbUser.phoneNumber.v;
+
+  @override
+  String? get photoURL => _dbUser.photoURL.v;
+
+  @override
+  String get providerId => _authSembastProviderId;
+
   final DbUser _dbUser;
 
   _FirebaseUserSembast(this.auth, this._dbUser);
 
+  /// Deletes the user, signing it out if it is the current user.
   @override
   Future<void> delete() async {
     await auth.deleteUser(uid);
-    await auth.signOut();
   }
 }
 

@@ -63,14 +63,14 @@ void localAdminTests({
       fetched = await auth.getUserByEmail(email);
       expect(fetched!.uid, 'uc1');
       // Create with existing email should throw StateError
-      expect(
-        () => auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
+      await expectLater(
+        auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
         throwsA(isA<StateError>()),
       );
 
       // Create with existing uid should throw StateError
-      expect(
-        () => auth.createUser(FirebaseAuthCreateUserRequest(uid: 'uc1')),
+      await expectLater(
+        auth.createUser(FirebaseAuthCreateUserRequest(uid: 'uc1')),
         throwsA(isA<StateError>()),
       );
 
@@ -151,6 +151,115 @@ void localAdminTests({
       await auth.signOut();
       currentUser = await auth.onCurrentUser.first;
       expect(currentUser, isNull);
+    });
+
+    test('deleteUser only signs out the deleted user', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var current = await auth.createUserWithEmailAndPassword(
+        email: 'deleteuser_current',
+        password: 'password1',
+      );
+      var other = await auth.createUser(
+        FirebaseAuthCreateUserRequest(email: 'deleteuser_other'),
+      );
+      await auth.deleteUser(other.uid);
+      expect(await auth.getUser(other.uid), isNull);
+      expect(auth.currentUser?.uid, current.user.uid);
+
+      await auth.deleteUser(current.user.uid);
+      await auth.onCurrentUser
+          .firstWhere((user) => user == null)
+          .timeout(const Duration(seconds: 10));
+    });
+
+    test('anonymous sign in keeps the other anonymous users', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var credential1 = await auth.getSignInAnonymouslyUserCredential();
+      var credential2 = await auth.getSignInAnonymouslyUserCredential();
+      expect(await auth.getUser(credential1.user.uid), isNotNull);
+
+      var signedIn = await auth.signInAnonymously();
+      await auth.getSignInAnonymouslyUserCredential();
+      expect(auth.currentUser?.uid, signedIn.user.uid);
+      expect(await auth.getUser(signedIn.user.uid), isNotNull);
+      expect(await auth.getUser(credential2.user.uid), isNotNull);
+      await auth.signOut();
+    });
+
+    test('sign in credential stores the password', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var email = 'credential_password1';
+      var credential = await auth.getSignInWithEmailAndPasswordUserCredential(
+        email: email,
+        password: 'password1',
+      );
+      expect(credential.user.email, email);
+      await expectLater(
+        auth.signInWithEmailAndPassword(email: email, password: 'wrong'),
+        throwsA(anything),
+      );
+      var userCredential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: 'password1',
+      );
+      expect(userCredential.user.uid, credential.user.uid);
+      await auth.signOut();
+    });
+
+    test('setUser keeps the other fields', () async {
+      var auth = getAuth();
+      var uid = 'setuser_in_place1';
+      await auth.createUser(
+        FirebaseAuthCreateUserRequest(
+          uid: uid,
+          email: 'setuser_in_place1',
+          displayName: 'Set User',
+          phoneNumber: '+33600000001',
+        ),
+      );
+      await auth.setUser(uid, emailVerified: true);
+      var user = (await auth.getUser(uid))!;
+      expect(user.email, 'setuser_in_place1');
+      expect(user.displayName, 'Set User');
+      expect(user.phoneNumber, '+33600000001');
+      expect(user.emailVerified, isTrue);
+
+      await auth.setUser(uid, email: 'setuser_in_place2');
+      user = (await auth.getUser(uid))!;
+      expect(user.email, 'setuser_in_place2');
+      expect(user.displayName, 'Set User');
+      expect(user.emailVerified, isTrue);
+    });
+
+    test('signed in user fields', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var email = 'user_fields1';
+      var password = 'password1';
+      await auth.createUser(
+        FirebaseAuthCreateUserRequest(
+          email: email,
+          password: password,
+          displayName: 'User Fields',
+          phoneNumber: '+33600000002',
+          photoURL: 'https://example.com/fields.jpg',
+        ),
+      );
+      var credential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      for (var user in [credential.user, (await auth.onCurrentUser.first)!]) {
+        expect(user.email, email);
+        expect(user.displayName, 'User Fields');
+        expect(user.phoneNumber, '+33600000002');
+        expect(user.photoURL, 'https://example.com/fields.jpg');
+        expect(user.providerId, isNotNull);
+      }
+      await auth.signOut();
     });
 
     test('signIn delete restart', () async {

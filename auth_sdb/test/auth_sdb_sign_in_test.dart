@@ -24,7 +24,8 @@ void main() {
       auth = authService.auth(app) as FirebaseAuthSdb;
     });
 
-    tearDownAll(() {
+    // Each test has its own app.
+    tearDown(() {
       return app.delete();
     });
 
@@ -39,8 +40,19 @@ void main() {
     );
     firebaseAuthSignInDeleteTests(
       getAuth: () => auth,
-      email: 'sembastemail',
-      password: 'sembastpassword',
+      email: 'sdbemail',
+      password: 'sdbpassword',
     );
+    test('getUsers listUsers', () async {
+      var user = await auth.createUser(
+        FirebaseAuthCreateUserRequest(email: 'sdb_get_users1'),
+      );
+      var users = await auth.getUsers([user.uid, 'sdb_get_users_missing']);
+      expect(users.map((user) => user.uid), [user.uid]);
+      // Empty page, no error.
+      var result = await auth.listUsers(maxResults: 0);
+      expect(result.users, isEmpty);
+      expect(result.pageToken, isNull);
+    });
   });
 }

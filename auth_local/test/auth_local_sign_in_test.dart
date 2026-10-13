@@ -20,7 +20,8 @@ void main() {
       auth = authService.auth(app) as FirebaseAuthAdmin;
     });
 
-    tearDownAll(() {
+    // Each test has its own app.
+    tearDown(() {
       return app.delete();
     });
 

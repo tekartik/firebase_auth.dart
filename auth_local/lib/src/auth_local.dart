@@ -91,13 +91,14 @@ class _UserRecordLocal
   _UserRecordLocal({
     required this.auth,
     required this.uid,
-    // ignore: unused_element_parameter
     this.disabled = false,
     this.emailVerified = true,
     this.isAnonymous = false,
     this.localPassword,
     this.email,
     this.displayName,
+    this.phoneNumber,
+    this.photoURL,
   });
 
   /// Optional
@@ -130,10 +131,10 @@ class _UserRecordLocal
   String? get passwordSalt => null;
 
   @override
-  String? get phoneNumber => null;
+  final String? phoneNumber;
 
   @override
-  String? get photoURL => null;
+  final String? photoURL;
 
   @override
   List<UserInfo>? get providerData => null;
@@ -147,13 +148,17 @@ class _UserRecordLocal
   UserInfo toUserInfo() {
     return _UserInfoLocal(auth: auth, uid: uid)
       ..email = email
-      ..displayName = displayName;
+      ..displayName = displayName
+      ..phoneNumber = phoneNumber
+      ..photoURL = photoURL;
   }
 
   User toUser() {
     return _UserLocal(auth: auth, uid: uid)
       ..email = email
-      ..displayName = displayName;
+      ..displayName = displayName
+      ..phoneNumber = phoneNumber
+      ..photoURL = photoURL;
   }
 }
 
@@ -170,10 +175,10 @@ class _UserInfoLocal with FirebaseUserMixin implements UserInfoLocal {
   String? email;
 
   @override
-  String? get phoneNumber => null;
+  String? phoneNumber;
 
   @override
-  String? get photoURL => null;
+  String? photoURL;
 
   @override
   String get providerId => localProviderId;
@@ -397,7 +402,10 @@ class AuthLocalImpl
   @override
   Future<void> deleteUser(String uid) async {
     _allUsers.removeWhere((user) => user.uid == uid);
-    await signOut();
+    // Only the deleted user is signed out.
+    if (currentUser?.uid == uid) {
+      await signOut();
+    }
   }
 
   @override
@@ -423,9 +431,12 @@ class AuthLocalImpl
       uid: uid,
       isAnonymous: false,
       localPassword: request.password,
-
+      disabled: request.disabled ?? false,
+      emailVerified: request.emailVerified ?? true,
       email: request.email,
       displayName: request.displayName,
+      phoneNumber: request.phoneNumber,
+      photoURL: request.photoURL,
     );
 
     _allUsers.add(userRecord);

@@ -34,23 +34,26 @@ void firebaseAuthAdminTests({
       try {
         expect(user.uid, uid);
         expect(user.email, email);
-        //expect(user.displayName, 'Create User 1');
-        // expect(user.emailVerified, isTrue);
-        // expect(user.disabled, isFalse);
-        /*expect(user.phoneNumber, '+1234567890');
-        expect(user.photoURL, 'https://example.com/photo.jpg');*/
+        expect(user.displayName, 'Create User 1');
+        expect(user.emailVerified, isTrue);
+        expect(user.disabled, isFalse);
+        expect(user.phoneNumber, '+1234567890');
+        expect(user.photoURL, 'https://example.com/photo.jpg');
 
         // Check user exists
         fetched = await auth.getUser(uid);
         expect(fetched!.uid, uid);
         expect(fetched.email, email);
+        expect(fetched.displayName, 'Create User 1');
+        expect(fetched.phoneNumber, '+1234567890');
+        expect(fetched.photoURL, 'https://example.com/photo.jpg');
 
         // Check user exists
         fetched = await auth.getUserByEmail(email);
         expect(fetched!.uid, uid);
         // Create with existing email should throw StateError
-        expect(
-          () => auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
+        await expectLater(
+          auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
           throwsA(isA<StateError>()),
         );
       } finally {
@@ -76,11 +79,9 @@ void firebaseAuthAdminTests({
       try {
         expect(user.uid, uid);
         expect(user.email, email);
-        //expect(user.displayName, 'Create User 1');
-        // expect(user.emailVerified, isTrue);
-        // expect(user.disabled, isFalse);
-        /*expect(user.phoneNumber, '+1234567890');
-        expect(user.photoURL, 'https://example.com/photo.jpg');*/
+        // Signed in, the user has a provider.
+        expect(user.providerId, isNotNull);
+        expect(auth.currentUser?.providerId, isNotNull);
 
         // Check user exists
         fetched = await auth.getUser(uid);
@@ -92,8 +93,8 @@ void firebaseAuthAdminTests({
         fetched = await auth.getUserByEmail(email);
         expect(fetched!.uid, uid);
         // Create with existing email should throw StateError
-        expect(
-          () => auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
+        await expectLater(
+          auth.createUser(FirebaseAuthCreateUserRequest(email: email)),
           throwsA(isA<StateError>()),
         );
       } finally {

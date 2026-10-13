@@ -30,8 +30,10 @@ void main() {
       auth = authService.auth(app);
     });
 
-    tearDownAll(() {
-      return app.delete();
+    // Each test has its own app and sim server.
+    tearDown(() async {
+      await app.delete();
+      await close(testContext);
     });
 
     localAdminTests(

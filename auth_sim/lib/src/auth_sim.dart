@@ -73,9 +73,12 @@ class _FirebaseAuthSim
             _currentUserSubscription?.cancel();
             return;
           }
-          if (userId != _currentUserId) {
-            _currentUserSubscription?.cancel();
+          if (userId == _currentUserId) {
+            // Already listening to this user.
+            return;
           }
+          _currentUserId = userId;
+          _currentUserSubscription?.cancel();
           _currentUserSubscription = onUserRecord(userId).listen((record) {
             if (record == null) {
               // Record not found, delete current user
