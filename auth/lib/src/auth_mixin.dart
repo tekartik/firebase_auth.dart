@@ -365,6 +365,77 @@ mixin FirebaseAuthAdminDefaultMixin implements FirebaseAuthAdmin {
   }
 }
 
+/// The sign-in provider of a local user that is neither anonymous nor has an
+/// email (for example created with [FirebaseAuthLocalAdmin.setUser]), like a
+/// custom token user.
+const _localCustomSignInProvider = 'custom';
+
+/// Local ID token verification of the local backends (sembast, sdb, sim,
+/// local): the ID token of a user is its uid, as produced by
+/// [FirebaseUserLocalIdTokenMixin.getIdToken].
+///
+/// Such a token is not signed, anyone knowing a uid can build it: it is only
+/// meant for local and test backends, for example a server test on an
+/// in-memory backend checking the token sent by its client.
+///
+/// Mix it in after [FirebaseAuthMixin] so that it replaces its unsupported
+/// [verifyIdToken].
+mixin FirebaseAuthLocalIdTokenMixin implements FirebaseAuth {
+  /// Verifies a local ID token [idToken]: the uid of an existing user.
+  ///
+  /// Throws a [StateError] `user-not-found` if no user has this uid and, when
+  /// [checkRevoked] is `true`, `user-disabled` if the user is disabled.
+  ///
+  /// [DecodedIdToken.signInProvider] is derived from the user:
+  /// [firebaseAuthAnonymousProviderId] for an anonymous user,
+  /// [firebaseAuthEmailPasswordProviderId] for a user with an email,
+  /// `'custom'` otherwise.
+  @override
+  Future<DecodedIdToken> verifyIdToken(
+    String idToken, {
+    bool? checkRevoked,
+  }) async {
+    var user = idToken.isEmpty ? null : await getUser(idToken);
+    if (user == null) {
+      throw StateError('user-not-found');
+    }
+    if ((checkRevoked ?? false) && user.disabled) {
+      throw StateError('user-disabled');
+    }
+    return _DecodedIdTokenLocal(
+      uid: user.uid,
+      signInProvider: user.isAnonymous
+          ? firebaseAuthAnonymousProviderId
+          : (user.email != null
+                ? firebaseAuthEmailPasswordProviderId
+                : _localCustomSignInProvider),
+    );
+  }
+}
+
+/// Local ID token of the users of the local backends (sembast, sdb, sim,
+/// local), verified by [FirebaseAuthLocalIdTokenMixin.verifyIdToken].
+mixin FirebaseUserLocalIdTokenMixin implements UserInfo, UserInfoWithIdToken {
+  /// The local ID token, which is the [uid] itself; [forceRefresh] is
+  /// ignored, the token never changes.
+  @override
+  Future<String> getIdToken({bool? forceRefresh}) async => uid;
+}
+
+/// Decoded local ID token, see [FirebaseAuthLocalIdTokenMixin].
+class _DecodedIdTokenLocal implements DecodedIdToken {
+  @override
+  final String uid;
+
+  @override
+  final String? signInProvider;
+
+  _DecodedIdTokenLocal({required this.uid, required this.signInProvider});
+
+  @override
+  String toString() => 'DecodedIdToken($uid, $signInProvider)';
+}
+
 /// Default mixin for [FirebaseAuthLocalAdmin] providing "not implemented"
 /// behavior for the two credential-preview operations, letting a backend
 /// mix this in and override only the ones it supports.

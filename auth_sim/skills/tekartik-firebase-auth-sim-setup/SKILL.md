@@ -71,6 +71,10 @@ a controllable server.
   `getSignInAnonymouslyUserCredential` helpers. Errors raised by the server
   (`user-not-found`, `wrong-password`, `email-already-exists`, ...) are
   forwarded to the client.
+* The id token of a user is its uid (`getIdToken()` of the signed-in user),
+  `verifyIdToken(idToken)` accepts it while the user exists on the server,
+  with `signInProvider` `'anonymous'`, `'password'` (email) or `'custom'`,
+  consistent with the sembast backend of the server. Not signed, test only.
 * `signOut()` deletes the user when it is anonymous, exactly like the sembast
   backend. `supportsCurrentUser` is `true`, `supportsListUsers` is `false`
   (`listUsers` throws).

@@ -71,7 +71,9 @@ one `FirebaseAuth` per `FirebaseApp`. The service comes from a sibling package:
 * To call your own API with a Firebase ID token check
   `user is UserInfoWithIdToken`, then `getIdToken(forceRefresh: true)`.
   Server side, `verifyIdToken(idToken, checkRevoked: true)` returns a
-  `DecodedIdToken` (`uid`).
+  `DecodedIdToken` (`uid`, and `signInProvider`, the
+  `firebase.sign_in_provider` claim: `firebaseAuthAnonymousProviderId` for
+  an anonymous user, `'password'`, `'google.com'`..., null when unknown).
 * `signIn(authProvider, options:)` (Google, Facebook...) returns an
   `AuthSignInResult`: when `hasInfo` is `false` (redirect flows) the outcome
   arrives later on `onCurrentUser`, and `credential` may be `null` even on
@@ -79,7 +81,9 @@ one `FirebaseAuth` per `FirebaseApp`. The service comes from a sibling package:
   (`AuthProviderRest`, `AuthLocalProvider`).
 * Admin lookups return `UserRecord` (`uid`, `email`, `displayName`,
   `emailVerified`, `disabled`, `isAnonymous`, `customClaims`, `providerData`,
-  `metadata` with `creationTime`/`lastSignInTime`), not `User`.
+  `metadata` with `creationTime`/`lastSignInTime` and `lastRefreshTime`, the
+  last id token refresh, null when unknown: an activity signal, also for
+  anonymous users), not `User`.
   `listUsers(maxResults:, pageToken:)` pages through `ListUsersResult` until
   `pageToken` is `null`; its `users` entries are nullable and `getUsers` omits
   unknown uids. `userRecordToJson`

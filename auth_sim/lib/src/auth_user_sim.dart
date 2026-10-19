@@ -36,8 +36,8 @@ class UserRecordSim with FirebaseUserRecordDefaultMixin {
   String? get photoURL => userResponse.photoURL.v;
 }
 
-/// User Sembast
-class FirebaseUserSim with FirebaseUserMixin {
+/// User sim, its id token is the uid (see [FirebaseUserLocalIdTokenMixin]).
+class FirebaseUserSim with FirebaseUserMixin, FirebaseUserLocalIdTokenMixin {
   /// record
   final UserRecordSim userRecordSim;
   @override

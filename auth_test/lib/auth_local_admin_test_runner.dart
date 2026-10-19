@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print, invalid_use_of_visible_for_testing_member
 library;
 
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase/firebase_mixin.dart';
+import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:test/test.dart';
 
@@ -259,6 +259,63 @@ void localAdminTests({
         expect(user.photoURL, 'https://example.com/fields.jpg');
         expect(user.providerId, isNotNull);
       }
+      await auth.signOut();
+    });
+
+    test('id token', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      // The id token of a local user is its uid.
+      var anonymous = (await auth.signInAnonymously()).user;
+      var idToken = await (anonymous as UserInfoWithIdToken).getIdToken();
+      expect(idToken, anonymous.uid);
+      var decoded = await auth.verifyIdToken(idToken);
+      expect(decoded.uid, anonymous.uid);
+      expect(decoded.signInProvider, firebaseAuthAnonymousProviderId);
+
+      var email = 'idtoken_email1';
+      var password = 'password1';
+      await auth.createUser(
+        FirebaseAuthCreateUserRequest(email: email, password: password),
+      );
+      var user = (await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      )).user;
+      idToken = await (user as UserInfoWithIdToken).getIdToken();
+      decoded = await auth.verifyIdToken(idToken, checkRevoked: true);
+      expect(decoded.uid, user.uid);
+      expect(decoded.signInProvider, firebaseAuthEmailPasswordProviderId);
+
+      // Neither anonymous nor with an email, like a custom token user.
+      await auth.setUser('idtoken_custom1');
+      decoded = await auth.verifyIdToken('idtoken_custom1');
+      expect(decoded.signInProvider, 'custom');
+
+      // A disabled user is only rejected when checking revocation.
+      var disabled = await auth.createUser(
+        FirebaseAuthCreateUserRequest(
+          email: 'idtoken_disabled1',
+          disabled: true,
+        ),
+      );
+      expect((await auth.verifyIdToken(disabled.uid)).uid, disabled.uid);
+      await expectLater(
+        auth.verifyIdToken(disabled.uid, checkRevoked: true),
+        throwsA(isA<StateError>()),
+      );
+
+      // Unknown or deleted user.
+      await expectLater(
+        auth.verifyIdToken('idtoken_unknown1'),
+        throwsA(isA<StateError>()),
+      );
+      await expectLater(auth.verifyIdToken(''), throwsA(isA<StateError>()));
+      await auth.deleteUser(user.uid);
+      await expectLater(
+        auth.verifyIdToken(idToken),
+        throwsA(isA<StateError>()),
+      );
       await auth.signOut();
     });
 

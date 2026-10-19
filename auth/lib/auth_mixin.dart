@@ -7,6 +7,8 @@ export 'package:tekartik_firebase_auth/src/auth_mixin.dart'
         FirebaseUserCredentialMixin,
         FirebaseAuthCredentialMixin,
         FirebaseAuthLocalAdminDefaultMixin,
+        FirebaseAuthLocalIdTokenMixin,
+        FirebaseUserLocalIdTokenMixin,
         FirebaseAuthAdminDefaultMixin;
 
 export 'auth.dart';

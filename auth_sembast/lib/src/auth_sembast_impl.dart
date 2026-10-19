@@ -57,6 +57,10 @@ class FirebaseAuthServiceSembastImpl
 }
 
 /// Firebase auth Sembast
+///
+/// The id token of a user is its uid ([UserInfoWithIdToken.getIdToken] of
+/// the signed-in user), accepted by [verifyIdToken] while the user exists,
+/// see [FirebaseAuthLocalIdTokenMixin].
 abstract class FirebaseAuthSembast
     implements FirebaseAuth, FirebaseAuthLocalAdmin, FirebaseAuthAdmin {}
 
@@ -126,7 +130,8 @@ class FirebaseAuthSembastImpl
     with
         FirebaseAppProductMixin<FirebaseAuth>,
         FirebaseAuthMixin,
-        FirebaseAuthLocalAdminDefaultMixin
+        FirebaseAuthLocalAdminDefaultMixin,
+        FirebaseAuthLocalIdTokenMixin
     implements FirebaseAuthSembast {
   StreamSubscription? _currentUserRecordSubscription;
   StreamSubscription? _currentUserSubscription;
@@ -585,8 +590,9 @@ class FirebaseAuthSembastImpl
   }
 }
 
-/// User Sembast
-class _FirebaseUserSembast with FirebaseUserMixin {
+/// User Sembast, its id token is the uid (see [FirebaseUserLocalIdTokenMixin]).
+class _FirebaseUserSembast
+    with FirebaseUserMixin, FirebaseUserLocalIdTokenMixin {
   final FirebaseAuthSembast auth;
   @override
   String get uid => _dbUser.id;

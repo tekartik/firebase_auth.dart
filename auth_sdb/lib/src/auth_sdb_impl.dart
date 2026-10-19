@@ -55,6 +55,10 @@ class FirebaseAuthServiceSdbImpl
 }
 
 /// Firebase auth Sdb
+///
+/// The id token of a user is its uid ([UserInfoWithIdToken.getIdToken] of
+/// the signed-in user), accepted by [verifyIdToken] while the user exists,
+/// see [FirebaseAuthLocalIdTokenMixin].
 abstract class FirebaseAuthSdb
     implements FirebaseAuth, FirebaseAuthLocalAdmin, FirebaseAuthAdmin {}
 
@@ -124,7 +128,8 @@ class FirebaseAuthSdbImpl
     with
         FirebaseAppProductMixin<FirebaseAuth>,
         FirebaseAuthMixin,
-        FirebaseAuthLocalAdminDefaultMixin
+        FirebaseAuthLocalAdminDefaultMixin,
+        FirebaseAuthLocalIdTokenMixin
     implements FirebaseAuthSdb {
   StreamSubscription? _currentUserRecordSubscription;
   StreamSubscription? _currentUserSubscription;
@@ -659,8 +664,8 @@ class FirebaseAuthSdbImpl
   }
 }
 
-/// User Sdb
-class _FirebaseUserSdb with FirebaseUserMixin {
+/// User Sdb, its id token is the uid (see [FirebaseUserLocalIdTokenMixin]).
+class _FirebaseUserSdb with FirebaseUserMixin, FirebaseUserLocalIdTokenMixin {
   final FirebaseAuthSdb auth;
   @override
   String get uid => _dbUser.id;

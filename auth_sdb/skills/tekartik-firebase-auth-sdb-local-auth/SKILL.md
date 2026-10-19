@@ -62,6 +62,11 @@ for tests and offline apps: it also implements `FirebaseAuthLocalAdmin` /
 * The current user is persisted (`info/currentUser` record): with a persistent
   factory the session survives an app restart. `onCurrentUser` emits once the
   database is open; `currentUser` is updated synchronously by sign in/out.
+* The id token of a user is its uid (`getIdToken()` of the signed-in user),
+  `verifyIdToken(idToken)` accepts it while the user exists (otherwise
+  `StateError('user-not-found')`, `user-disabled` with `checkRevoked`), with
+  `signInProvider` `'anonymous'`, `'password'` (email) or `'custom'`. Not
+  signed, test only.
 * `sendPasswordResetEmail(email:)` only checks that the user exists (throws
   `StateError('user-not-found')`), nothing is sent. `sendEmailVerification()`
   throws `UnsupportedError`. `supportsListUsers` is `false`

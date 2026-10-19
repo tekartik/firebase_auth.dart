@@ -15,6 +15,10 @@ import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'auth_service_sim.dart';
 
 /// Auth sim
+///
+/// The id token of a user is its uid ([UserInfoWithIdToken.getIdToken] of
+/// the signed-in user), accepted by [verifyIdToken] while the user exists on
+/// the sim server, see [FirebaseAuthLocalIdTokenMixin].
 abstract class FirebaseAuthSim implements FirebaseAuth, FirebaseAuthLocalAdmin {
   /// Firebase auth sim
   factory FirebaseAuthSim({
@@ -27,7 +31,8 @@ class _FirebaseAuthSim
     with
         FirebaseAppProductMixin<FirebaseAuth>,
         FirebaseAuthMixin,
-        FirebaseAuthLocalAdminDefaultMixin
+        FirebaseAuthLocalAdminDefaultMixin,
+        FirebaseAuthLocalIdTokenMixin
     implements FirebaseAuthSim, FirebaseAuthLocalAdmin {
   final FirebaseAppSim appSim;
   final FirebaseAuthServiceSim authServiceSim;

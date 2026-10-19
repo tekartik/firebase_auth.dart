@@ -81,10 +81,16 @@ users directly.
   `currentUser`): with `databaseFactoryIo` the session survives a restart.
   `currentUser` is updated synchronously by sign in/out, `onCurrentUser` emits
   once the database is open and re-emits when the user record changes.
+* The id token of a user is its uid (`getIdToken()` of the signed-in user),
+  `verifyIdToken(idToken)` accepts it while the user exists (otherwise
+  `StateError('user-not-found')`, `user-disabled` with `checkRevoked`), with
+  `signInProvider` `'anonymous'`, `'password'` (email) or `'custom'`: a
+  server test on the in-memory backend can check its client token. Not
+  signed, test only.
 * Unsupported here (they throw `UnsupportedError` from the base mixin):
   `listUsers` (`supportsListUsers` is `false`, `supportsCurrentUser` is
-  `true`), `getUsers`, `verifyIdToken`, `signIn(provider)` and
-  `sendEmailVerification`. `reloadCurrentUser()` just returns `currentUser`.
+  `true`), `signIn(provider)` and `sendEmailVerification`.
+  `reloadCurrentUser()` just returns `currentUser`.
 * Passwords are stored in clear text in the sembast database: this is a test
   and offline backend, never a security boundary.
 * `package:tekartik_firebase_auth_sembast/auth_sembast_mixin.dart` exposes

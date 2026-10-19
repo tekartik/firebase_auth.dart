@@ -370,6 +370,15 @@ abstract class UserMetadata {
 
   /// The date the user last signed in, formatted as a UTC string.
   String get lastSignInTime;
+
+  /// The date the user's ID token was last refreshed, formatted as a UTC
+  /// string, or `null` if unknown (never refreshed, or not tracked by the
+  /// backend).
+  ///
+  /// A signed-in client refreshes its ID token about every hour while it is
+  /// in use, so unlike [lastSignInTime] (only set by an explicit sign-in,
+  /// once for an anonymous user) this is a signal of recent activity.
+  String? get lastRefreshTime;
 }
 
 /// Deprecated alias for [FirebaseUserInfo]. New code should reference
@@ -478,6 +487,10 @@ abstract class FirebaseAuthCredential {
 /// The provider ID of an email and password credential.
 const firebaseAuthEmailPasswordProviderId = 'password';
 
+/// The sign-in provider ID of an anonymous user, see
+/// [DecodedIdToken.signInProvider].
+const firebaseAuthAnonymousProviderId = 'anonymous';
+
 /// An email and password credential, usable on every backend, for example to
 /// link it to an anonymous user ([FirebaseUser.linkWithCredential]).
 ///
@@ -580,6 +593,15 @@ class _ListUsersResult implements ListUsersResult {
 abstract class DecodedIdToken {
   /// The uid corresponding to the user who the ID token belonged to.
   String get uid;
+
+  /// The ID of the provider used to sign in the user the ID token belongs to
+  /// (the `firebase.sign_in_provider` claim), or `null` if unknown.
+  ///
+  /// For example [firebaseAuthAnonymousProviderId] (`'anonymous'`),
+  /// [firebaseAuthEmailPasswordProviderId] (`'password'`), `'google.com'`,
+  /// `'phone'` or `'custom'` (a custom token). A server can check it to know
+  /// whether the token belongs to an anonymous user.
+  String? get signInProvider;
 }
 
 /// Convenience extension methods on [FirebaseAuth].

@@ -118,6 +118,12 @@ void main() {
         var idToken = await (user as UserInfoWithIdToken).getIdToken();
         var decoded = await auth.verifyIdToken(idToken);
         expect(decoded.uid, auth.localAdminUser.uid);
+        expect(decoded.signInProvider, firebaseAuthEmailPasswordProviderId);
+        // Only the uid of an existing user is a valid id token.
+        await expectLater(
+          auth.verifyIdToken('unknown_uid'),
+          throwsA(isA<StateError>()),
+        );
       });
 
       test('newAuth', () async {

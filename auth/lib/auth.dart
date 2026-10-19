@@ -14,6 +14,7 @@ export 'package:tekartik_firebase_auth/src/auth.dart'
         FirebaseAuthCredential,
         FirebaseAuthEmailPasswordCredential,
         firebaseAuthEmailPasswordProviderId,
+        firebaseAuthAnonymousProviderId,
         AuthSignInResult,
         AuthProvider,
         AuthCredential,

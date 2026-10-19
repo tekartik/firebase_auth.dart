@@ -164,7 +164,10 @@ class _UserRecordLocal
 
 abstract class UserInfoLocal implements UserInfo, UserInfoWithIdToken {}
 
-class _UserInfoLocal with FirebaseUserMixin implements UserInfoLocal {
+/// Its id token is the uid, see [FirebaseUserLocalIdTokenMixin].
+class _UserInfoLocal
+    with FirebaseUserMixin, FirebaseUserLocalIdTokenMixin
+    implements UserInfoLocal {
   final FirebaseAuthLocal auth;
   _UserInfoLocal({required this.auth, required this.uid});
 
@@ -188,9 +191,6 @@ class _UserInfoLocal with FirebaseUserMixin implements UserInfoLocal {
 
   @override
   String toString() => '$uid $email $displayName';
-
-  @override
-  Future<String> getIdToken({bool? forceRefresh}) async => uid;
 }
 
 abstract class UserLocal implements User {}
@@ -223,7 +223,8 @@ class AuthLocalImpl
         FirebaseAppProductMixin<FirebaseAuth>,
         FirebaseAuthMixin,
         FirebaseAuthAdminDefaultMixin,
-        FirebaseAuthLocalAdminDefaultMixin
+        FirebaseAuthLocalAdminDefaultMixin,
+        FirebaseAuthLocalIdTokenMixin
     implements AuthLocal {
   final AuthServiceLocal _authServiceLocal;
   final AppLocal _appLocal;
@@ -379,15 +380,6 @@ class AuthLocalImpl
   String toString() => _appLocal.name;
 
   @override
-  Future<DecodedIdToken> verifyIdToken(
-    String idToken, {
-    bool? checkRevoked,
-  }) async {
-    // The id token is the uid itself
-    return DecodedIdTokenLocal(uid: idToken);
-  }
-
-  @override
   Future<User?> reloadCurrentUser() async {
     // No-op on local
     return currentUser;
@@ -475,7 +467,10 @@ class DecodedIdTokenLocal implements DecodedIdToken {
   @override
   final String uid;
 
-  DecodedIdTokenLocal({required this.uid});
+  @override
+  final String? signInProvider;
+
+  DecodedIdTokenLocal({required this.uid, this.signInProvider});
 }
 
 typedef AuthServiceLocal = FirebaseAuthServiceLocal;

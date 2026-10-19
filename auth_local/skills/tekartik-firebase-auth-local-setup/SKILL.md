@@ -70,8 +70,11 @@ dev builds; nothing is persisted.
   sent.
 * The id token is the uid itself: `await (user as UserInfoWithIdToken)
   .getIdToken()` returns the uid, and `auth.verifyIdToken(token)` returns a
-  `DecodedIdToken` whose `uid` is that token. Never let this backend anywhere
-  near production code that trusts id tokens.
+  `DecodedIdToken` whose `uid` is that token when such a user exists
+  (`StateError('user-not-found')` otherwise), its `signInProvider` derived
+  from the user (`'anonymous'`, `'password'` with an email, `'custom'`), like
+  the sembast, sdb and sim backends (`FirebaseAuthLocalIdTokenMixin`). Never
+  let this backend anywhere near production code that trusts id tokens.
 * Admin side (`FirebaseAuthAdmin` + `FirebaseAuthLocalAdmin`):
   `createUser(FirebaseAuthCreateUserRequest(uid:, email:, password:,
   displayName:))` (throws `StateError` on a duplicate uid or email),
