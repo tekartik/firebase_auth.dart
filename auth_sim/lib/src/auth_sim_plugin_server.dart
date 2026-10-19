@@ -120,6 +120,27 @@ class FirebaseAuthSimPluginServer {
     });
   }
 
+  /// Link an email and password to a user
+  Future<Model> handleFirebaseAuthUserLinkEmailPassword(
+    Map<String, Object?> params,
+  ) async {
+    var linkRequest = params.cv<UserLinkEmailPasswordRequest>();
+    var uid = linkRequest.userId.v!;
+    var credential = FirebaseAuthEmailPasswordCredential(
+      email: linkRequest.email.v!,
+      password: linkRequest.password.v!,
+    );
+
+    return await _lock.synchronized(() async {
+      await firebaseAuth.linkUserWithCredential(uid, credential);
+      var user = await firebaseAuth.getUser(uid);
+      if (user == null) {
+        return newModel();
+      }
+      return _fromUserRecord(user).toMap();
+    });
+  }
+
   /// Send password reset email
   Future<void> handleFirebaseAuthSendPasswordResetEmail(
     Map<String, Object?> params,

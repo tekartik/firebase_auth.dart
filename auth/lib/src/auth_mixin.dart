@@ -208,6 +208,13 @@ mixin FirebaseUserMixin implements User {
   Future<void> delete() {
     throw UnimplementedError('FirebaseUser $runtimeType.delete');
   }
+
+  /// Default implementation which is not supported: always throws an
+  /// [UnsupportedError]. Backends that can link override it.
+  @override
+  Future<UserCredential> linkWithCredential(FirebaseAuthCredential credential) {
+    throw UnsupportedError('FirebaseUser $runtimeType.linkWithCredential');
+  }
 }
 
 /// Default implementation of [UserCredential].
@@ -383,5 +390,15 @@ mixin FirebaseAuthLocalAdminDefaultMixin implements FirebaseAuthLocalAdmin {
     throw UnimplementedError(
       'FirebaseAuthLocalAdmin.getSignInWithEmailAndPasswordUserCredential',
     );
+  }
+
+  /// Default implementation which is not supported: always throws an
+  /// [UnsupportedError]. Backends that can link override it.
+  @override
+  Future<UserCredential> linkUserWithCredential(
+    String uid,
+    FirebaseAuthCredential credential,
+  ) {
+    throw UnsupportedError('$runtimeType.linkUserWithCredential not supported');
   }
 }

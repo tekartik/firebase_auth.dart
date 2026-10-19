@@ -86,7 +86,7 @@ class _FirebaseAuthSim
 
               currentUserAdd(null);
             } else {
-              currentUserAdd(FirebaseUserSim(record));
+              currentUserAdd(FirebaseUserSim(record, auth: this));
             }
           });
         });
@@ -171,6 +171,7 @@ class _FirebaseAuthSim
 
   @override
   Future<void> deleteUser(String uid) async {
+    await _ready;
     var simClient = await _simClient;
     var userDeleteRequest = UserGetRequest()..userId.setValue(uid);
 
@@ -179,6 +180,14 @@ class _FirebaseAuthSim
       methodAuthUserDelete,
       userDeleteRequest.toMap(),
     );
+    // Only the deleted user is signed out, right away.
+    if (currentUser?.uid == uid) {
+      await _currentUserSubscription?.cancel();
+      _currentUserSubscription = null;
+      _currentUserId = null;
+      await firebaseAuthCurrentUserRecord.delete(_database);
+      currentUserAdd(null);
+    }
   }
 
   @override
@@ -356,7 +365,7 @@ class _FirebaseAuthSim
     );
     var userRecordSim = userRecord as UserRecordSim;
 
-    return UserCredentialSim(userRecordSim);
+    return UserCredentialSim(userRecordSim, auth: this);
   }
 
   Future<UserCredentialSim> _handleSignInResponse(
@@ -373,9 +382,9 @@ class _FirebaseAuthSim
     );
     var userRecordSim = UserRecordSim(userResponse: userResponse);
 
-    currentUserAdd(FirebaseUserSim(userRecordSim));
+    currentUserAdd(FirebaseUserSim(userRecordSim, auth: this));
 
-    return UserCredentialSim(userRecordSim);
+    return UserCredentialSim(userRecordSim, auth: this);
   }
 
   Future<UserGetResponse> _getSignInAnonymouslyUserResponse() async {
@@ -426,7 +435,42 @@ class _FirebaseAuthSim
     var userResponse = await _getSignInAnonymouslyUserResponse();
     var userRecordSim = UserRecordSim(userResponse: userResponse);
 
-    return UserCredentialSim(userRecordSim);
+    return UserCredentialSim(userRecordSim, auth: this);
+  }
+
+  /// Links an email and password [credential] to the user [uid] on the
+  /// server, see [FirebaseUser.linkWithCredential].
+  @override
+  Future<UserCredential> linkUserWithCredential(
+    String uid,
+    FirebaseAuthCredential credential,
+  ) async {
+    if (credential is! FirebaseAuthEmailPasswordCredential) {
+      throw UnsupportedError(
+        '$runtimeType cannot link a ${credential.providerId} credential',
+      );
+    }
+    await _ready;
+    var simClient = await _simClient;
+    var linkRequest = UserLinkEmailPasswordRequest()
+      ..userId.setValue(uid)
+      ..email.setValue(credential.email)
+      ..password.setValue(credential.password);
+    var map = await simClient.sendRequest<Map>(
+      FirebaseAuthSimServerService.serviceName,
+      methodAuthUserLinkEmailPassword,
+      linkRequest.toMap(),
+    );
+    var userResponse = map.cv<UserGetResponse>();
+    if (userResponse.userId.v == null) {
+      throw StateError('user-not-found');
+    }
+    var userRecordSim = UserRecordSim(userResponse: userResponse);
+    if (currentUser?.uid == uid) {
+      // Also set the current user directly
+      currentUserAdd(FirebaseUserSim(userRecordSim, auth: this));
+    }
+    return UserCredentialSim(userRecordSim, auth: this);
   }
 
   @override

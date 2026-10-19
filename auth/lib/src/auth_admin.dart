@@ -44,6 +44,17 @@ abstract class FirebaseAuthLocalAdmin
   /// sign-in, without actually signing the user in (does not affect
   /// [FirebaseAuth.currentUser] or [FirebaseAuth.onCurrentUser]).
   Future<UserCredential> getSignInAnonymouslyUserCredential();
+
+  /// Links [credential] to the user [uid], which keeps its uid, see
+  /// [FirebaseUser.linkWithCredential] (which calls it for the users of a
+  /// local backend).
+  ///
+  /// When [uid] is the [FirebaseAuth.currentUser], the linked user becomes
+  /// the current one.
+  Future<UserCredential> linkUserWithCredential(
+    String uid,
+    FirebaseAuthCredential credential,
+  );
 }
 
 /// Convenience extension methods on [FirebaseAuthLocalAdmin].

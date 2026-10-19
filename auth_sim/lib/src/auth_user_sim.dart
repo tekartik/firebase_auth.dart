@@ -1,3 +1,4 @@
+import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth/auth_mixin.dart';
 
 import 'auth_sim_message.dart';
@@ -62,8 +63,32 @@ class FirebaseUserSim with FirebaseUserMixin {
   @override
   String get providerId => firebaseAuthSimProviderId;
 
+  /// The auth of the user, null when unknown (delete and link unsupported).
+  final FirebaseAuthLocalAdmin? auth;
+
   /// Constructor
-  FirebaseUserSim(this.userRecordSim);
+  FirebaseUserSim(this.userRecordSim, {this.auth});
+
+  /// Deletes the user, signing it out if it is the current user.
+  @override
+  Future<void> delete() async {
+    var auth = this.auth;
+    if (auth == null) {
+      return super.delete();
+    }
+    await auth.deleteUser(uid);
+  }
+
+  /// Links an email and password credential, the user is no longer
+  /// anonymous.
+  @override
+  Future<UserCredential> linkWithCredential(FirebaseAuthCredential credential) {
+    var auth = this.auth;
+    if (auth == null) {
+      return super.linkWithCredential(credential);
+    }
+    return auth.linkUserWithCredential(uid, credential);
+  }
 }
 
 /// User credential sim
@@ -71,11 +96,14 @@ class UserCredentialSim with FirebaseUserCredentialMixin {
   /// Record
   final UserRecordSim userRecordSim;
 
+  /// The auth of the user, see [FirebaseUserSim.auth].
+  final FirebaseAuthLocalAdmin? auth;
+
   @override
-  late final user = FirebaseUserSim(userRecordSim);
+  late final user = FirebaseUserSim(userRecordSim, auth: auth);
 
   /// Constructor
-  UserCredentialSim(this.userRecordSim);
+  UserCredentialSim(this.userRecordSim, {this.auth});
 
   @override
   late final credential = FirebaseAuthCredentialSim();

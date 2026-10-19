@@ -431,6 +431,33 @@ abstract class FirebaseUser extends UserInfo {
   ///  - Thrown if the user's last sign-in time does not meet the security
   ///    threshold. This does not apply if the user is anonymous.
   Future<void> delete();
+
+  /// Links [credential] to this user, which keeps its [uid].
+  ///
+  /// Typically turns an anonymous user ([isAnonymous]) into a permanent one
+  /// without losing what was saved under its uid. [credential] is a
+  /// [FirebaseAuthEmailPasswordCredential], supported by every backend that
+  /// links, or a credential of the backend itself.
+  ///
+  /// The current user is updated: [FirebaseAuth.onCurrentUser] emits the
+  /// linked user, same uid, no longer anonymous.
+  ///
+  /// A `FirebaseAuthException` maybe thrown with the following error code
+  /// (flutter; the rest and local implementations throw a [StateError] whose
+  /// message is the code, the sim an error whose message holds it):
+  /// - **provider-already-linked**:
+  ///  - Thrown if this user already has a credential of this provider.
+  /// - **email-already-in-use**:
+  ///  - Thrown if the email of [credential] belongs to another user. Signing
+  ///    in to that user instead changes the uid.
+  /// - **credential-already-in-use**:
+  ///  - Thrown if the account of [credential] belongs to another user.
+  /// - **invalid-email**, **weak-password**, **operation-not-allowed**:
+  ///  - As for [FirebaseAuth.createUserWithEmailAndPassword].
+  /// - **requires-recent-login**:
+  ///  - Thrown if the user's last sign-in time does not meet the security
+  ///    threshold. This does not apply if the user is anonymous.
+  Future<UserCredential> linkWithCredential(FirebaseAuthCredential credential);
 }
 
 /// Deprecated alias for [FirebaseAuthCredential]. New code should reference
@@ -446,6 +473,49 @@ abstract class FirebaseAuthCredential {
   /// The authentication provider ID for the credential (for example
   /// `'password'` or `'google.com'`).
   String get providerId;
+}
+
+/// The provider ID of an email and password credential.
+const firebaseAuthEmailPasswordProviderId = 'password';
+
+/// An email and password credential, usable on every backend, for example to
+/// link it to an anonymous user ([FirebaseUser.linkWithCredential]).
+///
+/// See: <https://firebase.google.com/docs/reference/js/auth.emailauthprovider>.
+abstract class FirebaseAuthEmailPasswordCredential
+    implements FirebaseAuthCredential {
+  /// The email.
+  String get email;
+
+  /// The password.
+  String get password;
+
+  /// Credential of [email] and [password].
+  factory FirebaseAuthEmailPasswordCredential({
+    required String email,
+    required String password,
+  }) = _FirebaseAuthEmailPasswordCredential;
+}
+
+class _FirebaseAuthEmailPasswordCredential
+    implements FirebaseAuthEmailPasswordCredential {
+  @override
+  final String email;
+
+  @override
+  final String password;
+
+  _FirebaseAuthEmailPasswordCredential({
+    required this.email,
+    required this.password,
+  });
+
+  @override
+  String get providerId => firebaseAuthEmailPasswordProviderId;
+
+  /// Never shows the password.
+  @override
+  String toString() => 'FirebaseAuthEmailPasswordCredential($email)';
 }
 
 /// The successful outcome of a sign-in, link, or re-authentication

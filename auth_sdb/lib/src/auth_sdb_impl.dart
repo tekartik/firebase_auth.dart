@@ -551,6 +551,50 @@ class FirebaseAuthSdbImpl
     return _FirebaseUserCredentialSdb(this, dbUser);
   }
 
+  /// Links an email and password [credential] to the user [uid], see
+  /// [FirebaseUser.linkWithCredential].
+  @override
+  Future<UserCredential> linkUserWithCredential(
+    String uid,
+    FirebaseAuthCredential credential,
+  ) async {
+    if (credential is! FirebaseAuthEmailPasswordCredential) {
+      throw UnsupportedError(
+        '$runtimeType cannot link a ${credential.providerId} credential',
+      );
+    }
+    await _ready;
+    var (dbUser, isCurrentUser) = await _database.inStoresTransaction(
+      [_currentUserStore.rawRef, _userStore.rawRef],
+      SdbTransactionMode.readWrite,
+      (txn) async {
+        var record = _userStore.record(uid);
+        var dbUser = await record.get(txn);
+        if (dbUser == null) {
+          throw StateError('user-not-found');
+        }
+        if (dbUser.email.v != null) {
+          throw StateError('provider-already-linked');
+        }
+        if (await _txnGetUserByEmail(txn, credential.email) != null) {
+          throw StateError('email-already-in-use');
+        }
+        dbUser
+          ..email.v = credential.email
+          ..localPassword.v = credential.password
+          ..isAnonymous.v = false;
+        await record.put(txn, dbUser);
+        var currentUser = await firebaseAuthCurrentUserRecord.get(txn);
+        return (dbUser, currentUser?.uid.v == uid);
+      },
+    );
+    if (isCurrentUser) {
+      // Also set the current user directly
+      currentUserAdd(_FirebaseUserSdb(this, dbUser));
+    }
+    return _FirebaseUserCredentialSdb(this, dbUser);
+  }
+
   @override
   Future<void> signOut() async {
     // ignore: unnecessary_statements
@@ -650,6 +694,13 @@ class _FirebaseUserSdb with FirebaseUserMixin {
   Future<void> delete() async {
     await auth.deleteUser(uid);
   }
+
+  /// Links an email and password credential, the user is no longer
+  /// anonymous.
+  @override
+  Future<UserCredential> linkWithCredential(
+    FirebaseAuthCredential credential,
+  ) => auth.linkUserWithCredential(uid, credential);
 }
 
 /// User credential Sdb

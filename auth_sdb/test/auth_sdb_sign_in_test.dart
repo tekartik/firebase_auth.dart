@@ -5,6 +5,7 @@ library;
 import 'package:tekartik_app_cv_sdb/app_cv_sdb.dart';
 import 'package:tekartik_firebase_auth_sdb/auth_sdb.dart';
 import 'package:tekartik_firebase_auth_test/auth_admin_test_runner.dart';
+import 'package:tekartik_firebase_auth_test/auth_link_test_runner.dart';
 import 'package:tekartik_firebase_auth_test/auth_local_admin_test_runner.dart';
 import 'package:tekartik_firebase_auth_test/auth_sign_in_delete_test_runner.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
@@ -36,6 +37,11 @@ void main() {
     firebaseAuthAdminTests(
       getAuth: () => auth,
       email: 'sdbemail',
+      password: 'sdbpassword',
+    );
+    firebaseAuthLinkTests(
+      getAuth: () => auth,
+      email: 'sdblinkemail',
       password: 'sdbpassword',
     );
     firebaseAuthSignInDeleteTests(

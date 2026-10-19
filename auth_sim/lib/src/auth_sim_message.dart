@@ -12,6 +12,7 @@ void initAuthSimBuilders() {
     UserSignOutRequest.new,
     UserCreateRequest.new,
     UserSendPasswordResetEmailRequest.new,
+    UserLinkEmailPasswordRequest.new,
   ]);
 }
 
@@ -51,6 +52,24 @@ const methodAuthSignOut = 'auth/sign_out';
 
 /// Send a password reset email
 const methodAuthSendPasswordResetEmail = 'auth/password_reset/send_email';
+
+/// Link an email and password to a user
+const methodAuthUserLinkEmailPassword = 'auth/user/link/email_password';
+
+/// Link an email and password to a user
+class UserLinkEmailPasswordRequest extends CvModelBase {
+  /// User id
+  final userId = CvField<String>('userId');
+
+  /// email
+  final email = CvField<String>('email');
+
+  /// password
+  final password = CvField<String>('password');
+
+  @override
+  CvFields get fields => [userId, email, password];
+}
 
 /// User sign in email password
 class UserSignInEmailPasswordRequest extends CvModelBase {

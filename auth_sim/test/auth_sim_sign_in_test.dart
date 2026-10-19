@@ -6,7 +6,9 @@ import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase_auth_sim/auth_sim.dart';
 import 'package:tekartik_firebase_auth_test/auth_admin_test_runner.dart';
+import 'package:tekartik_firebase_auth_test/auth_link_test_runner.dart';
 import 'package:tekartik_firebase_auth_test/auth_local_admin_test_runner.dart';
+import 'package:tekartik_firebase_auth_test/auth_sign_in_delete_test_runner.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_mixin.dart';
 import 'package:tekartik_firebase_sim/firebase_sim_server.dart';
 import 'package:test/test.dart';
@@ -43,6 +45,16 @@ void main() {
     firebaseAuthAdminTests(
       getAuth: () => auth,
 
+      email: 'simemail',
+      password: 'simpassword',
+    );
+    firebaseAuthLinkTests(
+      getAuth: () => auth,
+      email: 'simlinkemail',
+      password: 'simpassword',
+    );
+    firebaseAuthSignInDeleteTests(
+      getAuth: () => auth,
       email: 'simemail',
       password: 'simpassword',
     );
