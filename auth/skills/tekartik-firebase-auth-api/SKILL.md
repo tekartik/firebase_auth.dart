@@ -55,6 +55,9 @@ one `FirebaseAuth` per `FirebaseApp`. The service comes from a sibling package:
   errors): catch, log and display `e.toString()`, do not match on types.
 * `signInOrUpWithEmailAndPassword` (extension `TekartikFirebaseAuthExt`)
   signs in and falls back to creating the account, leaving the user signed in.
+  Any sign in failure (a wrong password too) leads to the creation attempt,
+  whose error ("already exists") replaces the real one: not for a login
+  screen.
   `getOrCreateUserWithEmailAndPassword` on a plain `FirebaseAuth` does the same
   then calls `signOut()` and returns only the `FirebaseUser`: use it in setup
   code, never in a login flow.

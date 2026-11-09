@@ -32,7 +32,8 @@ client usage.
   (so `app.auth()` works) and disposes it on `app.delete()`.
 * Auth class: `with FirebaseAppProductMixin<FirebaseAuth>, FirebaseAuthMixin`.
   Implement `app`, `service` and `reloadCurrentUser`; every other operation
-  throws `UnsupportedError` unless overridden. Publish state with
+  throws `UnsupportedError` unless overridden (`createUserWithEmailAndPassword`
+  throws `UnimplementedError`). Publish state with
   `currentUserAdd(user)` (`null` on sign-out): `currentUser` and
   `onCurrentUser` derive from it. Publish the initial value (even `null`) as
   soon as the persisted session is known or `onCurrentUser.first` never
@@ -49,7 +50,9 @@ client usage.
   override what you support. `createUser` must throw `StateError` when the
   uid or email already exists and generate a uid when
   `FirebaseAuthCreateUserRequest.uid` is `null`. `getOrCreateUser(request)`
-  (`FirebaseAuthAdminExt`) looks up by uid, then by email, then creates.
+  (`FirebaseAuthAdminExt`) looks up by uid, then by email, then creates; it
+  throws a `StateError` when the request has no email and the uid is not
+  found.
 * In-process backends implement `FirebaseAuthLocalAdmin` (mix in
   `FirebaseAuthLocalAdminDefaultMixin`): `setUser(uid, email:, isAnonymous:,
   emailVerified:)` upserts a user without any flow, `onUserRecord(uid)`

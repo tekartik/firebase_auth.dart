@@ -140,7 +140,11 @@ mixin FirebaseAuthMixin
     );
   }
 
-  /// {@macro tekartik_firebase_auth.auth_mixin.not_supported}
+  /// Default implementation, which is not supported by this mixin.
+  ///
+  /// Concrete classes that support this operation must override this member;
+  /// as implemented here it always throws an [UnimplementedError] (unlike the
+  /// other defaults, which throw an [UnsupportedError]).
   @override
   Future<UserCredential> createUserWithEmailAndPassword({
     required String email,
