@@ -7,6 +7,10 @@ import 'package:test/test.dart';
 
 /// Declares the user management tests on the auth returned by [getAuth]
 /// (called in each test). The user of [email] is created and deleted.
+///
+/// The sign in checks only run when the service supports a current user
+/// (`FirebaseAuthService.supportsCurrentUser`): an admin backend without one
+/// (the admin sdk, node) runs the user creation checks only.
 void firebaseAuthAdminTests({
   required FirebaseAuthAdmin Function() getAuth,
   required String email,
@@ -64,14 +68,17 @@ void firebaseAuthAdminTests({
     });
     test('create user with email/password', () async {
       var auth = getAuth();
+      var supportsCurrentUser = auth.service.supportsCurrentUser;
 
       // Check user exists
       var fetched = await auth.getUserByEmail(email);
       if (fetched != null) {
         await auth.deleteUser(fetched.uid);
       }
-      await auth.signOut();
-      expect(auth.currentUser?.uid, isNull);
+      if (supportsCurrentUser) {
+        await auth.signOut();
+        expect(auth.currentUser?.uid, isNull);
+      }
       var userCredentials = await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -81,16 +88,20 @@ void firebaseAuthAdminTests({
       try {
         expect(user.uid, uid);
         expect(user.email, email);
-        // Signed in, the user has a provider.
-        expect(user.providerId, isNotNull);
-        expect(auth.currentUser?.providerId, isNotNull);
+        if (supportsCurrentUser) {
+          // Signed in, the user has a provider.
+          expect(user.providerId, isNotNull);
+          expect(auth.currentUser?.providerId, isNotNull);
+        }
 
         // Check user exists
         fetched = await auth.getUser(uid);
         expect(fetched!.uid, uid);
         expect(fetched.email, email);
 
-        expect(auth.currentUser?.uid, uid);
+        if (supportsCurrentUser) {
+          expect(auth.currentUser?.uid, uid);
+        }
         // Check user exists
         fetched = await auth.getUserByEmail(email);
         expect(fetched!.uid, uid);
@@ -119,6 +130,10 @@ void firebaseAuthAdminTests({
       );
       try {
         expect(record.emailVerified, isFalse);
+        if (!auth.service.supportsCurrentUser) {
+          markTestSkipped('no current user: the sign in part is skipped');
+          return;
+        }
         var userCredential = await auth.signInWithEmailAndPassword(
           email: email,
           password: password,
