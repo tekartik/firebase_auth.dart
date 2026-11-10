@@ -233,7 +233,7 @@ class FirebaseAuthSembastImpl
       return false;
     });
     if (wasCurrentUser) {
-      currentUserAdd(null);
+      await _publishCurrentUser();
     }
   }
 
@@ -304,29 +304,69 @@ class FirebaseAuthSembastImpl
     _database = await authServiceSembast.databaseFactory.openDatabase(
       p.join(appLocal.localPath, 'auth.db'),
     );
+    // The listeners only trigger a read of the current user: their events
+    // can come late, after another change.
     _currentUserRecordSubscription = firebaseAuthCurrentUserRecord
         .onRecord(_database)
         .listen((record) {
-          _currentUserSubscription?.cancel();
           var uid = record?.uid.v;
-
-          if (uid != null) {
-            _currentUserSubscription = _userStore
-                .record(uid)
-                .onRecord(_database)
-                .listen((record) {
-                  var dbUser = record;
-                  if (dbUser != null) {
-                    currentUserAdd(_FirebaseUserSembast(this, dbUser));
-                  } else {
-                    firebaseAuthCurrentUserRecord.delete(_database);
-                  }
-                });
-          } else {
-            currentUserAdd(null);
+          if (uid != _listenedUid) {
+            _listenedUid = uid;
+            _currentUserSubscription?.cancel();
+            _currentUserSubscription = uid == null
+                ? null
+                : _userStore
+                      .record(uid)
+                      .onRecord(_database)
+                      .listen((_) => unawaited(_publishCurrentUser()));
           }
+          unawaited(_publishCurrentUser());
         });
   }();
+
+  /// The uid whose user record is listened to.
+  String? _listenedUid;
+
+  /// One publication at a time, in the order they are asked.
+  final _publishLock = Lock();
+
+  /// Whether a current user was published, and which one (null when signed
+  /// out).
+  var _published = false;
+  DbUser? _publishedDbUser;
+
+  /// Publishes the signed in user as the database holds it.
+  ///
+  /// The only path to [currentUserAdd], called once a change is committed
+  /// (by the methods and by the database listeners): the current user record
+  /// and its user are read in one transaction, one publication at a time, so
+  /// a late listener event cannot publish an older state. A current user
+  /// whose record was deleted is signed out in that same transaction. A state
+  /// equal to the published one is not published again.
+  Future<void> _publishCurrentUser() {
+    return _publishLock.synchronized(() async {
+      var dbUser = await _database.transaction((txn) async {
+        var uid = (await firebaseAuthCurrentUserRecord.get(txn))?.uid.v;
+        if (uid == null) {
+          return null;
+        }
+        var dbUser = await _userStore.record(uid).get(txn);
+        if (dbUser == null) {
+          // The signed in user was deleted.
+          await firebaseAuthCurrentUserRecord.delete(txn);
+        }
+        return dbUser;
+      });
+      if (_published && _sameDbUser(dbUser, _publishedDbUser)) {
+        return;
+      }
+      _published = true;
+      _publishedDbUser = dbUser;
+      currentUserAdd(
+        dbUser == null ? null : _FirebaseUserSembast(this, dbUser),
+      );
+    });
+  }
 
   /// The service
   final FirebaseAuthServiceSembastImpl authServiceSembast;
@@ -363,10 +403,10 @@ class FirebaseAuthSembastImpl
 
         DbCurrentUser()..uid.v = dbUser.id,
       );
-      // Also set the current user directly
-      currentUserAdd(_FirebaseUserSembast(this, dbUser));
       return dbUser;
     });
+    // Also set the current user directly
+    await _publishCurrentUser();
 
     return _FirebaseUserCredentialSembast(this, dbUser);
   }
@@ -471,10 +511,10 @@ class FirebaseAuthSembastImpl
 
         DbCurrentUser()..uid.v = dbUser.id,
       );
-      // Also set the current user directly
-      currentUserAdd(_FirebaseUserSembast(this, dbUser));
       return dbUser;
     });
+    // Also set the current user directly
+    await _publishCurrentUser();
 
     return _FirebaseUserCredentialSembast(this, dbUser);
   }
@@ -525,7 +565,7 @@ class FirebaseAuthSembastImpl
     });
     if (isCurrentUser) {
       // Also set the current user directly
-      currentUserAdd(_FirebaseUserSembast(this, dbUser));
+      await _publishCurrentUser();
     }
     return _FirebaseUserCredentialSembast(this, dbUser);
   }
@@ -550,7 +590,7 @@ class FirebaseAuthSembastImpl
       }
     });
 
-    currentUserAdd(null);
+    await _publishCurrentUser();
   }
 
   @override
@@ -685,4 +725,18 @@ class _UserRecordSembast with FirebaseUserRecordDefaultMixin {
 
   @override
   String? get photoURL => dbUser.photoURL.v;
+}
+
+/// Same user (id and fields), both null included.
+bool _sameDbUser(DbUser? user1, DbUser? user2) {
+  if (user1 == null || user2 == null) {
+    return user1 == user2;
+  }
+  if (user1.id != user2.id) {
+    return false;
+  }
+  var map1 = user1.toMap();
+  var map2 = user2.toMap();
+  return map1.length == map2.length &&
+      map1.keys.every((key) => map2.containsKey(key) && map1[key] == map2[key]);
 }

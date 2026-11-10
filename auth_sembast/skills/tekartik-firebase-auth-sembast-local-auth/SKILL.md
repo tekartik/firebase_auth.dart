@@ -59,12 +59,14 @@ users directly.
     displayName:, emailVerified:, disabled:, phoneNumber:, photoURL:))`
     returns a `UserRecord`; it throws `StateError('uid-already-exists')` or
     `StateError('email-already-exists')`. Without a `uid` one is generated.
-  * `setUser(uid, email:, emailVerified:, isAnonymous:)` **replaces** the
-    whole record (password, display name and dates are dropped) and first
-    deletes any other user with that email. To seed a user with a password
-    use `createUser` or the `getOrCreateUserWithEmailAndPassword(email:,
-    password:)` extension of `package:tekartik_firebase_auth/auth_admin.dart`.
-  * `getUser(uid)`, `getUserByEmail(email)`, `deleteUser(uid)` and
+  * `setUser(uid, email:, emailVerified:, isAnonymous:)` creates the user or
+    updates the given fields in place (the others, password included, are
+    kept), and first deletes any other user with that email. To seed a user
+    with a password use `createUser` or the
+    `getOrCreateUserWithEmailAndPassword(email:, password:)` extension of
+    `package:tekartik_firebase_auth/auth_admin.dart`.
+  * `getUser(uid)`, `getUsers(uids)`, `getUserByEmail(email)`,
+    `deleteUser(uid)` (signs out only when `uid` is the signed in user) and
     `onUserRecord(uid)`, a stream that re-emits on every change and `null`
     when the user does not exist.
   * `getSignInWithEmailAndPasswordUserCredential(email:, password:)` and
@@ -73,14 +75,16 @@ users directly.
 * Sign-in: `createUserWithEmailAndPassword` creates then signs in;
   `signInWithEmailAndPassword` throws `StateError('user-not-found')` or
   `StateError('wrong-password')` - a user stored without a password (from
-  `setUser`) accepts any password. `signInAnonymously()` creates a throw-away
+  `setUser`) accepts any password, and a disabled user signs in too. `signInAnonymously()` creates a throw-away
   anonymous user that `signOut()` deletes. `sendPasswordResetEmail(email:)`
   only checks the user exists (`StateError('user-not-found')`), no mail is
   sent.
 * The current user is persisted in the same database (store `info`, record
   `currentUser`): with `databaseFactoryIo` the session survives a restart.
-  `currentUser` is updated synchronously by sign in/out, `onCurrentUser` emits
-  once the database is open and re-emits when the user record changes.
+  `currentUser` is set when the sign in/out call completes, `onCurrentUser`
+  emits once the database is open, then once per change (sign in, sign out,
+  deletion or update of the signed in user; signing in again the signed in
+  user emits nothing).
 * The id token of a user is its uid (`getIdToken()` of the signed-in user),
   `verifyIdToken(idToken)` accepts it while the user exists (otherwise
   `StateError('user-not-found')`, `user-disabled` with `checkRevoked`), with
@@ -181,7 +185,7 @@ void main() {
     expect(credential.user.uid, record.uid);
     expect(auth.currentUser?.email, 'user@example.com');
 
-    // setUser replaces the record: no password left, any password signs in.
+    // A user set without password signs in with any password.
     await auth.setUser('admin', email: 'admin@example.com', emailVerified: true);
     expect((await auth.getUser('admin'))!.emailVerified, isTrue);
 

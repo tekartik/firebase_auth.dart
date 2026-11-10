@@ -49,6 +49,31 @@ void main() {
       email: 'sdbemail',
       password: 'sdbpassword',
     );
+    test('sign in and out are notified once each', () async {
+      var email = 'sdb_notify_once';
+      var password = 'sdbpassword';
+      await auth.createUser(
+        FirebaseAuthCreateUserRequest(email: email, password: password),
+      );
+      var emails = <String?>[];
+      var subscription = auth.onCurrentUser.listen(
+        (user) => emails.add(user?.email),
+      );
+      try {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        expect(emails, [null]);
+        await auth.signInWithEmailAndPassword(email: email, password: password);
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        // Signing in again the same user changes nothing.
+        await auth.signInWithEmailAndPassword(email: email, password: password);
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        await auth.signOut();
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        expect(emails, [null, email, null]);
+      } finally {
+        await subscription.cancel();
+      }
+    }, timeout: const Timeout(Duration(seconds: 30)));
     test('getUsers listUsers', () async {
       var user = await auth.createUser(
         FirebaseAuthCreateUserRequest(email: 'sdb_get_users1'),

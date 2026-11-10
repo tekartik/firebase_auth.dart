@@ -46,22 +46,28 @@ for tests and offline apps: it also implements `FirebaseAuthLocalAdmin` /
     displayName:, uid:, emailVerified:, disabled:, ...))` returns a
     `UserRecord`; throws `StateError('uid-already-exists')` or
     `StateError('email-already-exists')`.
-  * `setUser(uid, email:, emailVerified:, isAnonymous:)` creates or replaces
-    the whole record (password and display name are dropped) and removes other
-    users with the same email. Use `createUser` or
-    `createUserWithEmailAndPassword` to seed a user with a password.
-  * `getUser(uid)`, `getUserByEmail(email)`, `onUserRecord(uid)` (stream),
-    `deleteUser(uid)` which also signs the current session out.
+  * `setUser(uid, email:, emailVerified:, isAnonymous:)` creates the user or
+    updates the given fields in place (the others, password included, are
+    kept), and deletes any other user holding the same email. Use
+    `createUser` or `createUserWithEmailAndPassword` to seed a user with a
+    password.
+  * `getUser(uid)`, `getUsers(uids)`, `getUserByEmail(email)`,
+    `onUserRecord(uid)` (stream), `deleteUser(uid)` (signs out only when
+    `uid` is the signed in user).
+  * `listUsers(maxResults:, pageToken:)`: pages ordered by uid (1000 users by
+    default), loop while `pageToken` is not null.
   * `getOrCreateUserWithEmailAndPassword(email:, password:)` is an extension
     from `package:tekartik_firebase_auth/auth_admin.dart`.
 * Sign-in: `createUserWithEmailAndPassword` creates the user then signs in.
   `signInWithEmailAndPassword` throws `StateError('user-not-found')` or
   `StateError('wrong-password')`; a user stored without password (from
-  `setUser`) accepts any password. `signInAnonymously` creates a temporary
-  user that `signOut` deletes.
+  `setUser`) accepts any password, and a disabled user signs in too.
+  `signInAnonymously` creates a temporary user that `signOut` deletes.
 * The current user is persisted (`info/currentUser` record): with a persistent
   factory the session survives an app restart. `onCurrentUser` emits once the
-  database is open; `currentUser` is updated synchronously by sign in/out.
+  database is open, then once per change (sign in, sign out, deletion or
+  update of the signed in user; signing in again the signed in user emits
+  nothing); `currentUser` is set when the sign in/out call completes.
 * The id token of a user is its uid (`getIdToken()` of the signed-in user),
   `verifyIdToken(idToken)` accepts it while the user exists (otherwise
   `StateError('user-not-found')`, `user-disabled` with `checkRevoked`), with
@@ -69,8 +75,8 @@ for tests and offline apps: it also implements `FirebaseAuthLocalAdmin` /
   signed, test only.
 * `sendPasswordResetEmail(email:)` only checks that the user exists (throws
   `StateError('user-not-found')`), nothing is sent. `sendEmailVerification()`
-  throws `UnsupportedError`. `supportsListUsers` is `false`
-  (`supportsCurrentUser` is `true`).
+  throws `UnsupportedError`. `supportsListUsers` and `supportsCurrentUser`
+  are `true`.
 * Passwords are stored in clear text in the local database: never use this
   backend as a security boundary. Real apps use `tekartik_firebase_auth_flutter`
   (native) or the REST backend; keep sdb for tests, demos and offline data.
@@ -118,6 +124,22 @@ Future<void> main() async {
   );
   runApp(MyApp(firebaseAuth: firebaseAuth));
 }
+
+/// The app: its screens get the auth.
+class MyApp extends StatelessWidget {
+  final FirebaseAuth firebaseAuth;
+
+  const MyApp({super.key, required this.firebaseAuth});
+
+  @override
+  Widget build(BuildContext context) => StreamBuilder<User?>(
+    stream: firebaseAuth.onCurrentUser,
+    builder: (context, snapshot) => Text(
+      snapshot.data?.email ?? 'Not signed in',
+      textDirection: TextDirection.ltr,
+    ),
+  );
+}
 ```
 
 ### Seeding users in a Dart test
@@ -154,7 +176,7 @@ void main() {
     await auth.setUser('admin', email: 'admin@example.com', emailVerified: true);
     expect((await auth.getUser('admin'))?.emailVerified, isTrue);
 
-    await auth.deleteUser(record.uid); // also signs out
+    await auth.deleteUser(record.uid); // the signed in user: signs out
     expect(auth.currentUser, isNull);
   });
 }

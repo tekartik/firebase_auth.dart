@@ -1,6 +1,9 @@
-/// Support for doing something awesome.
+/// Local Firebase Auth backend on an sdb database (`idb_shim`): users and the
+/// signed in user stored in memory, IndexedDB or a Flutter app database.
 ///
-/// More dartdocs go here.
+/// Build it with [FirebaseAuthServiceSdb] then `auth(app)` on a local app
+/// (`tekartik_firebase_local`), or [newFirebaseAuthSdbMemory] in a test.
+/// Local only: passwords are stored in clear and the id token is the uid.
 library;
 
 import 'package:tekartik_app_cv_sdb/app_cv_sdb.dart';

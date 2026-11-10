@@ -1,6 +1,9 @@
-/// Support for doing something awesome.
+/// Local Firebase Auth backend on a sembast database: users and the signed in
+/// user stored in memory or in a file.
 ///
-/// More dartdocs go here.
+/// Build it with [FirebaseAuthServiceSembast] then `auth(app)` on a local app
+/// (`tekartik_firebase_local`), or [newFirebaseAuthMemory] in a test. Local
+/// only: passwords are stored in clear and the id token is the uid.
 library;
 
 import 'package:sembast/sembast_memory.dart';

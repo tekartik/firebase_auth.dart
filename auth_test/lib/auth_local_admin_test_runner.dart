@@ -173,6 +173,72 @@ void localAdminTests({
           .timeout(const Duration(seconds: 10));
     });
 
+    /// Lets the late listener events of a local implementation come.
+    Future<void> settle() async {
+      for (var i = 0; i < 20; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+
+    test('a signed out user does not come back', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var email = 'signedout_user';
+      var password = 'password1';
+      await auth.getOrCreateUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      var emails = <String?>[];
+      var subscription = auth.onCurrentUser.listen(
+        (user) => emails.add(user?.email),
+      );
+      try {
+        await settle();
+        emails.clear();
+        await auth.signInWithEmailAndPassword(email: email, password: password);
+        await auth.signOut();
+        expect(auth.currentUser, isNull);
+        for (var i = 0; i < 20; i++) {
+          await Future<void>.delayed(Duration.zero);
+          expect(auth.currentUser, isNull);
+        }
+        await settle();
+        expect(auth.currentUser, isNull);
+        // Signed in then out, no user after the sign out.
+        expect(emails.first, email);
+        var signedOutIndex = emails.indexOf(null);
+        expect(signedOutIndex, isNonNegative);
+        expect(emails.sublist(signedOutIndex), everyElement(isNull));
+      } finally {
+        await subscription.cancel();
+      }
+    }, timeout: const Timeout(Duration(seconds: 30)));
+
+    test('deleting the current user, another sign in stays', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var password = 'password1';
+      var deleted = await auth.createUserWithEmailAndPassword(
+        email: 'deleted_current_user',
+        password: password,
+      );
+      var email = 'signed_in_after_delete';
+      var other = await auth.getOrCreateUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      await settle();
+      await auth.deleteUser(deleted.user.uid);
+      await auth.signInWithEmailAndPassword(email: email, password: password);
+      expect(auth.currentUser?.uid, other.uid);
+      await settle();
+      expect(auth.currentUser?.uid, other.uid);
+      expect((await auth.onCurrentUser.first)?.uid, other.uid);
+      await auth.signOut();
+    }, timeout: const Timeout(Duration(seconds: 30)));
+
     test('anonymous sign in keeps the other anonymous users', () async {
       var auth = getAuth();
       await auth.signOut();
