@@ -216,6 +216,35 @@ void localAdminTests({
       }
     }, timeout: const Timeout(Duration(seconds: 30)));
 
+    test('sign in and out are published once each', () async {
+      var auth = getAuth();
+      await auth.signOut();
+      var email = 'published_once_user';
+      var password = 'password1';
+      await auth.getOrCreateUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      var emails = <String?>[];
+      var subscription = auth.onCurrentUser.listen(
+        (user) => emails.add(user?.email),
+      );
+      try {
+        await settle();
+        emails.clear();
+        await auth.signInWithEmailAndPassword(email: email, password: password);
+        await settle();
+        // Signing in again the same user changes nothing.
+        await auth.signInWithEmailAndPassword(email: email, password: password);
+        await settle();
+        await auth.signOut();
+        await settle();
+        expect(emails, [email, null]);
+      } finally {
+        await subscription.cancel();
+      }
+    }, timeout: const Timeout(Duration(seconds: 30)));
+
     test('deleting the current user, another sign in stays', () async {
       var auth = getAuth();
       await auth.signOut();

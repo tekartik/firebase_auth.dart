@@ -77,13 +77,23 @@ a controllable server.
   consistent with the sembast backend of the server. Not signed, test only.
 * `signOut()` deletes the user when it is anonymous, exactly like the sembast
   backend. `supportsCurrentUser` is `true`, `supportsListUsers` is `false`
-  (`listUsers` throws).
+  (`listUsers` throws), `reloadCurrentUser()` throws `UnimplementedError`.
 * `onCurrentUser` only emits once the local database is open, so in tests
   prefer `await auth.onCurrentUser.first` over reading `currentUser`
-  synchronously right after creating the auth.
+  synchronously right after creating the auth. Then it emits once per change
+  (a sign in, a sign out; signing in the same user again emits nothing), and a
+  signed in user deleted on the server, by any client, signs this one out.
 * `await app.delete()` disposes the client auth (closing its local database
-  and the server subscriptions); the users stay on the server, so a new app +
-  auth on the same `databaseFactory` finds the session again.
+  and ending its listeners); the users stay on the server, so a new app (same
+  name) + auth on the same `databaseFactory` finds the session again. The
+  connection of the app stays open: keep `await (app as FirebaseAppSim)
+  .simClient` and `close()` it after the delete, or a program does not exit.
+* The local database is per app name (`<localPath>/<appName>/auth.db`): two
+  auths of the same app name in one process share it, deleting one app
+  closes it for the other.
+* When the connection closes (server gone, client closed), an `onUserRecord`
+  stream ends with the error (quietly once cancelled or the app deleted) and
+  the current user stays.
 * The plugin service name is `firebase_auth`; add the firestore/storage sim
   plugins to the same `firebaseSimServe` call when the app needs them.
 * In tests use the memory transport: `webSocketChannelServerFactoryMemory` and
@@ -153,7 +163,10 @@ Future<void> main() async {
   print(await auth.getUserByEmail('user@example.com'));
 
   await auth.signOut();
+  // delete() leaves the connection of the app open: close it to exit.
+  var simClient = await (app as FirebaseAppSim).simClient;
   await app.delete();
+  await simClient.close();
 }
 ```
 
@@ -162,7 +175,6 @@ Future<void> main() async {
 ```dart
 import 'package:sembast/sembast_memory.dart';
 import 'package:tekartik_app_web_socket/web_socket.dart';
-import 'package:tekartik_firebase/firebase.dart';
 import 'package:tekartik_firebase_auth_sembast/auth_sembast.dart';
 import 'package:tekartik_firebase_auth_sim/auth_sim.dart';
 import 'package:tekartik_firebase_auth_sim/auth_sim_server.dart';
@@ -216,7 +228,8 @@ void main() {
 
     localAdminTests(
       getAuth: () => auth,
-      newApp: () => firebase.initializeApp(name: 'other'),
+      // Same app name: the restart test finds the signed in user again.
+      newApp: () => firebase.initializeApp(),
     );
     firebaseAuthAdminTests(
       getAuth: () => auth,

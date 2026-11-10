@@ -46,13 +46,18 @@ class _FirebaseAuthSim
 
   @override
   void dispose() {
+    super.dispose();
+    // Closed right away: the database is shared with an auth of the same app
+    // name created next (sembast returns the open database of a path). A
+    // change in progress fails, the next ones do nothing once disposed.
     _ready.then((_) {
       _currentUserIdSubscription?.cancel();
-      _currentUserSubscription?.cancel();
+      // Not awaited, it waits for the server.
+      _currentUserSubscription?.cancel().ignore();
+      _currentUserSubscription = null;
+      _currentUserId = null;
       _database.close();
-    });
-
-    super.dispose();
+    }).ignore();
   }
 
   @override
@@ -61,41 +66,113 @@ class _FirebaseAuthSim
   late Database _database;
   StreamSubscription? _currentUserIdSubscription;
   StreamSubscription? _currentUserSubscription;
+
+  /// The signed in user whose server record is listened to.
   String? _currentUserId;
+
+  /// One change of the signed in user at a time (the methods, the local
+  /// database listener, a deleted user, dispose).
+  final _stateLock = Lock();
+
   late final _ready = () async {
     firebaseAuthSembastInitDbBuilders();
     _database = await authServiceSim.databaseFactory.openDatabase(
       join(firebaseSim.localPath, appSim.name, 'auth.db'),
     );
+    // The local database holds the signed in user id (restored on start,
+    // shared by the auths of the same app name). Its events can come late,
+    // after another change: they only trigger a read of the record.
     _currentUserIdSubscription = firebaseAuthCurrentUserRecord
         .onRecord(_database)
-        .listen((record) {
-          var userId = record?.uid.v;
-          if (userId == null) {
-            _currentUserId = null;
-
-            currentUserAdd(null);
-            _currentUserSubscription?.cancel();
-            return;
-          }
-          if (userId == _currentUserId) {
-            // Already listening to this user.
-            return;
-          }
-          _currentUserId = userId;
-          _currentUserSubscription?.cancel();
-          _currentUserSubscription = onUserRecord(userId).listen((record) {
-            if (record == null) {
-              // Record not found, delete current user
-              firebaseAuthCurrentUserRecord.delete(_database);
-
-              currentUserAdd(null);
-            } else {
-              currentUserAdd(FirebaseUserSim(record, auth: this));
+        .listen((_) {
+          _stateLock.synchronized(() async {
+            if (disposed) {
+              return;
             }
-          });
+            var userId = (await firebaseAuthCurrentUserRecord.get(
+              _database,
+            ))?.uid.v;
+            _listenToUser(userId);
+            if (userId == null) {
+              _publish(null);
+            }
+            // Otherwise the user is published by its server record.
+          }).ignore();
         });
   }();
+
+  /// Listens to the server record of the signed in user [uid], none when
+  /// null.
+  void _listenToUser(String? uid) {
+    if (uid == _currentUserId) {
+      return;
+    }
+    _currentUserId = uid;
+    // Not awaited, it waits for the server.
+    _currentUserSubscription?.cancel().ignore();
+    _currentUserSubscription = null;
+    if (uid == null || disposed) {
+      return;
+    }
+    _currentUserSubscription = onUserRecord(uid).listen(
+      (record) => _onCurrentUserRecord(uid, record),
+      onError: (Object _) {
+        // The connection closed (server gone): the current user stays.
+      },
+    );
+  }
+
+  /// A server record event of the signed in user [uid].
+  void _onCurrentUserRecord(String uid, UserRecordSim? record) {
+    // A late event of a user no longer signed in is ignored.
+    if (disposed || _currentUserId != uid) {
+      return;
+    }
+    if (record != null) {
+      _publish(record);
+      return;
+    }
+    // The user was deleted on the server: signed out.
+    _stateLock.synchronized(() async {
+      if (disposed || _currentUserId != uid) {
+        return;
+      }
+      _listenToUser(null);
+      _publish(null);
+      await _deleteCurrentUserRecord(uid);
+    }).ignore();
+  }
+
+  /// Deletes the local current user record if it still holds [uid].
+  Future<void> _deleteCurrentUserRecord(String uid) async {
+    await _database.transaction((txn) async {
+      var record = await firebaseAuthCurrentUserRecord.get(txn);
+      if (record?.uid.v == uid) {
+        await firebaseAuthCurrentUserRecord.delete(txn);
+      }
+    });
+  }
+
+  /// Whether a current user was published, and which one (null when signed
+  /// out).
+  var _published = false;
+  UserGetResponse? _publishedUser;
+
+  /// The only path to [currentUserAdd]: a state equal to the published one
+  /// is not published again (a sign in is answered by the server and then
+  /// by its user record).
+  void _publish(UserRecordSim? record) {
+    if (disposed) {
+      return;
+    }
+    var user = record?.userResponse;
+    if (_published && user == _publishedUser) {
+      return;
+    }
+    _published = true;
+    _publishedUser = user;
+    currentUserAdd(record == null ? null : FirebaseUserSim(record, auth: this));
+  }
 
   @override
   Future<FirebaseUser?> reloadCurrentUser() {
@@ -186,13 +263,16 @@ class _FirebaseAuthSim
       userDeleteRequest.toMap(),
     );
     // Only the deleted user is signed out, right away.
-    if (currentUser?.uid == uid) {
-      await _currentUserSubscription?.cancel();
-      _currentUserSubscription = null;
-      _currentUserId = null;
-      await firebaseAuthCurrentUserRecord.delete(_database);
-      currentUserAdd(null);
-    }
+    await _stateLock.synchronized(() async {
+      if (disposed) {
+        return;
+      }
+      if (_currentUserId == uid || currentUser?.uid == uid) {
+        _listenToUser(null);
+        _publish(null);
+        await _deleteCurrentUserRecord(uid);
+      }
+    });
   }
 
   @override
@@ -231,51 +311,73 @@ class _FirebaseAuthSim
     return UserRecordSim(userResponse: userResponse);
   }
 
+  /// The server record of the user [userId], null when it does not exist.
+  ///
+  /// When the connection closes (app deleted, server gone), the stream ends,
+  /// with the error unless it was cancelled or the auth disposed.
   @override
   Stream<UserRecordSim?> onUserRecord(String userId) {
     late ServerSubscriptionSim<UserRecordSim?> subscription;
-    late FirebaseSimAppClient? simClient;
+    FirebaseSimAppClient? simClient;
     final lock = Lock();
-    subscription = ServerSubscriptionSim(
-      StreamController(
-        onCancel: () async {
-          await lock.synchronized(() async {
-            await removeSubscription(subscription);
-            // Allow failure here, in case server already closed
-            try {
-              await simClient?.sendRequest<void>(
-                FirebaseAuthSimServerService.serviceName,
-                methodAuthUserGetCancel,
-                {paramSubscriptionId: subscription.id},
-              );
-            } catch (e) {
-              if (isDebug) {
-                // ignore: avoid_print
-                print('Ignoring subscription cancel error $e');
-              }
+    late final StreamController<UserRecordSim?> controller;
+    controller = StreamController(
+      onCancel: () async {
+        await lock.synchronized(() async {
+          if (!_subscriptions.containsKey(subscription.id)) {
+            // Ended by a closed connection (or never started).
+            return;
+          }
+          await removeSubscription(subscription);
+          // Allow failure here, in case server already closed
+          try {
+            await simClient?.sendRequest<void>(
+              FirebaseAuthSimServerService.serviceName,
+              methodAuthUserGetCancel,
+              {paramSubscriptionId: subscription.id},
+            );
+          } catch (e) {
+            if (isDebug) {
+              // ignore: avoid_print
+              print('Ignoring subscription cancel error $e');
             }
-            await subscription.done;
-          });
-        },
-      ),
+          }
+          await subscription.done;
+        });
+      },
     );
+    subscription = ServerSubscriptionSim(controller);
 
     () async {
-      await lock.synchronized(() async {
-        simClient = await _simClient;
-        var result = await simClient!.sendRequest<Map>(
-          FirebaseAuthSimServerService.serviceName,
-          methodAuthUserGetListen,
-          (UserGetRequest()..userId.v = userId).toMap(),
-        );
+      try {
+        await lock.synchronized(() async {
+          simClient = await _simClient;
+          var result = await simClient!.sendRequest<Map>(
+            FirebaseAuthSimServerService.serviceName,
+            methodAuthUserGetListen,
+            (UserGetRequest()..userId.v = userId).toMap(),
+          );
 
-        subscription.id = result[paramSubscriptionId] as int?;
+          subscription.id = result[paramSubscriptionId] as int?;
 
-        addSubscription(subscription);
-      });
+          addSubscription(subscription);
+        });
 
-      // Loop until cancelled
-      await _getStream(simClient!, userId, subscription);
+        // Loop until cancelled
+        await _getStream(simClient!, userId, subscription);
+        subscription.doneCompleter.complete();
+      } catch (e, st) {
+        // The connection closed: done first, a pending cancel waits for it,
+        // and removed, the cancel of the close below has nothing to do.
+        subscription.doneCompleter.complete();
+        _subscriptions.remove(subscription.id);
+        if (!controller.isClosed) {
+          if (!disposed) {
+            controller.addError(e, st);
+          }
+          controller.close().ignore();
+        }
+      }
     }();
     return subscription.stream;
   }
@@ -314,7 +416,6 @@ class _FirebaseAuthSim
         break;
       }
     }
-    subscription.doneCompleter.complete();
   }
 
   @override
@@ -380,14 +481,17 @@ class _FirebaseAuthSim
     if (responseUid == null) {
       throw StateError('Login failed');
     }
-    await firebaseAuthCurrentUserRecord.put(
-      _database,
-
-      DbCurrentUser()..uid.v = responseUid,
-    );
     var userRecordSim = UserRecordSim(userResponse: userResponse);
+    await _stateLock.synchronized(() async {
+      await firebaseAuthCurrentUserRecord.put(
+        _database,
 
-    currentUserAdd(FirebaseUserSim(userRecordSim, auth: this));
+        DbCurrentUser()..uid.v = responseUid,
+      );
+      _listenToUser(responseUid);
+      // Also set the current user directly
+      _publish(userRecordSim);
+    });
 
     return UserCredentialSim(userRecordSim, auth: this);
   }
@@ -471,9 +575,9 @@ class _FirebaseAuthSim
       throw StateError('user-not-found');
     }
     var userRecordSim = UserRecordSim(userResponse: userResponse);
-    if (currentUser?.uid == uid) {
+    if (_currentUserId == uid) {
       // Also set the current user directly
-      currentUserAdd(FirebaseUserSim(userRecordSim, auth: this));
+      _publish(userRecordSim);
     }
     return UserCredentialSim(userRecordSim, auth: this);
   }
@@ -483,12 +587,14 @@ class _FirebaseAuthSim
     // ignore: unnecessary_statements
     await _ready;
     var currentUser = await onCurrentUser.first;
-    await firebaseAuthCurrentUserRecord.delete(_database);
     if (currentUser != null && currentUser.isAnonymous) {
+      // Also signs it out.
       await deleteUser(currentUser.uid);
     }
-
-    currentUserAdd(null);
-    _currentUserId = null;
+    await _stateLock.synchronized(() async {
+      await firebaseAuthCurrentUserRecord.delete(_database);
+      _listenToUser(null);
+      _publish(null);
+    });
   }
 }
