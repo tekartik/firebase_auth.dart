@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_print, invalid_use_of_visible_for_testing_member
+/// [firebaseAuthAdminTests]: user management of a `FirebaseAuthAdmin`.
 library;
 
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:test/test.dart';
 
-/// Auth
+/// Declares the user management tests on the auth returned by [getAuth]
+/// (called in each test). The user of [email] is created and deleted.
 void firebaseAuthAdminTests({
   required FirebaseAuthAdmin Function() getAuth,
   required String email,

@@ -1,3 +1,4 @@
+/// [firebaseAuthLinkTests]: link an email and password to an anonymous user.
 library;
 
 import 'package:tekartik_firebase_auth/auth.dart';

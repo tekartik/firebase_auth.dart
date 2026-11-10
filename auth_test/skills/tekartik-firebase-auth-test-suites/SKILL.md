@@ -4,7 +4,8 @@ description: >-
   Use when validating a tekartik_firebase_auth backend (local, sembast, sdb,
   sim, rest, flutter) against the shared conformance suites of
   tekartik_firebase_auth_test: runAuthTests, runAuthAppTests,
-  firebaseAuthAdminTests, localAdminTests, firebaseAuthSignInDeleteTests, what
+  firebaseAuthAdminTests, localAdminTests, firebaseAuthSignInDeleteTests,
+  firebaseAuthLinkTests, what
   FirebaseAuthService / FirebaseAuthAdmin / FirebaseAuthLocalAdmin each one
   needs, and the firebaseAuthMainMenu / FirebaseAuthMainMenuContext dev menu.
 ---
@@ -28,10 +29,9 @@ interfaces, so it is backend agnostic.
       git:
         url: https://github.com/tekartik/firebase_auth.dart
         path: auth_test
-      version: '>=0.3.8'
   ```
 
-* Four libraries, one per suite; import only the ones you call:
+* Five libraries, one per suite; import only the ones you call:
   * `package:tekartik_firebase_auth_test/auth_test.dart` - `runAuthTests`,
     `runAuthAppTests` (it also re-exports
     `package:tekartik_firebase_auth/auth.dart`).
@@ -39,6 +39,7 @@ interfaces, so it is backend agnostic.
   * `.../auth_local_admin_test_runner.dart` - `localAdminTests`.
   * `.../auth_sign_in_delete_test_runner.dart` -
     `firebaseAuthSignInDeleteTests`.
+  * `.../auth_link_test_runner.dart` - `firebaseAuthLinkTests`.
 * Every entry point *declares* `group`/`test`, it does not run anything: call
   it synchronously from `main()` or from a `group()` body, never inside
   `setUp`, `test` or after an `await`.
@@ -46,8 +47,9 @@ interfaces, so it is backend agnostic.
   authService, String? name, AppOptions? options})` is the basic service
   suite: it calls `firebase.initializeApp(...)` itself, checks `auth.app`,
   `auth.service`, instance unicity (`authService.auth(app)`,
-  `app.getProduct<FirebaseAuth>()`, `app.auth()`), `listUsers` and the current
-  user, and deletes the app in `tearDownAll`. Give it a `name` when a single
+  `app.getProduct<FirebaseAuth>()`, `app.auth()`), `listUsers` (one user,
+  then the pages end with a null page token, bounded at 100 pages) and the
+  current user, and deletes the app in `tearDownAll`. Give it a `name` when a single
   test file declares it twice, so the two apps do not collide.
 * `runAuthAppTests({required FirebaseAuthService authService, FirebaseAuth?
   auth, required App app})` is the same suite on an app you own (it does not
@@ -56,27 +58,38 @@ interfaces, so it is backend agnostic.
   `authService.supportsListUsers` / `authService.supportsCurrentUser`, so a
   backend that does not support them still passes - report the capability
   correctly on the service instead of skipping the suite.
-* The other three take a `getAuth` callback, called from inside each test, so
-  an instance rebuilt in `setUp` is picked up:
+* The other four take a `getAuth` callback, called from inside each test, so
+  an instance rebuilt in `setUp` (and its app deleted in `tearDown`) is
+  picked up:
   * `firebaseAuthAdminTests({required FirebaseAuthAdmin Function() getAuth,
     required String email, required String password})` - `createUser`,
     `getUser`, `getUserByEmail`, `createUserWithEmailAndPassword`,
     `signOut`, `deleteUser`, and expects a `StateError` when creating a
-    second user with the same email. It deletes any pre-existing user with
+    second user with the same email; a signed in user keeps `emailVerified`
+    and `isAnonymous` from its record. It deletes any pre-existing user with
     that email first, so give each backend its own `email` value.
   * `firebaseAuthSignInDeleteTests({required FirebaseAuth Function() getAuth,
     required String email, required String password})` - the pure client
     flow: create, sign out, sign in again, `user.delete()`, and signing in
     after the delete must fail.
+  * `firebaseAuthLinkTests({required FirebaseAuth Function() getAuth,
+    required String email, required String password})` -
+    `linkWithCredential` of an email and password on an anonymous user (same
+    uid, `provider-already-linked` on a second link) and an email already in
+    use (`email-already-in-use`, still anonymous).
   * `localAdminTests({required FirebaseAuthLocalAdmin Function() getAuth,
     FirebaseApp Function()? newApp})` - the full local backend contract:
     `setUser` (including re-assigning an email to another uid),
     `createUser` with every field plus duplicate uid/email errors,
     `getOrCreateUserWithEmailAndPassword`, `signInWithEmailAndPassword`,
     `sendPasswordResetEmail` (throws for an unknown user),
-    `signInAnonymously` + `getSignInAnonymouslyUserCredential`, and
+    `signInAnonymously` + `getSignInAnonymouslyUserCredential`, id tokens
+    (`verifyIdToken`), the `onCurrentUser` events (a sign in and a sign out
+    published once each, a signed out user never comes back, deleting the
+    current user keeps a sign in done right after) and
     `service.getExistingInstance(app)` before/after `app.delete()`. It starts
     by asserting that **no user is signed in**, so do not sign in in `setUp`.
+    The event tests wait 20 microtasks then 100 ms for late events.
   * Pass `newApp` to `localAdminTests` only when the backend persists its
     state: the last test deletes the app, rebuilds one with `newApp()` and
     expects the same current user to come back.
@@ -85,9 +98,10 @@ interfaces, so it is backend agnostic.
   to the file so parallel suites do not fight over the same record.
 * Pick the suites the backend actually supports:
   `tekartik_firebase_auth_sembast`, `_sdb` and `_sim` pass all of them;
-  `tekartik_firebase_auth_local` has no anonymous sign-in and no
-  `onUserRecord`, so it runs `runAuthTests`, `firebaseAuthAdminTests` and
-  `firebaseAuthSignInDeleteTests` but not `localAdminTests`.
+  `tekartik_firebase_auth_local` starts signed in as an admin and has no
+  anonymous credential nor link, so it runs `runAuthTests`,
+  `firebaseAuthAdminTests` and `firebaseAuthSignInDeleteTests` but not
+  `localAdminTests` nor `firebaseAuthLinkTests`.
 * `skipConcurrentTransactionTests` is a top-level flag kept for
   compatibility; the suites here do not use it.
 * `package:tekartik_firebase_auth_test/menu/firebase_auth_client_menu.dart`
@@ -139,7 +153,8 @@ void main() {
               ).auth(app)
               as FirebaseAuthSembast;
     });
-    tearDownAll(() => app.delete());
+    // Each test has its own app.
+    tearDown(() => app.delete());
 
     // Persistent backend: newApp checks the session is restored.
     localAdminTests(
@@ -187,7 +202,7 @@ void main() {
       app = newFirebaseAppLocal();
       auth = newFirebaseAuthServiceLocal().auth(app) as FirebaseAuthAdmin;
     });
-    tearDownAll(() => app.delete());
+    tearDown(() => app.delete());
 
     firebaseAuthAdminTests(
       getAuth: () => auth,

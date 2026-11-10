@@ -1,9 +1,13 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
+/// [firebaseAuthSignInDeleteTests]: create, sign in, delete a user from a
+/// `FirebaseAuth` client.
 library;
 
 import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:test/test.dart';
 
+/// Declares the sign in and delete tests on the auth returned by [getAuth]
+/// (called in each test). The user of [email] is created and deleted.
 void firebaseAuthSignInDeleteTests({
   required FirebaseAuth Function() getAuth,
   required String email,

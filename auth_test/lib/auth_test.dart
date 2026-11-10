@@ -1,3 +1,7 @@
+/// Service level tests of a `FirebaseAuthService`: [runAuthTests] (on its
+/// own app) and [runAuthAppTests] (on your app).
+library;
+
 // ignore: depend_on_referenced_packages
 import 'package:tekartik_common_utils/common_utils_import.dart';
 import 'package:tekartik_firebase/firebase.dart' as fb;
@@ -8,6 +12,8 @@ export 'package:tekartik_firebase_auth/auth.dart';
 
 bool skipConcurrentTransactionTests = false;
 
+/// Declares the service level tests on a new app of [firebase] (named [name],
+/// with [options]), deleted in `tearDownAll`.
 void runAuthTests({
   required fb.Firebase firebase,
   required FirebaseAuthService authService,
@@ -31,6 +37,9 @@ void runApp({
   required fb.App app,
 }) => runAuthAppTests(authService: authService, auth: auth, app: app);
 
+/// Declares the service level tests on [app] (not deleted): one auth per
+/// app, `listUsers` (skipped unless `authService.supportsListUsers`) and the
+/// current user (skipped unless `authService.supportsCurrentUser`).
 void runAuthAppTests({
   required FirebaseAuthService authService,
   FirebaseAuth? auth,

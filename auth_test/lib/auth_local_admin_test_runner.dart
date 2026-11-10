@@ -1,4 +1,6 @@
 // ignore_for_file: avoid_print, invalid_use_of_visible_for_testing_member
+/// [localAdminTests]: the contract of a local `FirebaseAuthLocalAdmin`
+/// backend (sembast, sdb, sim).
 library;
 
 import 'package:tekartik_firebase/firebase_mixin.dart';
@@ -6,6 +8,10 @@ import 'package:tekartik_firebase_auth/auth.dart';
 import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:test/test.dart';
 
+/// Declares the local backend tests on the auth returned by [getAuth] (called
+/// in each test, no user signed in at the start). The last test deletes the
+/// app; with [newApp] (a persistent backend) it then expects the signed in
+/// user back on the new app.
 void localAdminTests({
   required FirebaseAuthLocalAdmin Function() getAuth,
   FirebaseApp Function()? newApp,
