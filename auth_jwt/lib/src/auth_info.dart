@@ -131,20 +131,32 @@ abstract class FirebaseAuthInfo {
   /// Decoded email verified.
   bool? get emailVerified;
 
-  /// Decoded email verified.
+  /// Decoded picture url.
   String? get picture;
 
-  /// Decoded projectId.
+  /// Decoded project id (the `aud` claim): compare it with your project id,
+  /// [verify] does not.
   String? get projectId;
 
+  /// The header and the claims, for logging (no signature).
   Map toDebugMap();
 
-  /// Validate using public key fetched
+  /// Verifies the signature with the Google certificate of the token key id
+  /// and the time claims (`exp`, `iat`), at [currentTime] (now by default).
+  ///
+  /// [fetchKey] returns the PEM certificate of a key id; by default the
+  /// Google certificates are downloaded at each call.
+  ///
+  /// Returns false when the algorithm is not RS256 or when no certificate
+  /// matches the key id; throws a [FirebaseAuthValidationException] when the
+  /// token is expired or its signature invalid. The audience ([projectId]),
+  /// issuer and subject are not checked.
   Future<bool> verify({
     DateTime? currentTime,
     Future<String?> Function(String keyId)? fetchKey,
   });
 
+  /// Decodes [idToken] without verifying it, throws when it is not a JWT.
   factory FirebaseAuthInfo.fromIdToken(String idToken) =>
       FirebaseAuthInfoImpl.fromIdToken(idToken);
 }
@@ -255,7 +267,9 @@ class FirebaseAuthInfoImpl implements FirebaseAuthInfo {
       _log('no key for kid ${header!.kid}');
       return false;
     }
-    var signer = JWTRsaSha256Signer(pem: key);
+    // The signer key id must be the token one: corsac_jwt rejects the
+    // signature of a token whose kid differs from the signer kid.
+    var signer = JWTRsaSha256Signer(pem: key, kid: header!.kid);
 
     try {
       var validator = JWTValidator(currentTime: currentTime);

@@ -1,6 +1,8 @@
-/// Support for doing something awesome.
+/// Decodes ([FirebaseAuthInfo.fromIdToken]) and verifies
+/// ([FirebaseAuthInfo.verify]) a Firebase Authentication ID token.
 ///
-/// More dartdocs go here.
+/// `verify` checks the signature and the time claims only: compare
+/// [FirebaseAuthInfo.projectId] with your project id.
 library;
 
 export 'package:tekartik_firebase_auth_jwt/src/auth_info.dart'

@@ -12,7 +12,7 @@ run it on Flutter, REST, node, the admin SDK or in memory.
 | `tekartik_firebase_auth_sembast` | [auth_sembast](auth_sembast) | local backend on sembast (`newFirebaseAuthMemory()` for tests) |
 | `tekartik_firebase_auth_sdb` | [auth_sdb](auth_sdb) | local backend on sdb (memory, IndexedDB) |
 | `tekartik_firebase_auth_sim` | [auth_sim](auth_sim) | client and server of a remote simulation (web socket) |
-| `tekartik_firebase_auth_local` | [auth_local](auth_local) | the common local backend code |
+| `tekartik_firebase_auth_local` | [auth_local](auth_local) | in memory backend with two seeded users, for tests and demos |
 | `tekartik_firebase_auth_jwt` | [auth_jwt](auth_jwt) | ID token (JWT) validation |
 | `tekartik_firebase_auth_test` | [auth_test](auth_test) | the shared tests every backend runs |
 

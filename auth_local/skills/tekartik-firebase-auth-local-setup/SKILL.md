@@ -27,7 +27,6 @@ dev builds; nothing is persisted.
       git:
         url: https://github.com/tekartik/firebase_auth.dart
         path: auth_local
-      version: '>=0.3.8'
   ```
 
 * Import `package:tekartik_firebase_auth_local/auth_local.dart`. It re-exports
@@ -67,7 +66,9 @@ dev builds; nothing is persisted.
   or `StateError('invalid password')`. A user created without a password
   (including the two seeded ones) accepts **any** password.
   `sendPasswordResetEmail(email:)` only checks the user exists, nothing is
-  sent.
+  sent. The signed in `User` has the `emailVerified` and `isAnonymous` of its
+  record (`createUser(... emailVerified: false)` gives an unverified user).
+  `disabled` is not checked: a disabled user signs in.
 * The id token is the uid itself: `await (user as UserInfoWithIdToken)
   .getIdToken()` returns the uid, and `auth.verifyIdToken(token)` returns a
   `DecodedIdToken` whose `uid` is that token when such a user exists
@@ -79,9 +80,10 @@ dev builds; nothing is persisted.
   `createUser(FirebaseAuthCreateUserRequest(uid:, email:, password:,
   displayName:))` (throws `StateError` on a duplicate uid or email),
   `setUser(uid, email:, isAnonymous:, emailVerified:)`, `getUser`, `getUsers`,
-  `getUserByEmail`, `deleteUser` (which also signs out) and
+  `getUserByEmail`, `deleteUser` (which signs out the deleted user when it is
+  the current one) and
   `listUsers(maxResults:, pageToken:)` - the page token is the next start
-  index as a string. `supportsListUsers` and `supportsCurrentUser` are both
+  index as a string, null after the last page (loop while it is not null). `supportsListUsers` and `supportsCurrentUser` are both
   `true`.
 * Not implemented here, they throw: `signInAnonymously()` and
   `sendEmailVerification()` (`UnsupportedError`), `onUserRecord(uid)`
@@ -137,7 +139,6 @@ Future<void> main() async {
 ### Seed users and sign in with email/password in a test
 
 ```dart
-import 'package:tekartik_firebase_auth/auth_admin.dart';
 import 'package:tekartik_firebase_auth_local/auth_local.dart';
 import 'package:tekartik_firebase_local/firebase_local.dart';
 import 'package:test/test.dart';
@@ -178,15 +179,16 @@ void main() {
       throwsA(isA<StateError>()),
     );
 
+    // Deleting the current user signs it out.
+    await auth.deleteUser(record.uid);
+    expect(auth.currentUser, isNull);
+
     // The seeded users have no password: any password works for them.
     await auth.signInWithEmailAndPassword(
       email: 'admin@example.com',
       password: 'whatever',
     );
     expect(auth.currentUser!.uid, auth.localAdminUser.uid);
-
-    await auth.deleteUser(record.uid); // also signs out
-    expect(auth.currentUser, isNull);
   });
 
   test('listUsers', () async {

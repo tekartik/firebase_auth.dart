@@ -27,7 +27,6 @@ which the package fetches over http by default.
       git:
         url: https://github.com/tekartik/firebase_auth.dart
         path: auth_jwt
-      version: '>=0.1.1'
   ```
 
 * One public library: `import 'package:tekartik_firebase_auth_jwt/auth_jwt.dart';`.
@@ -38,13 +37,17 @@ which the package fetches over http by default.
   string that is not a JWT (an OAuth2 access token, a truncated header, ...)
   throws a `JWTError` from `package:corsac_jwt` at this point, so wrap the
   parsing in a `try`/`catch` too, not only the `verify()` call.
-* Then `await authInfo.verify()` to check the signature and the time claims.
-  It returns `Future<bool>`; it returns `false` when the header algorithm is
+* Then `await authInfo.verify()` to check the signature (with the
+  certificate of the token `kid`) and the time claims (`exp`, `iat`). It
+  returns `Future<bool>`; it returns `false` when the header algorithm is
   not `RS256` or when no public key matches the token `kid`, and it *throws*
   `FirebaseAuthValidationException` (read its `message`, e.g. it contains
-  `expired`) when the JWT validator reports errors. Treat "not true" and
-  "threw" as the same failure: never trust the claims unless `verify()`
-  returned `true`.
+  `expired`) when the JWT validator reports errors, a `TypeError` for a
+  token without `kid`. Treat "not true" and "threw" as the same failure:
+  never trust the claims unless `verify()` returned `true`. Before
+  2026-11-10 every genuine token was rejected ("The token signature is
+  invalid.", the signer had no key id): update the package if you saw that.
+  A rejected token is printed (`print`).
 * `verify()` takes two optional named parameters:
   * `currentTime` (`DateTime?`) to validate against a fixed instant - use it
     in tests with a recorded token, otherwise every token expires.
@@ -59,9 +62,11 @@ which the package fetches over http by default.
   `projectId` (the `aud` claim). All are nullable. `toDebugMap()` returns a
   map with the header and the decoded payload (times rendered as ISO 8601)
   for logging.
-* Verifying the signature is not enough: also check that
-  `authInfo.projectId` equals your own Firebase project id, otherwise a valid
-  token issued for another project would be accepted.
+* Verifying the signature is not enough: `verify()` does not check the
+  audience, the issuer, the subject or `auth_time`. Always check that
+  `authInfo.projectId` (the `aud` claim) equals your own Firebase project id,
+  otherwise a valid token issued for another project (signed by the same
+  Google keys) is accepted, and that `authInfo.userId` is not null.
 * `FirebaseAuthValidationException` implements `FirebaseAuthException`
   (itself an `Exception`); catch `FirebaseAuthException` to cover both. Note
   these are this package's own types - they are unrelated to the
@@ -196,16 +201,13 @@ void main() {
 
   test('verify at a fixed time', () async {
     var authInfo = FirebaseAuthInfo.fromIdToken(idToken);
-    try {
-      // Without currentTime the recorded token is always expired.
-      var ok = await authInfo.verify(
-        currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
-        fetchKey: fetchKey,
-      );
-      expect(ok, isTrue);
-    } on FirebaseAuthValidationException catch (e) {
-      expect(e.message, contains('expired'));
-    }
+    // A time between the iat and exp claims of the recorded token (without
+    // currentTime the recorded token is expired).
+    var ok = await authInfo.verify(
+      currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
+      fetchKey: fetchKey,
+    );
+    expect(ok, isTrue);
   });
 }
 ```

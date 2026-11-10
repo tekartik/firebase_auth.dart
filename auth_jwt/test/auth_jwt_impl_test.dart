@@ -51,20 +51,22 @@ void main() {
       expect(jwt.payload!.emailVerified, true);
       expect(jwt.payload!.projectId, 'tekartik-free-dev');
 
+      // The database url of the token project, no request sent.
       var database = jwt.payload!.projectId;
       var userId = jwt.payload!.userId;
-      try {
-        await databaseGetRecord(
-          idToken: idToken,
-          database: database,
-          path: '_check_user_access/$userId',
-        );
-        fail('should fail');
-      } on UnauthorizedDatabaseAuthException catch (_) {
-        // UnauthorizedDatabaseAuthException(401: {
-        // "error" : "Unauthorized request."
-        // }
-      }
+      Uri? requested;
+      await databaseGetRecord(
+        idToken: idToken,
+        database: database,
+        path: '_check_user_access/$userId',
+        httpGet: (uri) async {
+          requested = uri;
+          return 'null';
+        },
+      );
+      expect(requested!.host, 'tekartik-free-dev.firebaseio.com');
+      expect(requested!.path, '/_check_user_access/$userId.json');
+      expect(requested!.queryParameters['access_token'], idToken);
     });
   });
 }

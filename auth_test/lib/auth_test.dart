@@ -72,6 +72,30 @@ void runAuthAppTests({
           }
         }
       });
+      test('pages end', () async {
+        // The last page has no page token. Bounded: a backend always giving
+        // a token fails here instead of looping.
+        String? pageToken;
+        var pageCount = 0;
+        try {
+          do {
+            var result = await firebaseAuth.listUsers(
+              maxResults: 1000,
+              pageToken: pageToken,
+            );
+            pageToken = result.pageToken;
+            pageCount++;
+          } while (pageToken != null && pageCount < 100);
+        } catch (e) {
+          if (e.toString().contains('insufficient permission')) {
+            // ignore: avoid_print
+            print('insufficient permission $e');
+            return;
+          }
+          rethrow;
+        }
+        expect(pageToken, isNull);
+      }, timeout: const Timeout(Duration(minutes: 2)));
     }, skip: !authService.supportsListUsers);
 
     group('currentUser', () {

@@ -101,5 +101,33 @@ void firebaseAuthAdminTests({
         await auth.deleteUser(uid);
       }
     });
+    test('signed in user email verified from its record', () async {
+      var auth = getAuth();
+
+      var fetched = await auth.getUserByEmail(email);
+      if (fetched != null) {
+        await auth.deleteUser(fetched.uid);
+      }
+      var record = await auth.createUser(
+        FirebaseAuthCreateUserRequest(
+          email: email,
+          password: password,
+          emailVerified: false,
+        ),
+      );
+      try {
+        expect(record.emailVerified, isFalse);
+        var userCredential = await auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+        // Not verified once signed in either.
+        expect(userCredential.user.emailVerified, isFalse);
+        expect(auth.currentUser!.emailVerified, isFalse);
+        expect(auth.currentUser!.isAnonymous, isFalse);
+      } finally {
+        await auth.deleteUser(record.uid);
+      }
+    });
   });
 }

@@ -13,24 +13,29 @@ void main() {
   };
 
   group('decode', () {
+    /// The recorded token, valid at this time.
+    var recordedTokenTime = DateTime.parse('2020-05-03T07:05:34.000Z');
+    Future<String?> fetchKey(String key) async => keys20201009[key];
+
     test('doc', () async {
-      try {
-        var idToken =
-            'eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg4ODQ4YjVhZmYyZDUyMDEzMzFhNTQ3ZDE5MDZlNWFhZGY2NTEzYzgiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVGVzdCBUZWthcnRpayIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLUdsWE82SkpBZ2lJL0FBQUFBQUFBQUFJL0FBQUFBQUFBQUFBL0FDZXZvUU4xMUU4TF80WUk4LWx1MTZ0WW1XZmdUOTBVc3cvbW8vcGhvdG8uanBnIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3Rla2FydGlrLWZyZWUtZGV2IiwiYXVkIjoidGVrYXJ0aWstZnJlZS1kZXYiLCJhdXRoX3RpbWUiOjE1ODg0ODk1MzQsInVzZXJfaWQiOiJBYzhFeE93MWtJWlpXdjdaWnlLMWVJVncwTXUyIiwic3ViIjoiQWM4RXhPdzFrSVpaV3Y3Wlp5SzFlSVZ3ME11MiIsImlhdCI6MTU4ODQ4OTUzNCwiZXhwIjoxNTg4NDkzMTM0LCJlbWFpbCI6InRla2F0ZXN0QHRla2FydGlrLmZyIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMTEwMzAzODcyMTUwNzExMDA4NzciXSwiZW1haWwiOlsidGVrYXRlc3RAdGVrYXJ0aWsuZnIiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.O_w31LzfSYOGDTDYxskrGGN2LiBQLfZ5Zhn5JAgYYGdElZ8_hgVOyEwvBELmf4p9zEHDfzghMRvxfOGnYmGFouLhme3tvAVZKWlvOKSwCxPCI-MIGE_PGJTDWABcE5WbCcTb-oHXaiKVdJe3xjeTitlnRvF7aXLmqfX_nHWx-Kqc6RhXKiRbftOYDT3oI6buvEPq7B2gF58e9HGQ0ImLivRkYFrG6V_YWP35hH84V80DQLIbO5pzbA8dEFb-V1iKHufTuHAOxNE1rwuUN1SPqG4TrJ095I9u4FIokMm-uZUDTyxNLm6qjyS-r1UazqxsPhuFoNzQmKiby5tdST00IQ';
+      var idToken =
+          'eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg4ODQ4YjVhZmYyZDUyMDEzMzFhNTQ3ZDE5MDZlNWFhZGY2NTEzYzgiLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiVGVzdCBUZWthcnRpayIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLUdsWE82SkpBZ2lJL0FBQUFBQUFBQUFJL0FBQUFBQUFBQUFBL0FDZXZvUU4xMUU4TF80WUk4LWx1MTZ0WW1XZmdUOTBVc3cvbW8vcGhvdG8uanBnIiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL3Rla2FydGlrLWZyZWUtZGV2IiwiYXVkIjoidGVrYXJ0aWstZnJlZS1kZXYiLCJhdXRoX3RpbWUiOjE1ODg0ODk1MzQsInVzZXJfaWQiOiJBYzhFeE93MWtJWlpXdjdaWnlLMWVJVncwTXUyIiwic3ViIjoiQWM4RXhPdzFrSVpaV3Y3Wlp5SzFlSVZ3ME11MiIsImlhdCI6MTU4ODQ4OTUzNCwiZXhwIjoxNTg4NDkzMTM0LCJlbWFpbCI6InRla2F0ZXN0QHRla2FydGlrLmZyIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMTEwMzAzODcyMTUwNzExMDA4NzciXSwiZW1haWwiOlsidGVrYXRlc3RAdGVrYXJ0aWsuZnIiXX0sInNpZ25faW5fcHJvdmlkZXIiOiJnb29nbGUuY29tIn19.O_w31LzfSYOGDTDYxskrGGN2LiBQLfZ5Zhn5JAgYYGdElZ8_hgVOyEwvBELmf4p9zEHDfzghMRvxfOGnYmGFouLhme3tvAVZKWlvOKSwCxPCI-MIGE_PGJTDWABcE5WbCcTb-oHXaiKVdJe3xjeTitlnRvF7aXLmqfX_nHWx-Kqc6RhXKiRbftOYDT3oI6buvEPq7B2gF58e9HGQ0ImLivRkYFrG6V_YWP35hH84V80DQLIbO5pzbA8dEFb-V1iKHufTuHAOxNE1rwuUN1SPqG4TrJ095I9u4FIokMm-uZUDTyxNLm6qjyS-r1UazqxsPhuFoNzQmKiby5tdST00IQ';
 
-        /// Decode information from [idToken].
-        var authInfo = FirebaseAuthInfo.fromIdToken(idToken);
+      /// Decode information from [idToken].
+      var authInfo = FirebaseAuthInfo.fromIdToken(idToken);
 
-        /// Verify information, an exception is thrown on error.
-        await authInfo.verify();
+      /// Verify information (a false result or an exception is a failure).
+      expect(
+        await authInfo.verify(
+          currentTime: recordedTokenTime,
+          fetchKey: fetchKey,
+        ),
+        isTrue,
+      );
 
-        /// Extract information
-        var userId = authInfo.userId;
-        var email = authInfo.email;
-
-        // ignore: unnecessary_statements
-        [email, userId];
-      } catch (_) {}
+      /// Extract information
+      expect(authInfo.userId, 'Ac8ExOw1kIZZWv7ZZyK1eIVw0Mu2');
+      expect(authInfo.email, 'tekatest@tekartik.fr');
     });
 
     test('simple', () async {
@@ -49,31 +54,35 @@ void main() {
         'https://lh3.googleusercontent.com/-GlXO6JJAgiI/AAAAAAAAAAI/AAAAAAAAAAA/ACevoQN11E8L_4YI8-lu16tYmWfgT90Usw/mo/photo.jpg',
       );
 
-      Future<String?> fetchKey(String key) async => keys20201009[key];
+      // Today the recorded token is expired, its signature is valid.
+      await expectLater(
+        jwt.verify(fetchKey: fetchKey),
+        throwsA(
+          isA<FirebaseAuthValidationException>()
+              .having((e) => e.message, 'message', contains('expired'))
+              .having(
+                (e) => e.message,
+                'message',
+                isNot(contains('signature')),
+              ),
+        ),
+      );
 
-      try {
-        await jwt.verify(fetchKey: fetchKey);
-      } on FirebaseAuthValidationException catch (e) {
-        expect(e.message, contains('expired'));
-      }
+      // At a time within its validity it verifies (the signer needs the
+      // token key id).
+      expect(
+        await jwt.verify(currentTime: recordedTokenTime, fetchKey: fetchKey),
+        isTrue,
+      );
 
-      /*
-      await jwt.verify(
-          currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
-          fetchKey: fetchKey);
-      */
-      try {
-        // Will fail one day...just report and fix the error
+      // No key for its key id.
+      expect(
         await jwt.verify(
-          currentTime: DateTime.parse('2020-05-03T07:05:34.000Z'),
-        );
-      } on StateError catch (e) {
-        // validator error Bad state: RS256 signer requires public key to verify signatures.
-        expect(
-          e.message,
-          contains('RS256 signer requires public key to verify signatures'),
-        );
-      }
+          currentTime: recordedTokenTime,
+          fetchKey: (_) async => null,
+        ),
+        isFalse,
+      );
     });
 
     test('simple non firebase', () {

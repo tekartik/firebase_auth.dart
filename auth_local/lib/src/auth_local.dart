@@ -44,8 +44,9 @@ class AuthLocalSignInOptions implements AuthSignInOptions {
 }
 
 class ListUsersResultLocal implements ListUsersResult {
+  /// Null on the last page.
   @override
-  final String pageToken;
+  final String? pageToken;
 
   @override
   final List<UserRecord> users;
@@ -154,7 +155,12 @@ class _UserRecordLocal
   }
 
   User toUser() {
-    return _UserLocal(auth: auth, uid: uid)
+    return _UserLocal(
+        auth: auth,
+        uid: uid,
+        emailVerified: emailVerified,
+        isAnonymous: isAnonymous,
+      )
       ..email = email
       ..displayName = displayName
       ..phoneNumber = phoneNumber
@@ -196,13 +202,20 @@ class _UserInfoLocal
 abstract class UserLocal implements User {}
 
 class _UserLocal extends _UserInfoLocal implements UserLocal {
-  _UserLocal({required super.auth, required super.uid});
+  _UserLocal({
+    required super.auth,
+    required super.uid,
+    required this.emailVerified,
+    required this.isAnonymous,
+  });
 
+  /// From the user record.
   @override
-  bool get emailVerified => true;
+  final bool emailVerified;
 
+  /// From the user record.
   @override
-  bool get isAnonymous => false;
+  final bool isAnonymous;
 
   @override
   Future<void> delete() async {
@@ -296,7 +309,8 @@ class AuthLocalImpl
     var startIndex = parseInt(pageToken, 0)!;
     var lastIndex = startIndex + (maxResults ?? 10);
     var result = ListUsersResultLocal(
-      pageToken: lastIndex.toString(),
+      // No token after the last page.
+      pageToken: lastIndex < _allUsers.length ? lastIndex.toString() : null,
       users: listSubList(_allUsers, startIndex, lastIndex),
     );
 
